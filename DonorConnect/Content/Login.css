@@ -1,11 +1,11 @@
 ﻿/* General Styles */
 body {
-    background-color: #9A616D;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0;
+    background-color: #bfdae2;
 }
 
 .container {
@@ -15,14 +15,13 @@ body {
 }
 
 .card {
-    border-radius: 1rem;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
+    border-radius: 1rem;
 }
 
-/* Image Container Styles */
 .image-container {
     width: 100%;
 }
@@ -34,19 +33,19 @@ body {
     border-radius: 1rem 1rem 0 0;
 }
 
-/* Card Body Styles */
-.card-body {
-    padding: 2rem;
-    flex: 1;
-}
-
 .form-control {
     border-radius: 0.5rem;
 }
 
 .btn {
     border-radius: 0.5rem;
+    background-color: #ff6219;
+    border: none;
 }
+
+    .btn:hover {
+        background-color: #e55315;
+    }
 
 .d-flex.align-items-center.mb-3.pb-1 i {
     margin-right: 0.5rem;
@@ -54,7 +53,44 @@ body {
 
 .d-flex.align-items-center.mb-3.pb-1 .h1 {
     font-weight: bold;
+    margin-left: -10px;
 }
+
+.form-outline {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+    .form-outline input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .form-outline label {
+        position: absolute;
+        top: -0.5rem;
+        left: 1rem;
+        background: #fff;
+        padding: 0 0.25rem;
+        color: #495057;
+        font-size: 0.875rem;
+        transition: 0.2s ease all;
+    }
+
+    .form-outline input:focus {
+        border-color: #ff6219;
+        box-shadow: 0 0 0 0.2rem rgba(255, 98, 25, 0.25);
+    }
+
+        .form-outline input:focus + label {
+            top: -1.5rem;
+            left: 0.75rem;
+            font-size: 0.75rem;
+            color: #ff6219;
+        }
 
 /* Responsive Styles */
 @media (min-width: 601px) {
@@ -91,15 +127,15 @@ body {
     }
 
     .card-body {
-        padding: 1rem; /* Reduced padding for smaller screens */
+        padding: 1rem;
     }
 
     .form-control {
-        padding: 0.5rem; /* Adjusted padding for input fields */
+        padding: 0.5rem;
     }
 
     .btn {
-        padding: 0.5rem 1rem; /* Adjusted padding for button */
-        font-size: 0.9rem; /* Reduced font size for button */
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
     }
 }

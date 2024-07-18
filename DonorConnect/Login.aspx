@@ -9,22 +9,22 @@
     <link href="/Content/Login.css" rel="stylesheet" type="text/css" />
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
 </head>
-<body>
+<body style="background-color: #bfdae2">
     <form id="form1" runat="server">
         <div class="container">
-            <div class="card">
+            <div class="card" style="border-radius: 1rem;">
                 <div class="row no-gutters flex-column flex-md-row">
                     <div class="col-12 col-md-6 image-container">
-                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/img1.webp"
-                             alt="login form" class="img-fluid image-side" />
+                        <img src="/Image/login_pic.jpg" 
+                             alt="login form" class="img-fluid image-side" style="height: 100%"/>
                     </div>
                     <div class="col-12 col-md-6 d-flex align-items-center">
                         <div class="card-body p-4 p-lg-5 text-black">
                             <div class="d-flex align-items-center mb-3 pb-1">
                                 <i class="fas fa-cubes fa-2x me-3" style="color: #ff6219;"></i>
-                                <span class="h1 fw-bold mb-0">Logo</span>
+                                <span class="h1 fw-bold mb-0">DonorConnect</span>
                             </div>
-                            <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Sign into your account</h5>
+                            <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Login to your account</h5>
                             <div class="form-outline mb-4">
                                 <input type="email" id="form2Example17" class="form-control form-control-lg" />
                                 <label class="form-label" for="form2Example17">Email address</label>
@@ -37,9 +37,9 @@
                                 <button class="btn btn-dark btn-lg btn-block" type="button">Login</button>
                             </div>
                             <a class="small text-muted" href="#!">Forgot password?</a>
-                            <p class="mb-5 pb-lg-2" style="color: #393f81;">Don't have an account? <a href="#!" style="color: #393f81;">Register here</a></p>
-                            <a href="#!" class="small text-muted">Terms of use.</a>
-                            <a href="#!" class="small text-muted">Privacy policy</a>
+                            <p class="mb-5 pb-lg-2" style="color: #393f81; margin-top: 15px;">Doesn't have an account? <a href="SignUp.aspx" style="color: #393f81;">Register here</a></p>
+                            <a href="#!" class="small text-muted">Terms of Use.</a>
+                            <a href="#!" class="small text-muted">Privacy Policy</a>
                         </div>
                     </div>
                 </div>
