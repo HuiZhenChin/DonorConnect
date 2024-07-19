@@ -104,8 +104,13 @@
                             <div class="section">
                                 <div class="section-label">Business License</div>
                                 <div class="form-outline mb-4">
-                                    <input type="file" id="orgLicense" class="form-control form-control-lg" required="required" multiple="multiple" />
-                                    <label class="form-label" for="orgLicense">Upload Business License</label>
+                                    <div class="input-with-icon d-flex align-items-center">
+                                        <input type="file" id="orgLicense" class="form-control form-control-lg" required="required" multiple="multiple" />
+                                        <div id="showSampleBusinessLicense" style="cursor: pointer; margin-left: 10px;" data-toggle="modal" data-target="#sampleBusinessLicenseModal">
+                                            <i class="fas fa-question-circle fa-lg" style="color: #6E747A;"></i>
+                                        </div>
+                                    </div>
+                                    <label class="form-label" for="orgLicense">Upload Business License (SSM Borang E)</label>
                                     <div class="guidelines">
                                         <p>Accepted formats: .jpg, .jpeg, .png, .pdf</p>
                                     </div>
@@ -153,27 +158,29 @@
                                     <label class="form-label" for="vehiclePlateNo">Vehicle Plate Number</label>
                                 </div>
                                 <div class="form-outline mb-4">
-                                    <input type="file" id="riderCarLicense" class="form-control form-control-lg" required="required" multiple="multiple" />
+                                    <div class="input-with-icon d-flex align-items-center">
+                                        <input type="file" id="riderCarLicense" class="form-control form-control-lg" required="required" multiple="multiple" />
+                                        <div id="showSampleImage" style="cursor: pointer; margin-left: 10px;" data-toggle="modal" data-target="#sampleImageModal">
+                                            <i class="fas fa-question-circle fa-lg" style=" color: #6E747A;"></i>
+                                        </div>
+                                    </div>
                                     <label class="form-label" for="riderCarLicense">Upload Driving License</label>
                                     <div class="guidelines">
-                                        <p>Accepted formats: .jpg, .jpeg, .png, .pdf</p>
+                                        <p>Accepted formats: .jpg, .jpeg, .png (only image file)</p>
                                     </div>
                                 </div>
-                                <div id="showSampleIcon" style="cursor: pointer;">
-                                    <i class="fas fa-image fa-lg"></i>
-                                    
-                                </div>
-                                
-                                <div id="sampleImageContainer" style="display: none;">
-                                    <p>Sample Valid Drving License:</p>
-                                    <img src="/Image/driving_license.jpg" alt="Sample Image" style="max-width: 100%; height: auto;"/>
-                                    <p>Follow this format to upload your file. You may upload separate files for front and back of the license.</p>
-                                </div>
+
+
                                 <div class="form-outline mb-4">
-                                    <input type="file" id="riderFacePhoto" class="form-control form-control-lg" required="required"/>
+                                    <div class="input-with-icon d-flex align-items-center">
+                                        <input type="file" id="riderFacePhoto" class="form-control form-control-lg" required="required" />
+                                        <div id="showSampleFacePhoto" style="cursor: pointer; margin-left: 10px;" data-toggle="modal" data-target="#sampleImageModal2">
+                                            <i class="fas fa-question-circle fa-lg" style="color: #6E747A;"></i>
+                                        </div>
+                                    </div>
                                     <label class="form-label" for="riderFacePhoto">Upload Face Photo</label>
                                     <div class="guidelines">
-                                        <p>Accepted formats: passport size</p>
+                                        <p>Accepted format: .jpg, .jpeg, .png (only image file)</p>
                                     </div>
                                 </div>
                                 <div class="form-outline mb-4">
@@ -202,8 +209,72 @@
             </div>
         </div>
     </div>
-</form>
 
+    <!-- Modal/ Dialog Box -->
+    <div class="modal fade" id="sampleImageModal" tabindex="-1" role="dialog" aria-labelledby="sampleImageModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="sampleImageModalLabel">Sample Valid Driving License</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <img src="/Image/driving_license.jpg" alt="Sample Image" style="max-width: 100%; height: auto;"/>
+            <p>Follow this format to upload your file. You may upload separate files for front and back of the license.</p>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+
+       <div class="modal fade" id="sampleImageModal2" tabindex="-1" role="dialog" aria-labelledby="sampleImageModalLabel2" aria-hidden="true">
+           <div class="modal-dialog" role="document">
+               <div class="modal-content">
+                   <div class="modal-header">
+                       <h5 class="modal-title" id="sampleImageModalLabel2">Sample Valid and Invalid Face Photos</h5>
+                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                           <span aria-hidden="true">&times;</span>
+                       </button>
+                   </div>
+                   <div class="modal-body">
+                       <div class="valid-sample">
+                           <i class="fas fa-check-circle fa-lg" style="color: green;"></i>
+                           <img src="/Image/valid_face_photo.jpg" alt="Valid Sample Image" style="max-width: 80%; height: auto;" />
+                           <p>Sample Valid Face Photo</p>
+                       </div>
+                       <div class="invalid-sample">
+                           <i class="fas fa-times-circle fa-lg" style="color: red;"></i>
+                           <img src="/Image/invalid_face_photo.jpg" alt="Invalid Sample Image" style="max-width: 100%; height: auto;" />
+                           <p>Example Invalid Face Photo </p>
+                       </div>
+                      
+                       <p>Follow the valid example to upload one face photo of you. Ensure the photo is clear, with your face fully visible.</p>
+                   </div>
+               </div>
+           </div>
+       </div>
+
+       <div class="modal fade" id="sampleBusinessLicenseModal" tabindex="-1" role="dialog" aria-labelledby="sampleBusinessLicenseModalLabel" aria-hidden="true">
+           <div class="modal-dialog" role="document">
+               <div class="modal-content">
+                   <div class="modal-header">
+                       <h5 class="modal-title" id="sampleBusinessLicenseModalLabel">Sample Business License</h5>
+                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                           <span aria-hidden="true">&times;</span>
+                       </button>
+                   </div>
+                   <div class="modal-body">
+                       <img src="/Image/business_license.jpg" alt="Sample Image" style="max-width: 100%; height: auto;" />
+                       <p>Follow this format to upload your file. Ensure the business name and registration number are clearly visible.</p>
+                   </div>
+               </div>
+           </div>
+       </div>
+
+</form>
 
     <script>
         function showDetails(role) {
@@ -212,16 +283,10 @@
                 document.getElementById(r + 'Details').style.display = (r === role) ? 'block' : 'none';
             });
         }
-        document.getElementById('showSampleIcon').addEventListener('click', function () {
-           
-            var sampleImageContainer = document.getElementById('sampleImageContainer');
-            if (sampleImageContainer.style.display === 'none') {
-                sampleImageContainer.style.display = 'block';
-            } else {
-                sampleImageContainer.style.display = 'none';
-            }
-        });
     </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
 

@@ -128,7 +128,9 @@
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Image\business_license.jpg" />
     <Content Include="Image\driving_license.jpg" />
+    <Content Include="Image\invalid_face_photo.jpg" />
     <Content Include="Image\login_pic.jpg" />
     <Content Include="Image\main.jpg" />
     <Content Include="Image\delivery_home.jpg" />
@@ -136,6 +138,7 @@
     <Content Include="Image\main_new.jpg" />
     <Content Include="Image\phone_home.jpg" />
     <Content Include="Image\signup_pic.jpg" />
+    <Content Include="Image\valid_face_photo.jpg" />
     <Content Include="Login.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
