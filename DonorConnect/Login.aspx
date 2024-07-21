@@ -20,8 +20,7 @@
                     </div>
                     <div class="col-12 col-md-6 d-flex align-items-center">
                         <div class="card-body p-4 p-lg-5 text-black">
-                            <div class="d-flex align-items-center mb-3 pb-1">
-                                <i class="fas fa-cubes fa-2x me-3" style="color: #ff6219;"></i>
+                            <div class="d-flex align-items-center mb-3 pb-1"> 
                                 <span class="h1 fw-bold mb-0">DonorConnect</span>
                             </div>
                             <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Login to your account</h5>

@@ -106,6 +106,7 @@
     <Content Include="Content\Login.css" />
     <Content Include="Content\Delivery.css" />
     <Content Include="Content\SignUp.css" />
+    <Content Include="Content\SignUp2.css" />
     <Content Include="Home.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
