@@ -24,6 +24,24 @@ namespace DonorConnect
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
+        /// selectedRole control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField selectedRole;
+
+        /// <summary>
+        /// donorDetails control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl donorDetails;
+
+        /// <summary>
         /// donorName control.
         /// </summary>
         /// <remarks>
@@ -31,6 +49,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox donorName;
+
+        /// <summary>
+        /// lblDonorName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDonorName;
 
         /// <summary>
         /// donorUsername control.
@@ -42,6 +69,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox donorUsername;
 
         /// <summary>
+        /// lblDonorUsername control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDonorUsername;
+
+        /// <summary>
         /// donorEmail control.
         /// </summary>
         /// <remarks>
@@ -49,6 +85,33 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox donorEmail;
+
+        /// <summary>
+        /// lblDonorEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDonorEmail;
+
+        /// <summary>
+        /// donorContactNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox donorContactNumber;
+
+        /// <summary>
+        /// lblDonorContactNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDonorContactNumber;
 
         /// <summary>
         /// donorPassword control.
@@ -60,6 +123,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox donorPassword;
 
         /// <summary>
+        /// lblDonorPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDonorPassword;
+
+        /// <summary>
         /// donorConfirmPassword control.
         /// </summary>
         /// <remarks>
@@ -67,6 +139,24 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox donorConfirmPassword;
+
+        /// <summary>
+        /// lblDonorConfirmPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDonorConfirmPassword;
+
+        /// <summary>
+        /// organizationDetails control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl organizationDetails;
 
         /// <summary>
         /// orgName control.
@@ -78,6 +168,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox orgName;
 
         /// <summary>
+        /// lblOrgName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrgName;
+
+        /// <summary>
         /// orgEmail control.
         /// </summary>
         /// <remarks>
@@ -85,6 +184,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox orgEmail;
+
+        /// <summary>
+        /// lblOrgEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrgEmail;
 
         /// <summary>
         /// orgContactNumber control.
@@ -96,6 +204,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox orgContactNumber;
 
         /// <summary>
+        /// lblOrgContactNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrgContactNumber;
+
+        /// <summary>
         /// orgAddress control.
         /// </summary>
         /// <remarks>
@@ -103,6 +220,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox orgAddress;
+
+        /// <summary>
+        /// lblOrgAddress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrgAddress;
 
         /// <summary>
         /// orgRegion control.
@@ -114,6 +240,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.DropDownList orgRegion;
 
         /// <summary>
+        /// lblOrgRegion control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrgRegion;
+
+        /// <summary>
         /// picName control.
         /// </summary>
         /// <remarks>
@@ -121,6 +256,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox picName;
+
+        /// <summary>
+        /// lblPicName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPicName;
 
         /// <summary>
         /// picEmail control.
@@ -132,6 +276,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox picEmail;
 
         /// <summary>
+        /// lblPicEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPicEmail;
+
+        /// <summary>
         /// picNumber control.
         /// </summary>
         /// <remarks>
@@ -139,6 +292,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox picNumber;
+
+        /// <summary>
+        /// lblPicNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPicNumber;
 
         /// <summary>
         /// orgLicense control.
@@ -150,6 +312,24 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.FileUpload orgLicense;
 
         /// <summary>
+        /// lblOrgLicense control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrgLicense;
+
+        /// <summary>
+        /// lblImgTypeOrgLicense control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblImgTypeOrgLicense;
+
+        /// <summary>
         /// orgPassword control.
         /// </summary>
         /// <remarks>
@@ -157,6 +337,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox orgPassword;
+
+        /// <summary>
+        /// lblOrgPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrgPassword;
 
         /// <summary>
         /// orgConfirmPassword control.
@@ -168,6 +357,24 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox orgConfirmPassword;
 
         /// <summary>
+        /// lblOrgConfirmPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrgConfirmPassword;
+
+        /// <summary>
+        /// riderDetails control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl riderDetails;
+
+        /// <summary>
         /// riderName control.
         /// </summary>
         /// <remarks>
@@ -175,6 +382,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox riderName;
+
+        /// <summary>
+        /// lblRiderName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderName;
 
         /// <summary>
         /// riderUsername control.
@@ -186,6 +402,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox riderUsername;
 
         /// <summary>
+        /// lblRiderUsername control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderUsername;
+
+        /// <summary>
         /// riderEmail control.
         /// </summary>
         /// <remarks>
@@ -193,6 +418,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox riderEmail;
+
+        /// <summary>
+        /// lblRiderEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderEmail;
 
         /// <summary>
         /// riderContactNumber control.
@@ -204,6 +438,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox riderContactNumber;
 
         /// <summary>
+        /// lblRiderContactNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderContactNumber;
+
+        /// <summary>
         /// vehicleType control.
         /// </summary>
         /// <remarks>
@@ -211,6 +454,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList vehicleType;
+
+        /// <summary>
+        /// lblVehicleType control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblVehicleType;
 
         /// <summary>
         /// vehiclePlateNo control.
@@ -222,6 +474,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox vehiclePlateNo;
 
         /// <summary>
+        /// lblVehiclePlateNo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblVehiclePlateNo;
+
+        /// <summary>
         /// riderCarLicense control.
         /// </summary>
         /// <remarks>
@@ -229,6 +490,24 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.FileUpload riderCarLicense;
+
+        /// <summary>
+        /// lblRiderCarLicense control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderCarLicense;
+
+        /// <summary>
+        /// lblImgTypeCarLicense control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblImgTypeCarLicense;
 
         /// <summary>
         /// riderFacePhoto control.
@@ -240,6 +519,24 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.FileUpload riderFacePhoto;
 
         /// <summary>
+        /// lblRiderFacePhoto control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderFacePhoto;
+
+        /// <summary>
+        /// lblImgTypeFacePhoto control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblImgTypeFacePhoto;
+
+        /// <summary>
         /// riderPassword control.
         /// </summary>
         /// <remarks>
@@ -249,6 +546,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox riderPassword;
 
         /// <summary>
+        /// lblRiderPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderPassword;
+
+        /// <summary>
         /// riderConfirmPassword control.
         /// </summary>
         /// <remarks>
@@ -256,6 +562,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox riderConfirmPassword;
+
+        /// <summary>
+        /// lblRiderConfirmPassword control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderConfirmPassword;
 
         /// <summary>
         /// signUpButton control.

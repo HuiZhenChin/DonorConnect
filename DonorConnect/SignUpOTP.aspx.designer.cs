@@ -11,7 +11,7 @@ namespace DonorConnect
 {
 
 
-    public partial class Login
+    public partial class SignUpOTP
     {
 
         /// <summary>
@@ -24,15 +24,6 @@ namespace DonorConnect
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// txtEmail control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEmail;
-
-        /// <summary>
         /// lblEmail control.
         /// </summary>
         /// <remarks>
@@ -42,30 +33,30 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.Label lblEmail;
 
         /// <summary>
-        /// txtPassword control.
+        /// lblOTP control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPassword;
+        protected global::System.Web.UI.WebControls.Label lblOTP;
 
         /// <summary>
-        /// lblPassword control.
+        /// txtOTP control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblPassword;
+        protected global::System.Web.UI.WebControls.TextBox txtOTP;
 
         /// <summary>
-        /// btnLogin control.
+        /// btnVerifyOTP control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnLogin;
+        protected global::System.Web.UI.WebControls.Button btnVerifyOTP;
     }
 }

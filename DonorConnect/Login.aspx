@@ -25,15 +25,15 @@
                             </div>
                             <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Login to your account</h5>
                             <div class="form-outline mb-4">
-                                <input type="email" id="form2Example17" class="form-control form-control-lg" />
-                                <label class="form-label" for="form2Example17">Email address</label>
+                                <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control form-control-lg" TextMode="Email"></asp:TextBox>
+                                <asp:Label ID="lblEmail" runat="server" CssClass="form-label" AssociatedControlID="txtEmail">Email address</asp:Label>
                             </div>
                             <div class="form-outline mb-4">
-                                <input type="password" id="form2Example27" class="form-control form-control-lg" />
-                                <label class="form-label" for="form2Example27">Password</label>
+                                <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control form-control-lg" TextMode="Password"></asp:TextBox>
+                                <asp:Label ID="lblPassword" runat="server" CssClass="form-label" AssociatedControlID="txtPassword">Password</asp:Label>
                             </div>
                             <div class="pt-1 mb-4">
-                                <button class="btn btn-dark btn-lg btn-block" type="button">Login</button>
+                                <asp:Button ID="btnLogin" runat="server" CssClass="btn btn-dark btn-lg btn-block" Text="Login"  />
                             </div>
                             <a class="small text-muted" href="#!">Forgot password?</a>
                             <p class="mb-5 pb-lg-2" style="color: #393f81; margin-top: 15px;">Doesn't have an account? <a href="SignUp.aspx" style="color: #393f81;">Register here</a></p>
@@ -48,4 +48,3 @@
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
 </html>
-
