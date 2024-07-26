@@ -14,6 +14,7 @@ using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
+using WebGrease.Activities;
 
 namespace DonorConnect
 {
@@ -24,20 +25,19 @@ namespace DonorConnect
             if (!IsPostBack)
             {
                 // Initial page load actions (if any)
+                
             }
            
         }
-
 
         protected void btnRegister_Click(object sender, EventArgs e)
         {
             try
             {
-
                 string role = selectedRole.Value;
-
                 bool isValid = true;
 
+                // validation based on role and set session variables to enter otp page
                 switch (role)
                 {
                     case "donor":
@@ -75,6 +75,15 @@ namespace DonorConnect
                         {
                             ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Password and Confirm Password do not match!');", true);
                             isValid = false;
+                        }
+                        if (isValid)
+                        {
+                            Session["Role"] = "donor";
+                            Session["DonorName"] = donorName.Text;
+                            Session["DonorUsername"] = donorUsername.Text;
+                            Session["DonorEmail"] = donorEmail.Text;
+                            Session["DonorContactNumber"] = donorContactNumber.Text;
+                            Session["DonorPassword"] = donorPassword.Text;
                         }
                         break;
 
@@ -147,6 +156,23 @@ namespace DonorConnect
                             lblImgTypeOrgLicense.Text = "Invalid file type. Accepted formats: .jpg, .jpeg, .png, .pdf";
                             isValid = false;
                         }
+                        if (isValid)
+                        {
+                            Session["Role"] = "organization";
+                            Session["OrgName"] = orgName.Text;
+                            Session["OrgEmail"] = orgEmail.Text;
+                            Session["OrgContactNumber"] = orgContactNumber.Text;
+                            Session["OrgAddress"] = orgAddress.Text;
+                            Session["PicName"] = picName.Text;
+                            Session["PicEmail"] = picEmail.Text;
+                            Session["PicNumber"] = picNumber.Text;
+                            Session["OrgPassword"] = orgPassword.Text;
+                            Session["OrgRegion"] = orgRegion.SelectedValue;
+
+                            string base64BusinessLicense = ConvertToBase64(orgLicense.PostedFile);
+                            Session["OrgLicense"] = base64BusinessLicense;
+                            
+                        }
                         break;
 
                     case "rider":
@@ -216,6 +242,25 @@ namespace DonorConnect
                             lblImgTypeFacePhoto.Text = "Invalid file type. Accepted formats: .jpg, .jpeg, .png, .pdf";
                             isValid = false;
                         }
+                        if (isValid)
+                        {
+                            Session["Role"] = "rider";
+                            Session["RiderName"] = riderName.Text;
+                            Session["RiderUsername"] = riderUsername.Text;
+                            Session["RiderEmail"] = riderEmail.Text;
+                            Session["RiderContactNumber"] = riderContactNumber.Text;
+                            Session["VehiclePlateNo"] = vehiclePlateNo.Text;
+                            Session["VehicleType"] = vehicleType.SelectedValue;
+                            Session["RiderPassword"] = riderPassword.Text;
+
+                            // Save the files in session (e.g., as byte arrays)
+                            string base64DrvingLicense = ConvertToBase64(riderCarLicense.PostedFile);
+                            Session["RiderCarLicense"] = base64DrvingLicense;
+
+                            string base64FacePic = ConvertToBase64(riderFacePhoto.PostedFile);
+                            Session["RiderFacePhoto"] = base64FacePic;
+                            
+                        }
                         break;
                 }
 
@@ -224,260 +269,36 @@ namespace DonorConnect
                     // Redirect to OTP verification page
                     string email = "";
                     string username = "";
+                    
 
                     switch (role)
                     {
                         case "donor":
                             email = donorEmail.Text;
                             username = donorUsername.Text;
+                            
                             break;
                         case "organization":
                             email = orgEmail.Text;
-                            username = picName.Text; // or orgUsername.Text if available
+                            username = orgName.Text;
+                            
                             break;
                         case "rider":
                             email = riderEmail.Text;
                             username = riderUsername.Text;
+                           
                             break;
                     }
 
-                    Response.Redirect($"SignUpOTP.aspx?email={email}&username={username}");
-
-                    RegisterUser(role);
-
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Registered Successful!');", true);
+                    Response.Redirect($"SignUpOTP.aspx?email={email}&username={username}&selectedRole={role}");
                 }
             }
             catch (Exception ex)
             {
-                // log the exception and display a user-friendly error message
                 Response.Write("An error occurred: " + ex.Message);
             }
         }
-    
-            
 
-
-        private void RegisterUser(string role)
-        {
-            string connectionString = ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString;
-
-            using (SqlConnection con = new SqlConnection(connectionString))
-            {
-                con.Open();
-
-                switch (role)
-                {
-                    case "donor":
-                       
-                        RegisterDonor(con);
-                        break;
-                    case "organization":
-                        RegisterOrganization(con);
-                        break;
-                    case "rider":
-                        RegisterRider(con);
-                        break;
-                    default:
-                        // Handle unknown role
-                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Please select a role!');", true);
-                        break;
-                }
-            }
-        }
-
-
-        private void RegisterDonor(SqlConnection con)
-        {
-            try
-            {
-                QRY NewQry = new QRY();
-
-                // Hash the password before including it in the query
-                string hashedPassword = HashPassword(donorPassword.Text);
-
-                string donor_sql = "EXEC [create_donor] " +
-                                   "@method = 'INSERT', " +
-                                   "@donorId = NULL, " +  // donorId will be generated in the stored procedure
-                                   "@donorName = '" + donorName.Text + "', " +
-                                   "@donorUsername = '" + donorUsername.Text + "', " +
-                                   "@donorEmail = '" + donorEmail.Text + "', " +
-                                   "@donorContactNumber = '" + donorContactNumber.Text + "', " +
-                                   "@donorHashPassword = '" + hashedPassword + "', " +
-                                   "@donorNewHashPassword = NULL, " +
-                                   "@donorAddress1 = NULL," +
-                                   "@donorAddress2 = NULL, " +
-                                   "@donorProfilePicBase64 = NULL ";
-
-                
-                DataTable dt_check = NewQry.GetData(donor_sql);
-                string message = "";
-
-                if (dt_check.Rows.Count > 0)
-                {
-                    message = dt_check.Rows[0]["MESSAGE"].ToString();
-                    if (message != "" && message != "SUCCESSFUL! You have registered as a donor!")
-                    {
-                        Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>ErrorMsg('" + message + "');</script>");
-                    }
-                    else if (message != "" && message == "SUCCESSFUL! You have registered as a donor!")
-                    {
-                        Session["message"] = message;
-                        
-                    }
-                }
-                
-                clearText();
-                
-            }
-            catch (Exception ex)
-            {
-                // Log other exceptions or display specific error messages
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('An error occurred: " + ex.Message + "');", true);
-            }
-        }
-
-        private void RegisterOrganization(SqlConnection con)
-        {
-            try
-            {
-                QRY NewQry = new QRY();
-
-                // hash the password before including it in the query
-                string hashedPassword = HashPassword(orgPassword.Text);
-
-                // encrypt the image as base64
-
-                string businessLicense = ConvertToBase64(orgLicense.PostedFile);
-                
-                // initial status after registration
-                string status = "Pending Approval";
-
-                string org_sql = "EXEC [create_organization] " +
-                                   "@method = 'INSERT', " +
-                                   "@orgId = NULL, " +  // orgId will be generated in the stored procedure
-                                   "@orgName = '" + orgName.Text + "', " +
-                                   "@orgEmail = '" + orgEmail.Text + "', " +
-                                   "@orgContactNumber = '" + orgContactNumber.Text + "', " +
-                                   "@orgHashPassword = '" + hashedPassword + "', " +
-                                   "@orgNewHashPassword = NULL, " +
-                                   "@orgAddress = '" + orgAddress.Text + "', " +
-                                   "@businessLicenseImageBase64 ='" + businessLicense + "', " +
-                                   "@picName = '" + picName.Text + "', " +
-                                   "@picEmail = '" + picEmail.Text + "', " +
-                                   "@picContactNumber = '" + picNumber.Text + "', " +
-                                   "@orgProfilePicBase64 = NULL, " +
-                                   "@orgDescription= NULL, " +
-                                   "@mostNeededItemCategory = NULL, " +
-                                   "@orgRegion = '" + orgRegion.SelectedValue + "', " +
-                                   "@orgStatus = '" + status + "', " +
-                                   "@adminId = NULL ";
-
-
-                DataTable dt_check = NewQry.GetData(org_sql);
-                string message = "";
-
-                if (dt_check.Rows.Count > 0)
-                {
-                    message = dt_check.Rows[0]["MESSAGE"].ToString();
-                    if (message != "" && message != "SUCCESSFUL! You have registered as an organization!")
-                    {
-                        Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>ErrorMsg('" + message + "');</script>");
-                    }
-                    else if (message != "" && message == "SUCCESSFUL! You have registered as an organization!")
-                    {
-                        Session["message"] = message;
-                        
-                    }
-                }
-               
-                clearText();
-            }
-            catch (Exception ex)
-            {
-                // Log other exceptions or display specific error messages
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('An error occurred: " + ex.Message + "');", true);
-            }
-        }
-
-        private void RegisterRider(SqlConnection con)
-        {
-            try
-            {
-                QRY NewQry = new QRY();
-
-                // Hash the password before including it in the query
-                string hashedPassword = HashPassword(riderPassword.Text);
-
-                // encrypt the image as base64
-
-                string drivingLicense = ConvertToBase64(riderCarLicense.PostedFile);
-
-                string facePic = ConvertToBase64(riderFacePhoto.PostedFile);
-
-                // initial status after registration
-                string status = "Pending Approval";
-
-                string rider_sql = "EXEC [create_rider] " +
-                                   "@method = 'INSERT', " +
-                                   "@riderId = NULL, " +  // riderId will be generated in the stored procedure
-                                   "@riderUsername = '" + riderName.Text + "', " +
-                                   "@riderFullName = '" + riderUsername.Text + "', " +
-                                   "@riderEmail = '" + riderEmail.Text + "', " +
-                                   "@riderContactNumber = '" + riderContactNumber.Text + "', " +
-                                   "@riderHashPassword = '" + hashedPassword + "', " +
-                                   "@riderNewHashPassword = NULL, " +
-                                   "@drivingLicenseImageBase64 = '" + drivingLicense + "', " +
-                                   "@vehicleType = '" + vehicleType.SelectedValue + "', " +
-                                   "@riderFacePicBase64 = '" + facePic + "', " +
-                                   "@noOfDeliveryMade = NULL," +
-                                   "@walletAmount = NULL," +
-                                   "@vehiclePlateNumber = '" + vehiclePlateNo.Text + "', " +
-                                   "@registerDate = NULL," +
-                                   "@riderStatus = '" + status + "', " +
-                                   "@adminId = NULL";
-
-
-                DataTable dt_check = NewQry.GetData(rider_sql);
-                string message = "";
-
-                if (dt_check.Rows.Count > 0)
-                {
-                    message = dt_check.Rows[0]["MESSAGE"].ToString();
-                    if (message != "" && message != "SUCCESSFUL! You have registered as a delivery rider!")
-                    {
-                        Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>ErrorMsg('" + message + "');</script>");
-                    }
-                    else if (message != "" && message == "SUCCESSFUL! You have registered as a delivery rider!")
-                    {
-                        Session["message"] = message;
-                        
-                    }
-                }
-               
-                clearText();
-            }
-            catch (Exception ex)
-            {
-                // Log other exceptions or display specific error messages
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('An error occurred: " + ex.Message + "');", true);
-            }
-        }
-
-
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
-        }
 
         private string ConvertToBase64(HttpPostedFile postedFile)
         {
@@ -489,34 +310,34 @@ namespace DonorConnect
             }
         }
 
-        public void clearText()
-        {
-            donorName.Text = "";
-            donorUsername.Text = "";
-            donorEmail.Text = "";
-            donorContactNumber.Text = "";
-            donorPassword.Text = "";
-            donorConfirmPassword.Text = "";
-            orgName.Text = "";
-            orgEmail.Text = "";
-            orgContactNumber.Text = "";
-            orgAddress.Text = "";
-            orgRegion.Text = "";
-            picName.Text = "";
-            picEmail.Text = "";
-            picNumber.Text = "";
-            orgPassword.Text = "";
-            orgConfirmPassword.Text = "";
-            riderName.Text = "";
-            riderUsername.Text = "";
-            riderEmail.Text = "";
-            riderContactNumber.Text = "";
-            riderPassword.Text = "";
-            riderConfirmPassword.Text = "";
-            vehicleType.Text = "";
-            vehiclePlateNo.Text = "";
+        //public void clearText()
+        //{
+        //    donorName.Text = "";
+        //    donorUsername.Text = "";
+        //    donorEmail.Text = "";
+        //    donorContactNumber.Text = "";
+        //    donorPassword.Text = "";
+        //    donorConfirmPassword.Text = "";
+        //    orgName.Text = "";
+        //    orgEmail.Text = "";
+        //    orgContactNumber.Text = "";
+        //    orgAddress.Text = "";
+        //    orgRegion.Text = "";
+        //    picName.Text = "";
+        //    picEmail.Text = "";
+        //    picNumber.Text = "";
+        //    orgPassword.Text = "";
+        //    orgConfirmPassword.Text = "";
+        //    riderName.Text = "";
+        //    riderUsername.Text = "";
+        //    riderEmail.Text = "";
+        //    riderContactNumber.Text = "";
+        //    riderPassword.Text = "";
+        //    riderConfirmPassword.Text = "";
+        //    vehicleType.Text = "";
+        //    vehiclePlateNo.Text = "";
 
-        }
+        //}
 
     }
 

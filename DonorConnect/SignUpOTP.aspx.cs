@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNet.FriendlyUrls;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
 using System.EnterpriseServices.CompensatingResourceManager;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -16,19 +21,26 @@ namespace DonorConnect
         {
             if (!IsPostBack)
             {
-                // Retrieve the email and username from the query string
+                // retrieve the email and username passed from the Sign Up Page
                 string email = Request.QueryString["email"];
                 string username = Request.QueryString["username"];
+                string role = Request.QueryString["selectedRole"];
                 if (!string.IsNullOrEmpty(email))
                 {
-                    // Store the email in the session
+                    // store the email in the session
                     Session["EmailAddress"] = email;
                 }
 
                 if (!string.IsNullOrEmpty(username))
                 {
-                    // Store the username in the session
+                    // store the username in the session
                     Session["Username"] = username;
+                }
+
+                if (!string.IsNullOrEmpty(role))
+                {
+                    // store the role in the session
+                    Session["Role"] = role;
                 }
 
                 if (Session["EmailAddress"] != null)
@@ -47,19 +59,19 @@ namespace DonorConnect
 
         protected void generateOTP()
         {
-            // Generate a 6-digit random OTP
+            // generate a 6-digit random OTP
             Random random = new Random();
             string otp = random.Next(100000, 999999).ToString();
 
-            // Store the OTP and generation time in the session
+            // store the OTP and generation time in the session
             Session["GeneratedOTP"] = otp;
             Session["OTPExpirationTime"] = DateTime.Now;
 
-            // Retrieve email and username from the session
+            // retrieve email and username from the session
             string email = Session["EmailAddress"].ToString();
             string username = Session["Username"].ToString();
 
-            // Call the stored procedure to send the OTP email
+            // call the stored procedure to send the OTP email
             QRY NewQry = new QRY();
 
             string sql = "EXEC [signup_otp] " +
@@ -75,25 +87,27 @@ namespace DonorConnect
             }
         }
 
+        // verify otp function
         protected void btnVerifyOTP_Click(object sender, EventArgs e)
         {
             string enteredOTP = txtOTP.Text.Trim();
 
-            // Retrieve the generated OTP and generation time from the session
+            // retrieve the generated OTP and generation time 
             string generatedOTP = Session["GeneratedOTP"] as string;
             DateTime? otpGenerationTime = Session["OTPExpirationTime"] as DateTime?;
 
-            // Check if the OTP has expired (valid for 2 minutes)
+            // check if the OTP has expired (valid for 2 minutes)
             if (otpGenerationTime.HasValue && DateTime.Now.Subtract(otpGenerationTime.Value).TotalMinutes <= 2)
             {
-                // Implement OTP verification logic
+                // otp verification
                 if (enteredOTP == generatedOTP)
                 {
                     // OTP verified successfully
                     ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('OTP verified successfully!');", true);
-                    //string email = Request.QueryString["email"];
-                    //string username = Request.QueryString["username"];
-                    //Response.Redirect($"SignUp.aspx?email={email}&username={username}");
+                    
+                    // perform user registration based on role
+                    RegisterUser();
+                    Response.Redirect("Login.aspx");
 
                 }
                 else
@@ -109,5 +123,234 @@ namespace DonorConnect
                 
             }
         }
+
+        private void RegisterUser()
+        {
+            string role = Session["Role"].ToString();
+            string email = Session["EmailAddress"].ToString();
+            string username = Session["Username"].ToString();
+
+            string connectionString = ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString;
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                con.Open();
+
+                switch (role)
+                {
+                    case "donor":
+
+                        RegisterDonor(con);
+                        break;
+                    case "organization":
+                        RegisterOrganization(con);
+                        break;
+                    case "rider":
+                        RegisterRider(con);
+                        break;
+                    default:
+                        // handle unknown role
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Please select a role!');", true);
+                        break;
+                }
+            }
+        }
+
+
+        private void RegisterDonor(SqlConnection con)
+        {
+            try
+            {
+                QRY NewQry = new QRY();
+
+                string name = Session["DonorName"].ToString();
+                string contactNumber = Session["DonorContactNumber"].ToString();
+                string password = Session["DonorPassword"].ToString();
+                string email = Session["EmailAddress"].ToString();
+                string username = Session["Username"].ToString();
+
+                // hash the password 
+                string hashedPassword = HashPassword(password);
+
+                string donor_sql = "EXEC [create_donor] " +
+                                   "@method = 'INSERT', " +
+                                   "@donorId = NULL, " +  // donorId will be generated in the stored procedure
+                                   "@donorName = '" + name + "', " +
+                                   "@donorUsername = '" + username + "', " +
+                                   "@donorEmail = '" + email + "', " +
+                                   "@donorContactNumber = '" + contactNumber + "', " +
+                                   "@donorHashPassword = '" + hashedPassword + "', " +
+                                   "@donorNewHashPassword = NULL, " +
+                                   "@donorAddress1 = NULL," +
+                                   "@donorAddress2 = NULL, " +
+                                   "@donorProfilePicBase64 = NULL ";
+
+
+                DataTable dt_check = NewQry.GetData(donor_sql);
+
+                //string message = "";
+
+                //if (dt_check.Rows.Count > 0)
+                //{
+                //    message = dt_check.Rows[0]["MESSAGE"].ToString();
+                //    if (message != "" && message != "Successful! You have registered as a donor. You may start your item donation journey now!")
+                //    {
+                //        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('" + message + "');", true);
+                //    }
+                //    else if (message != "" && message == "Successful! You have registered as a donor.You may start your item donation journey now!")
+                //    {
+                //        Session["message"] = message;
+                //        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a donor. You may start your item donation journey now!');", true);
+                //    }
+                //}
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a donor. You may start your item donation journey now!');", true);
+
+                Session.Clear();
+
+
+            }
+            catch (Exception ex)
+            {
+                // error message
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('An error occurred: " + ex.Message + "');", true);
+            }
+        }
+
+        private void RegisterOrganization(SqlConnection con)
+        {
+            try
+            {
+                QRY NewQry = new QRY();
+
+                string orgName = Session["OrgName"].ToString();
+                string orgContactNumber = Session["OrgContactNumber"].ToString();
+                string orgAddress = Session["OrgAddress"].ToString();
+                string orgEmail = Session["OrgEmail"].ToString();
+                string picName = Session["PicName"].ToString();
+                string picEmail = Session["PicEmail"].ToString();
+                string picNumber = Session["PicNumber"].ToString();
+                string password = Session["OrgPassword"].ToString();
+                string region = Session["OrgRegion"].ToString();
+                string businessLicense = Session["OrgLicense"].ToString();
+
+                // hash the password 
+                string hashedPassword = HashPassword(password);
+
+                // initial status after registration (waiting for admin approval)
+                string status = "Pending Approval";
+
+                string org_sql = "EXEC [create_organization] " +
+                                   "@method = 'INSERT', " +
+                                   "@orgId = NULL, " +  // orgId will be generated in the stored procedure
+                                   "@orgName = '" + orgName + "', " +
+                                   "@orgEmail = '" + orgEmail + "', " +
+                                   "@orgContactNumber = '" + orgContactNumber + "', " +
+                                   "@orgHashPassword = '" + hashedPassword + "', " +
+                                   "@orgNewHashPassword = NULL, " +
+                                   "@orgAddress = '" + orgAddress + "', " +
+                                   "@businessLicenseImageBase64 ='" + businessLicense + "', " +
+                                   "@picName = '" + picName + "', " +
+                                   "@picEmail = '" + picEmail + "', " +
+                                   "@picContactNumber = '" + picNumber + "', " +
+                                   "@orgProfilePicBase64 = NULL, " +
+                                   "@orgDescription= NULL, " +
+                                   "@mostNeededItemCategory = NULL, " +
+                                   "@orgRegion = '" + region + "', " +
+                                   "@orgStatus = '" + status + "', " +
+                                   "@adminId = NULL ";
+
+
+                DataTable dt_check = NewQry.GetData(org_sql);
+               
+                Session.Clear();
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as an organization, but your application is pending for approval from administration. Stay tuned and you will receive an email for application updates.');", true);
+
+              
+
+            }
+            catch (Exception ex)
+            {
+                // error message
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('An error occurred: " + ex.Message + "');", true);
+            }
+        }
+
+        private void RegisterRider(SqlConnection con)
+        {
+            try
+            {
+                QRY NewQry = new QRY();
+
+                string name = Session["RiderName"].ToString();
+                string contactNumber = Session["RiderContactNumber"].ToString();
+                string vehiclePlateNo = Session["VehiclePlateNo"].ToString();
+                string vehicleType = Session["VehicleType"].ToString();
+                string password = Session["RiderPassword"].ToString();
+                string drivingLicense = Session["RiderCarLicense"].ToString();
+                string facePic = Session["RiderFacePhoto"].ToString();
+                string username = Session["RiderUsername"].ToString();
+                string email = Session["RiderEmail"].ToString();
+
+                // hash the password 
+                string hashedPassword = HashPassword(password);
+
+                // initial status after registration (waiting for admin approval)
+                string status = "Pending Approval";
+
+                string rider_sql = "EXEC [create_rider] " +
+                                   "@method = 'INSERT', " +
+                                   "@riderId = NULL, " +  // riderId will be generated in the stored procedure
+                                   "@riderUsername = '" + name + "', " +
+                                   "@riderFullName = '" + username + "', " +
+                                   "@riderEmail = '" + email + "', " +
+                                   "@riderContactNumber = '" + contactNumber + "', " +
+                                   "@riderHashPassword = '" + hashedPassword + "', " +
+                                   "@riderNewHashPassword = NULL, " +
+                                   "@drivingLicenseImageBase64 = '" + drivingLicense + "', " +
+                                   "@vehicleType = '" + vehicleType + "', " +
+                                   "@riderFacePicBase64 = '" + facePic + "', " +
+                                   "@noOfDeliveryMade = NULL," +
+                                   "@walletAmount = NULL," +
+                                   "@vehiclePlateNumber = '" + vehiclePlateNo + "', " +
+                                   "@registerDate = NULL," +
+                                   "@riderStatus = '" + status + "', " +
+                                   "@adminId = NULL";
+
+
+                DataTable dt_check = NewQry.GetData(rider_sql);
+                Session.Clear();
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a delivery rider, but your application is pending for approval from administration. Stay tuned and you will receive an email for application updates.');", true);
+
+                
+            
+            }
+            catch (Exception ex)
+            {
+                // error message
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('An error occurred: " + ex.Message + "');", true);
+            }
+        }
+
+
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
+
+        // do encryption for license
+        
+
     }
 }

@@ -342,20 +342,21 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         function selectRole(role) {
-            // Get all role boxes
+            // get all role boxes
             var roleBoxes = document.getElementsByClassName('role-box');
 
-            // Remove the 'selected' class from all role boxes
+            // remove the 'selected' class from all role boxes
             for (var i = 0; i < roleBoxes.length; i++) {
                 roleBoxes[i].classList.remove('selected');
             }
 
-            // Add the 'selected' class to the clicked role box
+            // add the 'selected' class to the clicked role box
             document.getElementById(role + 'Box').classList.add('selected');
 
-            // Set the selected role value
+            // set the selected role value
             document.getElementById('<%= selectedRole.ClientID %>').value = role;
 
+            // only display selected role's sign up details
             document.getElementById('donorDetails').style.display = role === 'donor' ? 'block' : 'none';
             document.getElementById('organizationDetails').style.display = role === 'organization' ? 'block' : 'none';
             document.getElementById('riderDetails').style.display = role === 'rider' ? 'block' : 'none';
