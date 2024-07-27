@@ -76,6 +76,7 @@ namespace DonorConnect
                             ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Password and Confirm Password do not match!');", true);
                             isValid = false;
                         }
+                       
                         if (isValid)
                         {
                             Session["Role"] = "donor";
@@ -171,7 +172,7 @@ namespace DonorConnect
 
                             string base64BusinessLicense = ConvertToBase64(orgLicense.PostedFile);
                             Session["OrgLicense"] = base64BusinessLicense;
-                            
+
                         }
                         break;
 
@@ -259,9 +260,10 @@ namespace DonorConnect
 
                             string base64FacePic = ConvertToBase64(riderFacePhoto.PostedFile);
                             Session["RiderFacePhoto"] = base64FacePic;
-                            
+
                         }
                         break;
+
                 }
 
                 if (isValid)
@@ -269,24 +271,24 @@ namespace DonorConnect
                     // Redirect to OTP verification page
                     string email = "";
                     string username = "";
-                    
+
 
                     switch (role)
                     {
                         case "donor":
                             email = donorEmail.Text;
                             username = donorUsername.Text;
-                            
+
                             break;
                         case "organization":
                             email = orgEmail.Text;
                             username = orgName.Text;
-                            
+
                             break;
                         case "rider":
                             email = riderEmail.Text;
                             username = riderUsername.Text;
-                           
+
                             break;
                     }
 

@@ -10,8 +10,11 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Xml.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace DonorConnect
 {
@@ -104,23 +107,23 @@ namespace DonorConnect
                 {
                     // OTP verified successfully
                     ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('OTP verified successfully!');", true);
-                    
+
                     // perform user registration based on role
                     RegisterUser();
-                    Response.Redirect("Login.aspx");
+
 
                 }
                 else
                 {
                     ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Invalid OTP. Please try again.');", true);
-                    
+
                 }
             }
             else
             {
                 ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('OTP has expired. Please request a new OTP.');", true);
 
-                
+
             }
         }
 
@@ -141,12 +144,15 @@ namespace DonorConnect
                     case "donor":
 
                         RegisterDonor(con);
+                        
                         break;
                     case "organization":
                         RegisterOrganization(con);
+                        
                         break;
                     case "rider":
                         RegisterRider(con);
+                       
                         break;
                     default:
                         // handle unknown role
@@ -188,23 +194,30 @@ namespace DonorConnect
 
                 DataTable dt_check = NewQry.GetData(donor_sql);
 
-                //string message = "";
+                if (dt_check.Rows.Count > 0)
+                {
+                    string message = dt_check.Rows[0]["MESSAGE"].ToString();
+                    if (message == "Successful! You have registered as a donor. You may start your item donation journey now!")
+                    {
+                        Session["message"] = message;
+                        SendConfirmationEmail(con);
 
-                //if (dt_check.Rows.Count > 0)
-                //{
-                //    message = dt_check.Rows[0]["MESSAGE"].ToString();
-                //    if (message != "" && message != "Successful! You have registered as a donor. You may start your item donation journey now!")
-                //    {
-                //        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('" + message + "');", true);
-                //    }
-                //    else if (message != "" && message == "Successful! You have registered as a donor.You may start your item donation journey now!")
-                //    {
-                //        Session["message"] = message;
-                //        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a donor. You may start your item donation journey now!');", true);
-                //    }
-                //}
+                        // Show SweetAlert success dialog
+                        string script = "Swal.fire({ title: 'Success!', text: 'You have registered as a donor. You may start your item donation journey now!', icon: 'success', confirmButtonText: 'OK' });";
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", script, true);
 
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a donor. You may start your item donation journey now!');", true);
+                        // Optional: Redirect after showing the success dialog
+                        // ScriptManager.RegisterStartupScript(this, GetType(), "redirect", "setTimeout(function(){ window.location.href='Login.aspx'; }, 2000);", true);
+                    }
+                    else
+                    {
+                        // Show SweetAlert error dialog
+                        string script = $"Swal.fire({{ title: 'Error', text: '{message}', icon: 'error', confirmButtonText: 'OK' }});";
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", script, true);
+                    }
+                }
+
+                // ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a donor. You may start your item donation journey now!');", true);
 
                 Session.Clear();
 
@@ -262,12 +275,14 @@ namespace DonorConnect
 
 
                 DataTable dt_check = NewQry.GetData(org_sql);
-               
+
+                SendConfirmationEmail(con);
+
                 Session.Clear();
 
                 ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as an organization, but your application is pending for approval from administration. Stay tuned and you will receive an email for application updates.');", true);
 
-              
+
 
             }
             catch (Exception ex)
@@ -302,8 +317,8 @@ namespace DonorConnect
                 string rider_sql = "EXEC [create_rider] " +
                                    "@method = 'INSERT', " +
                                    "@riderId = NULL, " +  // riderId will be generated in the stored procedure
-                                   "@riderUsername = '" + name + "', " +
-                                   "@riderFullName = '" + username + "', " +
+                                   "@riderFullName = '" + name + "', " +
+                                   "@riderUsername = '" + username + "', " +
                                    "@riderEmail = '" + email + "', " +
                                    "@riderContactNumber = '" + contactNumber + "', " +
                                    "@riderHashPassword = '" + hashedPassword + "', " +
@@ -320,12 +335,15 @@ namespace DonorConnect
 
 
                 DataTable dt_check = NewQry.GetData(rider_sql);
+
+                SendConfirmationEmail(con);
+
                 Session.Clear();
 
                 ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a delivery rider, but your application is pending for approval from administration. Stay tuned and you will receive an email for application updates.');", true);
 
-                
-            
+
+
             }
             catch (Exception ex)
             {
@@ -350,7 +368,38 @@ namespace DonorConnect
         }
 
         // do encryption for license
-        
 
+
+
+
+        private void SendConfirmationEmail(SqlConnection con)
+        {
+            try
+            {
+                QRY NewQry = new QRY();
+
+                string username = Session["Username"].ToString();
+                string email = Session["EmailAddress"].ToString();
+                string role = Session["Role"].ToString();
+
+
+                string email_sql = "EXEC [signup_confirm] " +
+                                "@role = '" + role + "', " +
+                                "@username = '" + username + "', " +
+                                "@email = '" + email + "' ";
+
+
+                DataTable dt_check = NewQry.GetData(email_sql);
+                Session.Clear();
+
+
+
+            }
+            catch (Exception ex)
+            {
+                // error message
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('An error occurred: " + ex.Message + "');", true);
+            }
+        }
     }
 }

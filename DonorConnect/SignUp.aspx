@@ -257,7 +257,7 @@
                             </div>
 
                             <div class="pt-1 mb-4">
-                                <asp:Button ID="signUpButton" type="submit" name="submit" CssClass="btn btn-dark btn-lg btn-block" Text="Sign Up" runat="server" onClick="btnRegister_Click"/>
+                                <asp:Button ID="signUpButton" type="submit" name="submit" CssClass="btn btn-dark btn-lg btn-block" Text="Sign Up" runat="server" onClick="btnRegister_Click" />
                             </div>
                             <p class="mb-5 pb-lg-2" style="color: #393f81;">Already have an account? <a href="Login.aspx" style="color: #393f81;">Login here</a></p>
                             <a href="#!" class="small text-muted">Terms of use.</a>
@@ -360,16 +360,16 @@
             document.getElementById('donorDetails').style.display = role === 'donor' ? 'block' : 'none';
             document.getElementById('organizationDetails').style.display = role === 'organization' ? 'block' : 'none';
             document.getElementById('riderDetails').style.display = role === 'rider' ? 'block' : 'none';
-             
-         }
 
-  
+        }
 
-        
+        window.onload = function () {
+            var role = document.getElementById('<%= selectedRole.ClientID %>').value ;
+             selectRole(role);
+         };
+
+
     </script>
 
 </body>
 </html>
-
-
-

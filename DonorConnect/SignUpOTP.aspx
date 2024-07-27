@@ -5,6 +5,7 @@
 <head runat="server">
     <title>Verify OTP</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"/>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -14,7 +15,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h3 class="card-title">Verify OTP</h3>
-                            <p class="card-text">An OTP has been sent to your email address: <asp:Label ID="lblEmail" runat="server" CssClass="font-weight-bold"></asp:Label>. Please enter it below to verify your account.</p>
+                            <p class="card-text">An OTP has been sent to your email address: <asp:Label ID="lblEmail" runat="server" CssClass="font-weight-bold"></asp:Label>. Please check your inbox and enter it below to verify your account.</p>
                             <div class="form-group">
                                 <asp:Label ID="lblOTP" runat="server" CssClass="form-label">OTP</asp:Label>
                                 <asp:TextBox ID="txtOTP" runat="server" CssClass="form-control" />
@@ -28,7 +29,7 @@
         </div>
     </form>
  
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
 
