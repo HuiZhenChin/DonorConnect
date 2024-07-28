@@ -8,6 +8,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/Content/Login.css" rel="stylesheet" type="text/css" />
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript">
+        function showMessage(title) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            Toast.fire({
+                icon: "success",
+                title: title
+            });
+        }
+
+        function ErrorMsg(message, icon) {
+            Swal.fire({
+                icon: icon,
+                title: message,
+                timer: 5000,
+            });
+        }
+    </script>
 </head>
 <body style="background-color: #bfdae2">
     <form id="form1" runat="server">

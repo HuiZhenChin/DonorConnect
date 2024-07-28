@@ -73,10 +73,23 @@ namespace DonorConnect
                         }
                         if (donorPassword.Text != donorConfirmPassword.Text)
                         {
-                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Password and Confirm Password do not match!');", true);
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Password and Confirm Password do not match!', 'warning');", true);
                             isValid = false;
                         }
-                       
+
+                        string donorSQL;
+                        QRY _Qry = new QRY();
+                        DataTable _dt;
+                        donorSQL = "SELECT * FROM [donor] WHERE donorUsername = '" + donorUsername.Text + "' ";
+
+                        _dt = _Qry.GetData(donorSQL);
+
+                        if (_dt.Rows.Count > 0)
+                        {
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Donor with the same username already exists', 'warning');", true);
+                            isValid = false;
+                        }
+
                         if (isValid)
                         {
                             Session["Role"] = "donor";
@@ -146,7 +159,7 @@ namespace DonorConnect
                         }
                         if (orgPassword.Text != orgConfirmPassword.Text)
                         {
-                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Password and Confirm Password do not match!');", true);
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Password and Confirm Password do not match!', 'warning');", true);
                             isValid = false;
                         }
 
@@ -155,6 +168,18 @@ namespace DonorConnect
                         if (!isValidBusinessLicense)
                         {
                             lblImgTypeOrgLicense.Text = "Invalid file type. Accepted formats: .jpg, .jpeg, .png, .pdf";
+                            isValid = false;
+                        }
+                        string orgSQL;
+                        QRY _Qry1 = new QRY();
+                        DataTable _dt1;
+                        orgSQL = "SELECT * FROM [organization] WHERE orgName = '" + orgName.Text + "' ";
+
+                        _dt1 = _Qry1.GetData(orgSQL);
+
+                        if (_dt1.Rows.Count > 0)
+                        {
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Organization already exists', 'warning');", true);
                             isValid = false;
                         }
                         if (isValid)
@@ -229,7 +254,7 @@ namespace DonorConnect
                         }
                         if (riderPassword.Text != riderConfirmPassword.Text)
                         {
-                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Password and Confirm Password do not match!');", true);
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Password and Confirm Password do not match!', 'warning');", true);
                             isValid = false;
                         }
 
@@ -241,6 +266,18 @@ namespace DonorConnect
                         {
                             lblImgTypeCarLicense.Text = "Invalid file type. Accepted formats: .jpg, .jpeg, .png, .pdf";
                             lblImgTypeFacePhoto.Text = "Invalid file type. Accepted formats: .jpg, .jpeg, .png, .pdf";
+                            isValid = false;
+                        }
+                        string riderSQL;
+                        QRY _Qry2 = new QRY();
+                        DataTable _dt2;
+                        riderSQL = "SELECT * FROM [delivery_rider] WHERE riderFullName = '" + riderName.Text + "' AND riderEmail = '" + riderEmail.Text + "' ";
+
+                        _dt2 = _Qry2.GetData(riderSQL);
+
+                        if (_dt2.Rows.Count > 0)
+                        {
+                            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Rider already exists', 'warning');", true);
                             isValid = false;
                         }
                         if (isValid)
@@ -310,7 +347,9 @@ namespace DonorConnect
                 byte[] bytes = ms.ToArray();
                 return Convert.ToBase64String(bytes);
             }
+
         }
+
 
         //public void clearText()
         //{

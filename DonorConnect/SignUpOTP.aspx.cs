@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using System.Web.Security;
+using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
@@ -106,7 +107,7 @@ namespace DonorConnect
                 if (enteredOTP == generatedOTP)
                 {
                     // OTP verified successfully
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('OTP verified successfully!');", true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showSuccess('OTP verified successfully!');", true);
 
                     // perform user registration based on role
                     RegisterUser();
@@ -115,13 +116,15 @@ namespace DonorConnect
                 }
                 else
                 {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Invalid OTP. Please try again.');", true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Invalid OTP. Please try again.');", true);
 
                 }
             }
             else
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('OTP has expired. Please request a new OTP.');", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('OTP has expired. Please request a new OTP.');", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "redirect", "setTimeout(function(){ window.location.href='/SignUp.aspx'; }, 3000);", true);
+
 
 
             }
@@ -156,7 +159,7 @@ namespace DonorConnect
                         break;
                     default:
                         // handle unknown role
-                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Please select a role!');", true);
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Please select a role!');", true);
                         break;
                 }
             }
@@ -202,23 +205,18 @@ namespace DonorConnect
                         Session["message"] = message;
                         SendConfirmationEmail(con);
 
-                        // Show SweetAlert success dialog
-                        string script = "Swal.fire({ title: 'Success!', text: 'You have registered as a donor. You may start your item donation journey now!', icon: 'success', confirmButtonText: 'OK' });";
-                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", script, true);
+                        Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
 
-                        // Optional: Redirect after showing the success dialog
-                        // ScriptManager.RegisterStartupScript(this, GetType(), "redirect", "setTimeout(function(){ window.location.href='Login.aspx'; }, 2000);", true);
                     }
+                    
                     else
                     {
                         // Show SweetAlert error dialog
-                        string script = $"Swal.fire({{ title: 'Error', text: '{message}', icon: 'error', confirmButtonText: 'OK' }});";
-                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", script, true);
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Error in signing up!', 'error');", true);
                     }
                 }
 
-                // ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a donor. You may start your item donation journey now!');", true);
-
+               
                 Session.Clear();
 
 
@@ -226,7 +224,7 @@ namespace DonorConnect
             catch (Exception ex)
             {
                 // error message
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('An error occurred: " + ex.Message + "');", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('An error occurred: " + ex.Message + "');", true);
             }
         }
 
@@ -276,15 +274,31 @@ namespace DonorConnect
 
                 DataTable dt_check = NewQry.GetData(org_sql);
 
-                SendConfirmationEmail(con);
+                if (dt_check.Rows.Count > 0)
+                {
+                    string message = dt_check.Rows[0]["MESSAGE"].ToString();
+                    if (message == "Successful! You have registered as an organization! Your application is pending for approval now.")
+                    {
+                        Session["message"] = message;
+                        SendConfirmationEmail(con);
+
+                        Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
+
+                    }
+                    
+                    else
+                    {
+                        // Show SweetAlert error dialog
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Error in signing up!', 'error');", true);
+                    }
+                }
+
 
                 Session.Clear();
 
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as an organization, but your application is pending for approval from administration. Stay tuned and you will receive an email for application updates.');", true);
-
-
 
             }
+
             catch (Exception ex)
             {
                 // error message
@@ -336,12 +350,27 @@ namespace DonorConnect
 
                 DataTable dt_check = NewQry.GetData(rider_sql);
 
-                SendConfirmationEmail(con);
+                if (dt_check.Rows.Count > 0)
+                {
+                    string message = dt_check.Rows[0]["MESSAGE"].ToString();
+                    if (message == "Successful! You have registered as a delivery rider! Your application is pending for approval now.")
+                    {
+                        Session["message"] = message;
+                        SendConfirmationEmail(con);
+
+                        Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
+
+                    }
+                   
+                    else
+                    {
+                        // Show SweetAlert error dialog
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Error in signing up!', 'error');", true);
+                    }
+                }
+
 
                 Session.Clear();
-
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Successful! You have registered as a delivery rider, but your application is pending for approval from administration. Stay tuned and you will receive an email for application updates.');", true);
-
 
 
             }

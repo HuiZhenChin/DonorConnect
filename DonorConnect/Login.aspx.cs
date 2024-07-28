@@ -38,27 +38,32 @@ namespace DonorConnect
 
                 if (message == "Login Successful!")
                 {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showMessage('Login Successfully!', 'success');", true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showMessage('Login Successfully!');", true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "redirect", "setTimeout(function(){ window.location.href='/Home.aspx'; }, 3000);", true);
+
                     Session["username"] = txtUsername.Text;
-                    Response.Redirect("/Home.aspx");
-                }
+                  }
                 else if (message == "Incorrect Password!")
                 {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showMessage('Incorrect Password!', 'danger');", true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Incorrect Password!', 'error');", true);
                 }
                 else if (message == "Account does not exist")
                 {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showMessage('Account does not exist', 'warning');", true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Account does not exist', 'warning');", true);
+                }
+                else if (message == "Your application is still pending for approval")
+                {
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Your application is still pending for approval', 'warning');", true);
                 }
             }
             else
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showMessage('An unexpected error occurred.', 'danger');", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('An unexpected error occurred.', 'error');", true);
             }
         }
         catch (Exception ex)
         {
-            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showMessage('An error occurred: " + ex.Message + "', 'danger');", true);
+            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('An error occurred: " + ex.Message + "', 'error');", true);
         }
     }
 

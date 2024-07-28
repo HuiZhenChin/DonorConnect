@@ -9,6 +9,18 @@
     <link href="/Content/SignUp2.css" rel="stylesheet" type="text/css" />
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript">
+ 
+    function ErrorMsg(message, icon) {
+        Swal.fire({
+            icon: icon,
+            title: message,
+            timer: 3000,
+        });
+    }
+</script>
 </head>
 <body style="background-color: #bfdae2">
     <form id="form1" runat="server">
@@ -35,6 +47,7 @@
                                     <div>Delivery Rider</div>
                                 </div>
                             </div>
+
 
                             <!-- Hidden input to store the selected role -->
                            <asp:HiddenField ID="selectedRole" runat="server" />

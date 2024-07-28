@@ -5,7 +5,32 @@
 <head runat="server">
     <title>Verify OTP</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"/>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="text/javascript">
+        function ErrorMsg(message) {
+            Swal.fire({
+                icon: 'error',
+                title: message,
+                
+            });
+        }
+
+        function showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: message,
+                showConfirmButton: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'Login.aspx';
+                }
+            });
+        }
+
+
+
+    </script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -29,7 +54,7 @@
         </div>
     </form>
  
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
 </body>
 </html>
 
