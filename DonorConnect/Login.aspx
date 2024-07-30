@@ -64,7 +64,7 @@
                             <div class="pt-1 mb-4">
                                 <asp:Button ID="btnLogin" runat="server" CssClass="btn btn-dark btn-lg btn-block" Text="Login" onClick="btnLogin_Click"/>
                             </div>
-                            <a class="small text-muted" href="#!">Forgot password?</a>
+                            <a class="small text-muted" href="ResetPassword.aspx">Forgot password?</a>
                             <p class="mb-5 pb-lg-2" style="color: #393f81; margin-top: 15px;">Doesn't have an account? <a href="SignUp.aspx" style="color: #393f81;">Register here</a></p>
                             <a href="#!" class="small text-muted">Terms of Use.</a>
                             <a href="#!" class="small text-muted">Privacy Policy</a>
