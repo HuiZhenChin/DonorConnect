@@ -13,5 +13,14 @@ namespace DonorConnect
         {
 
         }
+
+        protected void logout(object sender, EventArgs e)
+        {
+            // clear the session
+            Session["username"] = null;
+            HttpContext.Current.Session.Abandon();
+            Session.Clear();
+            Response.Redirect("~/Home");
+        }
     }
 }
