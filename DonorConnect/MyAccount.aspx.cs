@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Xml.Linq;
 
 namespace DonorConnect
 {
@@ -24,25 +28,37 @@ namespace DonorConnect
                     {
                         ShowDonorInfo(username);
                         donorContent.Visible = true;
-                        //orgContent.Visible = false;
+                        orgContent.Visible = false;
+                        selectedRole.Text = "donor";
                     }
                     else if (role == "organization")
                     {
                         ShowOrgInfo(username);
-                        // donorContent.Visible = false;
-                        //orgContent.Visible = true;
+                        donorContent.Visible = false;
+                        orgContent.Visible = true;
+                        selectedRole.Text = "organization";
+                    }
+                    else if (role == "rider")
+                    {
+                        ShowRiderInfo(username);
+                        donorContent.Visible = false;
+                        orgContent.Visible = false;
+                        riderContent.Visible = true;
+                        selectedRole.Text = "rider";
                     }
                     else
                     {
-                        //donorContent.Visible = false;
-                        //orgContent.Visible = false;
+                        donorContent.Visible = false;
+                        orgContent.Visible = false;
+                        riderContent.Visible = false;
+                        selectedRole.Text = " ";
                     }
                 }
             }
         }
-        
 
-    private string GetUserRoleFromDatabase(string username)
+
+        private string GetUserRoleFromDatabase(string username)
         {
             string sql;
             string role = "";
@@ -86,18 +102,197 @@ namespace DonorConnect
             string sql;
             QRY _Qry = new QRY();
             DataTable _dt;
-            sql = "SELECT * FROM [organization] WHERE username = '" + username + "' ";
+            sql = "SELECT * FROM [organization] WHERE orgName = '" + username + "' ";
             _dt = _Qry.GetData(sql);
 
-            //if (_dt.Rows.Count > 0)
-            //{
-            //    DataRow row = _dt.Rows[0];
-            //    TextBox1.Text = row["username"].ToString();
-            //    TextBox2.Text = row["full_name"].ToString();
-            //    TextBox3.Text = row["email"].ToString();
-            //    TextBox4.Text = row["phone"].ToString();
-            //    TextBox5.Text = row["address"].ToString();
-            //}
+            if (_dt.Rows.Count > 0)
+            {
+                DataRow row = _dt.Rows[0];
+                txtOrgName.Text = row["orgName"].ToString();
+                txtOrgEmail.Text = row["orgEmail"].ToString();
+                txtOrgNumber.Text = row["orgContactNumber"].ToString();
+                txtOrgAddress.Text = row["orgAddress"].ToString();
+                txtPicName.Text = row["picName"].ToString();
+                txtPicEmail.Text = row["picEmail"].ToString();
+                txtPicNumber.Text = row["picContactNumber"].ToString();
+                orgRegion.SelectedValue = row["orgRegion"].ToString();
+                txtDesc.Text = row["orgDescription"].ToString();
+                txtCategory.Text = row["mostNeededItemCategory"].ToString();
+
+
+            }
+        }
+
+        private void ShowRiderInfo(string username)
+        {
+            string sql;
+            QRY _Qry = new QRY();
+            DataTable _dt;
+            sql = "SELECT * FROM [delivery_rider] WHERE riderUsername = '" + username + "' ";
+            _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                DataRow row = _dt.Rows[0];
+                txtRiderUsername.Text = row["riderUsername"].ToString();
+                txtRiderFullName.Text = row["riderFullName"].ToString();
+                txtRiderEmail.Text = row["riderEmail"].ToString();
+                txtRiderNumber.Text = row["riderContactNumber"].ToString();
+                vehicleType.SelectedValue = row["vehicleType"].ToString();
+                txtPlateNo.Text = row["vehiclePlateNumber"].ToString();
+
+
+            }
+        }
+
+        protected void btnSaveDonorInfo_Click(object sender, EventArgs e)
+        {
+            UpdateDonorInfo();
+        }
+
+        protected void btnSaveOrgInfo_Click(object sender, EventArgs e)
+        {
+            UpdateOrgInfo();
+        }
+
+        protected void btnSaveRiderInfo_Click(object sender, EventArgs e)
+        {
+            UpdateRiderInfo();
+        }
+
+        private void UpdateDonorInfo()
+        {
+            string username = Session["username"].ToString();
+
+            if (string.IsNullOrWhiteSpace(txtFullName.Text) ||
+                string.IsNullOrWhiteSpace(txtEmail.Text) ||
+                string.IsNullOrWhiteSpace(txtPhone.Text))
+                
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('All fields must be filled out.');", true);
+                return;
+            }
+            string sql = "UPDATE [donor] SET " +
+                  "donorName = '" + txtFullName.Text + "', " +
+                   "donorEmail = '" + txtEmail.Text + "', " +
+                  "donorContactNumber = '" + txtPhone.Text + "', " +
+                  "donorAddress1 = '" + txtAddress.Text + "' " +
+                  "WHERE donorUsername = '" + username + "'";
+
+            string sql2 = "UPDATE [user] SET " +
+                   "email = '" + txtEmail.Text + "' " +
+                  "WHERE username = '" + username + "'";
+
+            QRY _Qry = new QRY();
+            bool success = _Qry.ExecuteNonQuery(sql);
+            bool success2 = _Qry.ExecuteNonQuery(sql2);
+
+            if (success || success2)
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess();", true);
+            }
+            else
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating user information. Please try again!');", true);
+            }
+        }
+
+        private void UpdateOrgInfo()
+        {
+            string username = Session["username"].ToString();
+
+            if (string.IsNullOrWhiteSpace(txtOrgEmail.Text) ||
+                string.IsNullOrWhiteSpace(txtOrgNumber.Text) ||
+                string.IsNullOrWhiteSpace(txtOrgAddress.Text) ||
+                string.IsNullOrWhiteSpace(txtPicName.Text) ||
+                string.IsNullOrWhiteSpace(txtPicEmail.Text) || 
+                string.IsNullOrWhiteSpace(txtPicNumber.Text) ||
+                string.IsNullOrWhiteSpace(orgRegion.SelectedValue))
+                //string.IsNullOrWhiteSpace(txtDesc.Text) ||
+                //string.IsNullOrWhiteSpace(txtCategory.Text))
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('All fields must be filled out.');", true);
+                return;
+            }
+
+            string sql = "UPDATE [organization] SET " +
+                         "orgEmail = '" + txtOrgEmail.Text + "', " +
+                         "orgContactNumber = '" + txtOrgNumber.Text + "', " +
+                         "orgAddress = '" + txtOrgAddress.Text + "', " +
+                         "picName = '" + txtPicName.Text + "', " +
+                         "picEmail = '" + txtPicEmail.Text + "', " +
+                         "picContactNumber = '" + txtPicNumber.Text + "', " +
+                         "orgRegion = '" + orgRegion.SelectedValue + "', " +
+                         "orgDescription = '" + txtDesc.Text + "', " +
+                         "mostNeededItemCategory = '" + txtCategory.Text + "' " +
+                         "WHERE orgName = '" + username + "'";
+
+            string sql2 = "UPDATE [user] SET " +
+                   "email = '" + txtOrgEmail.Text + "', " +
+                  "WHERE username = '" + username + "'";
+
+            QRY _Qry = new QRY();
+            bool success = _Qry.ExecuteNonQuery(sql);
+
+            bool success2 = _Qry.ExecuteNonQuery(sql2);
+
+            if (success || success2)
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess();", true);
+            }
+            else
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating user information. Please try again!');", true);
+            }
+        }
+
+        private void UpdateRiderInfo()
+        {
+            string username = Session["username"].ToString();
+
+            if (string.IsNullOrWhiteSpace(txtRiderFullName.Text) ||
+                string.IsNullOrWhiteSpace(txtRiderEmail.Text) ||
+                string.IsNullOrWhiteSpace(txtRiderNumber.Text) ||
+                string.IsNullOrWhiteSpace(vehicleType.SelectedValue) ||
+                string.IsNullOrWhiteSpace(txtPlateNo.Text))
+            {
+               
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('All fields must be filled out.');", true);
+                return; 
+            }
+
+            string sql = "UPDATE [delivery_rider] SET " +
+                         "riderFullName = '" + txtRiderFullName.Text + "', " +
+                         "riderEmail = '" + txtRiderEmail.Text + "', " +
+                         "riderContactNumber = '" + txtRiderNumber.Text + "', " +
+                         "vehicleType = '" + vehicleType.SelectedValue + "', " +
+                         "vehiclePlateNumber = '" + txtPlateNo.Text + "' " +
+                         "WHERE riderUsername = '" + username + "'";
+
+            string sql2 = "UPDATE [user] SET " +
+                   "email = '" + txtRiderEmail.Text + "', " +
+                  "WHERE username = '" + username + "'";
+
+            QRY _Qry = new QRY();
+            bool success = _Qry.ExecuteNonQuery(sql);
+            bool success2 = _Qry.ExecuteNonQuery(sql2);
+
+            if (success || success2)
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess();", true);
+            }
+            else
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating user information. Please try again!');", true);
+            }
         }
     }
 }
