@@ -4,38 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Account</title>
-
+    <link href="/Content/MyAccount.css" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <style>
-        .section-header {
-            cursor: pointer;
-            background-color: #f8f9fa;
-            padding: 10px;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .section-content {
-            display: none;
-            padding: 15px;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            background-color: #fff;
-            margin-bottom: 15px;
-        }
-        .form-row {
-            margin-bottom: 1rem;
-        }
-    </style>
+    
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="container">
+   <div class="container">
+         <!-- Profile Picture Section -->
+        <div class="profile-pic" id="profilePic" runat="server" onclick="triggerFileUpload()" style="background-color: #f5f5f5; padding: 20px;">
+            <label class="-label" for="fileUpload" style="cursor: pointer;">
+                 <i class="fas fa-camera"></i>
+                <span>Change Image</span>
+            </label>
+            <asp:FileUpload ID="fileUpload" runat="server" CssClass="d-none" OnChange="loadFile(event)"/>
+            <asp:Image ID="output" runat="server" ImageUrl="/Image/default_picture.jpg" Width="165px" Height="165px" />
+        </div>
+        <!-- Display Username -->
+       <div style="background-color: #f5f5f5; padding: 20px; text-align:center;">
+        <asp:Label runat="server" ID="profileUsername" Font-Bold="true" style="font-size: 22px;"/>
+
+       </div>
+        <!-- Buttons for Profile Picture Updates -->
+        <div id="buttons" runat="server" style="display:none; text-align: right; margin-top: 10px;">
+            <asp:Button ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click" />
+            <asp:Button ID="btnCancel" runat="server" Text="Cancel" OnClick="btnCancel_Click" />
+        </div>
+
+
         <!-- User Information Section -->
-        <div class="section-header" id="userInfoHeader">
+        <div class="section-header" id="userInfoHeader" style="margin-top: 20px;">
             <h5>User Information</h5>
         </div>
     <!-- Hidden input to store the selected role -->
@@ -63,9 +64,9 @@
                     <asp:Label runat="server" ID="lblAddress" Text="Delivery Address" />
                     <asp:TextBox runat="server" ID="txtAddress" CssClass="form-control"/>
                 </div>
-                <div class="form-group">
+                <div class="form-row">
                     <asp:Button runat="server" ID="btnSaveDonorInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveDonorInfo_Click"/>
-                    <asp:Button runat="server" ID="btnCancelDonorInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" />
+                    <asp:Button runat="server" ID="btnCancelDonorInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
                 </div>
             </asp:Panel>
         </div>
@@ -133,7 +134,7 @@
             </div>
             <div class="form-row">
                 <asp:Button runat="server" ID="btnSaveOrgInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveOrgInfo_Click"/>
-                <asp:Button runat="server" ID="btnCancelOrgInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" />
+                <asp:Button runat="server" ID="btnCancelOrgInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
             </div>
         </asp:Panel>
     </div>
@@ -171,7 +172,7 @@
         </div>
         <div class="form-row">
             <asp:Button runat="server" ID="btnSaveRiderInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveRiderInfo_Click"/>
-            <asp:Button runat="server" ID="btnCancelRiderInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" />
+            <asp:Button runat="server" ID="btnCancelRiderInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
         </div>
     </asp:Panel>
 </div>
@@ -192,14 +193,14 @@
                 </div>
                 <div class="form-row">
                     <asp:Button runat="server" ID="btnSaveNotifications" CssClass="btn btn-primary" Text="Save"/>
-                    <asp:Button runat="server" ID="btnCancelNotifications" CssClass="btn btn-secondary" Text="Cancel"  CausesValidation="False" />
+                    <asp:Button runat="server" ID="btnCancelNotifications" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
                 </div>
             </asp:Panel>
         </div>
     </div>
     <script>
         $(document).ready(function () {
-            // Toggle content sections based on role
+            // toggle content sections based on role
             var selectedRole = $('#<%= selectedRole.ClientID %>').val();
             if (selectedRole === "donor") {
                 $('#<%= donorContent.ClientID %>').show();
@@ -218,24 +219,26 @@
             $('#userInfoHeader').click(function () {
                 if (selectedRole === "donor") {
                     $('#<%= donorContent.ClientID %>').toggle();
-        } else if (selectedRole === "organization") {
-            $('#<%= orgContent.ClientID %>').toggle();
-        } else if (selectedRole === "rider") {
-            $('#<%= riderContent.ClientID %>').toggle();
-        }
-    });
+                } else if (selectedRole === "organization") {
+                    $('#<%= orgContent.ClientID %>').toggle();
+                } else if (selectedRole === "rider") {
+                    $('#<%= riderContent.ClientID %>').toggle();
+                }
+            });
 
             $('#notificationsHeader').click(function () {
                 $('#<%= notificationsContent.ClientID %>').toggle();
-    });
+            });
         });
+
+
     </script>
 
     <script>
-        function showSuccess() {
+        function showSuccess(message) {
             Swal.fire({
                 title: 'Success!',
-                text: 'User information updated successfully!',
+                text: message,
                 icon: 'success',
                 confirmButtonText: 'OK'
             });
@@ -249,7 +252,24 @@
                 confirmButtonText: 'OK'
             });
         }
-</script>
+
+        // trigger file upload from device
+        function triggerFileUpload() {
+            document.getElementById('<%= fileUpload.ClientID %>').click();
+       }
+
+       // load uploaded profile picture
+        function loadFile(event) {
+            var output = document.getElementById('<%= output.ClientID %>');
+            var reader = new FileReader();
+            reader.onload = function () {
+                output.src = reader.result;
+                document.getElementById('<%= buttons.ClientID %>').style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+    </script>
 
 
 </asp:Content>

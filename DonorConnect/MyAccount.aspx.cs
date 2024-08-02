@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
@@ -30,6 +32,7 @@ namespace DonorConnect
                         donorContent.Visible = true;
                         orgContent.Visible = false;
                         selectedRole.Text = "donor";
+                        profileUsername.Text = username;
                     }
                     else if (role == "organization")
                     {
@@ -37,6 +40,7 @@ namespace DonorConnect
                         donorContent.Visible = false;
                         orgContent.Visible = true;
                         selectedRole.Text = "organization";
+                        profileUsername.Text = username;
                     }
                     else if (role == "rider")
                     {
@@ -45,6 +49,11 @@ namespace DonorConnect
                         orgContent.Visible = false;
                         riderContent.Visible = true;
                         selectedRole.Text = "rider";
+                        profileUsername.Text = username;
+                        // not allow rider to chg profile pic, will display their uploaded face photo during registration
+                        profilePic.Style.Add("pointer-events", "none");
+                        profilePic.Style.Add("opacity", "1.0"); 
+                        fileUpload.Enabled = false;
                     }
                     else
                     {
@@ -52,8 +61,14 @@ namespace DonorConnect
                         orgContent.Visible = false;
                         riderContent.Visible = false;
                         selectedRole.Text = " ";
+                        profileUsername.Text = " ";
                     }
+
+                    // load current profile picture from database
+                    LoadProfilePicture();
                 }
+
+              
             }
         }
 
@@ -191,7 +206,7 @@ namespace DonorConnect
             if (success || success2)
             {
 
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess();", true);
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('User information updated successfully!',);", true);
             }
             else
             {
@@ -243,7 +258,7 @@ namespace DonorConnect
             if (success || success2)
             {
 
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess();", true);
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('User information updated successfully!',);", true);
             }
             else
             {
@@ -286,7 +301,7 @@ namespace DonorConnect
             if (success || success2)
             {
 
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess();", true);
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('User information updated successfully!',);", true);
             }
             else
             {
@@ -294,5 +309,159 @@ namespace DonorConnect
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating user information. Please try again!');", true);
             }
         }
+
+        private void LoadProfilePicture()
+        {
+            string base64String = GetProfilePictureFromDb();
+
+            if (!string.IsNullOrEmpty(base64String))
+            {
+                output.ImageUrl = "data:image/jpeg;base64," + base64String;
+            }
+            else
+            {
+                // default image if no profile picture is found
+                output.ImageUrl = "/Image/default_picture.jpg";
+            }
+        }
+
+
+        private string GetProfilePictureFromDb()
+        {
+            string username = Session["username"].ToString();
+            string role = GetUserRoleFromDatabase(username);
+
+            string sql, sql2, sql3;
+            QRY _Qry = new QRY();
+            DataTable _dt, _dt2, _dt3;
+            
+            if (role == "donor")
+            {
+                sql = "SELECT donorProfilePicBase64 FROM [donor] WHERE donorUsername = '" + username + "' ";
+                _dt = _Qry.GetData(sql);
+
+                if (_dt.Rows.Count > 0)
+                {
+                    return _dt.Rows[0]["donorProfilePicBase64"].ToString();
+                }
+
+            }
+            else if (role == "organization")
+            {
+                sql2 = "SELECT orgProfilePicBase64 FROM [organization] WHERE orgName = '" + username + "' ";
+                _dt2 = _Qry.GetData(sql2);
+
+                if (_dt2.Rows.Count > 0)
+                {
+                    return _dt2.Rows[0]["orgProfilePicBase64"].ToString();
+                }
+
+            }
+            else if (role == "rider")
+            {
+                sql3 = "SELECT riderFacePicBase64 FROM [delivery_rider] WHERE riderUsername = '" + username + "' ";
+                _dt3 = _Qry.GetData(sql3);
+
+                if (_dt3.Rows.Count > 0)
+                {
+                    return _dt3.Rows[0]["riderFacePicBase64"].ToString();
+                }
+
+            }
+
+            return null;
+        }
+
+        protected void btnSave_Click(object sender, EventArgs e)
+        {
+            if (fileUpload.HasFile)
+            {
+                using (Stream fs = fileUpload.PostedFile.InputStream)
+                {
+                    using (BinaryReader br = new BinaryReader(fs))
+                    {
+                        byte[] bytes = br.ReadBytes((int)fs.Length);
+                        string base64String = Convert.ToBase64String(bytes);
+
+                        // save the base64 string to the database
+                        SaveProfilePictureToDb(base64String);
+
+                        // update the ImageUrl to display the new profile picture
+                        output.ImageUrl = "data:image/jpeg;base64," + base64String;
+                    }
+                }
+            }
+            // Hide buttons after saving
+            buttons.Visible = false;
+        }
+
+        protected void btnCancel_Click(object sender, EventArgs e)
+        {
+            // reload the profile picture from the database to cancel the changes
+            LoadProfilePicture();
+            // hide buttons after changes discarded
+            buttons.Visible = false;
+        }
+
+        private void SaveProfilePictureToDb(string base64String)
+        {
+            string username = Session["username"].ToString();
+            string role = GetUserRoleFromDatabase(username);
+            string sql;
+            QRY _Qry = new QRY();
+
+            try
+            {
+
+                if (role == "donor")
+                {
+                    sql = "UPDATE [donor] SET " +
+                     "donorProfilePicBase64 = '" + base64String + "' " +
+                    "WHERE donorUsername = '" + username + "'";
+                    _Qry.ExecuteNonQuery(sql);
+
+                    bool success = _Qry.ExecuteNonQuery(sql);
+
+                    if (success)
+                    {
+
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Profile picture updated successfully!',);", true);
+                    }
+                    else
+                    {
+
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating profile picture. Please try again!');", true);
+                    }
+                }
+                else if (role == "organization")
+                {
+                    sql = "UPDATE [organization] SET " +
+                     "orgProfilePicBase64 = '" + base64String + "' " +
+                    "WHERE orgName = '" + username + "'";
+                    _Qry.ExecuteNonQuery(sql);
+
+                    bool success = _Qry.ExecuteNonQuery(sql);
+
+                    if (success)
+                    {
+
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Profile picture updated successfully!',);", true);
+                    }
+                    else
+                    {
+
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating profile picture. Please try again!');", true);
+                    }
+                }
+                
+            }
+
+            catch (Exception ex)
+            {
+                
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", $"showError('Error updating profile picture: {ex.Message}');", true);
+            }
+        }
+
     }
 }

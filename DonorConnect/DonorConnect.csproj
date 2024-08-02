@@ -105,6 +105,7 @@
     <Content Include="Content\Home.css" />
     <Content Include="Content\Login.css" />
     <Content Include="Content\Delivery.css" />
+    <Content Include="Content\MyAccount.css" />
     <Content Include="Content\SignUp.css" />
     <Content Include="Content\SignUp2.css" />
     <Content Include="Home.aspx" />
@@ -129,6 +130,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Image\business_license.jpg" />
+    <Content Include="Image\default_picture.jpg" />
     <Content Include="Image\driving_license.jpg" />
     <Content Include="Image\invalid_face_photo.jpg" />
     <Content Include="Image\login_pic.jpg" />

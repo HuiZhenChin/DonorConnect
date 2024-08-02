@@ -11,7 +11,7 @@
 
     <!-- Include Bootstrap CSS from CDN -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/Content/styles.css" rel="stylesheet" type="text/css" />
+    <%--<link href="~/Content/styles.css" rel="stylesheet" type="text/css" />--%>
 </head>
 <body>
     <form runat="server">
