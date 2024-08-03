@@ -87,7 +87,7 @@ namespace DonorConnect
             {
                 role = _dt.Rows[0]["role"].ToString();
 
-                Session["Role"] = role;
+                Session["role"] = role;
             }
 
             return role;

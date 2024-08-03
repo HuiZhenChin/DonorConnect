@@ -143,6 +143,8 @@
     <Content Include="Image\valid_face_photo.jpg" />
     <Content Include="Login.aspx" />
     <Content Include="MyAccount.aspx" />
+    <Content Include="OrgDonations.aspx" />
+    <Content Include="PublishDonations.aspx" />
     <Content Include="ResetPassword.aspx" />
     <Content Include="ResetPassword2.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -245,6 +247,20 @@
       <DependentUpon>MyAccount.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="OrgDonations.aspx.cs">
+      <DependentUpon>OrgDonations.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="OrgDonations.aspx.designer.cs">
+      <DependentUpon>OrgDonations.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="PublishDonations.aspx.cs">
+      <DependentUpon>PublishDonations.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PublishDonations.aspx.designer.cs">
+      <DependentUpon>PublishDonations.aspx</DependentUpon>
+    </Compile>
     <Compile Include="QRY.cs" />
     <Compile Include="ResetPassword.aspx.cs">
       <DependentUpon>ResetPassword.aspx</DependentUpon>

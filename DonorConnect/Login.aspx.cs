@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -42,7 +43,19 @@ namespace DonorConnect
                     ScriptManager.RegisterStartupScript(this, GetType(), "redirect", "setTimeout(function(){ window.location.href='/Home.aspx'; }, 3000);", true);
 
                     Session["username"] = txtUsername.Text;
-                  }
+
+                    // get role
+                    string sql = "SELECT * FROM [user] WHERE username = '" + txtUsername.Text + "' ";
+                    QRY _Qry = new QRY();
+                    DataTable _dt = _Qry.GetData(sql);
+
+                    if (_dt.Rows.Count > 0)
+                    {
+                        string role = _dt.Rows[0]["role"].ToString();
+
+                        Session["role"] = role;
+                    }
+                 }
                 else if (message == "Incorrect Password!")
                 {
                     ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Incorrect Password!', 'error');", true);
