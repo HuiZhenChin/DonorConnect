@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -20,7 +21,7 @@ namespace DonorConnect
                 {
                     string username = Session["username"].ToString();
 
-                    
+
 
                 }
             }
@@ -32,7 +33,7 @@ namespace DonorConnect
                 && !chkFurniture.Checked && !chkHygiene.Checked && !chkMedical.Checked && !chkToys.Checked
                 && !chkOther.Checked)
             {
-                lblCategory.Visible = true;
+                lblCategory.Style["display"] = "block";
                 return;
             }
 
@@ -93,7 +94,7 @@ namespace DonorConnect
             }
             if (chkOther.Checked)
             {
-                categories.Add("Other");
+                categories.Add(newCategory.Text);
                 specificItems.Add(string.IsNullOrEmpty(txtSpecificOther.Text) ? "" : txtSpecificOther.Text);
                 quantities.Add(string.IsNullOrEmpty(qtyOther.Text) ? "" : qtyOther.Text);
             }
@@ -108,30 +109,32 @@ namespace DonorConnect
             string status = "Pending Approval";
             string imgUpload = "";
             string fileUpload = "";
+            string address = "";
 
-            string fileExtension = Path.GetExtension(donationFile.FileName).ToLower();
+            imgUpload = ConvertToBase64(donationImg.PostedFile);
 
-            if (fileExtension == ".png" || fileExtension == ".jpg" || fileExtension == ".jpeg")
-            {
-                imgUpload = ConvertToBase64(donationFile.PostedFile);
+            fileUpload = ConvertToBase64(donationFile.PostedFile);
 
-            }
-            if (fileExtension == ".pdf")
-            {
-                fileUpload = ConvertToBase64(donationFile.PostedFile);
-
-            }
             string urgent = rbUrgentYes.Checked ? "Yes" : "No";
 
             string username = Session["username"].ToString();
             string orgId = GetOrgId(username);
+
+            if (txtAddress.Text == username)
+            {
+                address = GetOrgAddress(username);
+            }
+            else if (txtAddress.Text != username)
+            {
+                address = txtAddress.Text;
+            }
 
             sql = "EXEC [create_org_item_donations] " +
                             "@method = 'INSERT', " +
                             "@donationPublishId = NULL, " +  //auto-generated in stored procedure
                             "@title = '" + txtTitle.Text + "', " +
                             "@peopleNeeded = '" + txtQuantity.Text + "', " +
-                            "@address = '" + txtAddress.Text + "', " +
+                            "@address = '" + address + "', " +
                             "@desc = '" + txtDescription.Text + "', " +
                             "@itemCategory = '" + itemCategories + "', " +
                             "@specificItems = '" + specificItemsString + "', " +
@@ -143,7 +146,9 @@ namespace DonorConnect
                             "@donationAttch = '" + fileUpload + "', " +
                             "@orgId = '" + orgId + "', " +
                             "@adminId= NULL, " +
-                            "@created_on= NULL ";
+                            "@created_on= NULL, " +
+                            "@restriction= NULL, " +
+                            "@state = '" + txtRegion.SelectedValue + "' ";
 
             DataTable dt_check = _Qry.GetData(sql);
 
@@ -153,9 +158,9 @@ namespace DonorConnect
                 if (message == "Successful! You have submitted a new item donation application. Your request is now pending for approval.")
                 {
                     Session["message"] = message;
-                        
-                    Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
 
+                    Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
+                    clearText();
                 }
 
                 else
@@ -165,7 +170,7 @@ namespace DonorConnect
                 }
 
             }
-            
+
         }
 
         private string ConvertToBase64(HttpPostedFile postedFile)
@@ -197,24 +202,47 @@ namespace DonorConnect
             return id;
         }
 
-        protected void chkFood_CheckedChanged(object sender, EventArgs e)
+        private string GetOrgAddress(string username)
         {
-            ToggleField();
+            string sql;
+            string address = "";
+            QRY _Qry = new QRY();
+            DataTable _dt;
+            sql = "SELECT * FROM [organization] WHERE orgName = '" + username + "' ";
+
+            _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                address = _dt.Rows[0]["orgAddress"].ToString();
+            }
+
+            return address;
         }
 
-        protected void ToggleField()
+        protected void clearText()
         {
-            if (chkFood.Checked)
-            {
-                txtSpecificFood.Attributes["style"] = "display: block;";
-                qtyFood.Attributes["style"] = "display: block;";
-            }
-            else
-            {
-                txtSpecificFood.Attributes["style"] = "display: none;";
-                qtyFood.Attributes["style"] = "display: none;";
-            }
+            txtTitle.Text = "";
+            txtQuantity.Text = "";
+            txtAddress.Text = "";
+            txtRegion.Text = "";
+            txtDescription.Text = "";
+            txtRestrictions.Text = "";
+            rbUrgentNo.Checked = true;
+            rbUrgentNo.Checked = false;
+            txtTimeRange.Text = "";
+            chkBooks.Checked = false;
+            chkClothing.Checked = false;
+            chkElectronics.Checked = false;
+            chkFood.Checked = false;
+            chkFurniture.Checked = false;
+            chkHygiene.Checked = false;
+            chkMedical.Checked = false;
+            chkOther.Checked = false;
+            chkToys.Checked = false;
+            newCategory.Text = "";
         }
+      
 
 
     }
