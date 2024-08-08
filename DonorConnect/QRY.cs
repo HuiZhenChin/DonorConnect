@@ -46,6 +46,28 @@ namespace DonorConnect
             return ds;
         }
 
+        public string ExecuteNonQuery2(string sql)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                        return "Success"; // return a success message
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error message
+                Console.WriteLine($"Error: {ex.Message}");
+                return $"Error: {ex.Message}"; // return the error message
+            }
+        }
+
         public bool ExecuteNonQuery(string sql)
         {
             try
@@ -62,10 +84,11 @@ namespace DonorConnect
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine($"Error: {ex.Message}");
                 return false; // failure
             }
         }
+
 
 
     }

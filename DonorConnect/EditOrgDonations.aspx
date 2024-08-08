@@ -1,9 +1,9 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="PublishDonations.aspx.cs" Inherits="DonorConnect.PublishDonations1" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="EditOrgDonations.aspx.cs" Inherits="DonorConnect.EditOrgDonations" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Publish Donations</title>
-     <%--<link href="/Content/MyAccount.css" rel="stylesheet" type="text/css" />--%>
+     <title>Edit Donations</title>
+     
      <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -30,7 +30,6 @@
         }
     </style>
 </asp:Content>
-
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container mt-4">
         <div class="card">
@@ -147,6 +146,7 @@
                             <asp:TextBox ID="newCategory" runat="server" CssClass="form-control specific-items-input" Placeholder="Enter new category" style="display:none;" />
                             <asp:TextBox ID="txtSpecificOther" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
                             <asp:TextBox ID="qtyOther" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
+                            <asp:PlaceHolder ID="PlaceholderNewCategory" runat="server"></asp:PlaceHolder>
                         </div>
                     </div>
                     
@@ -182,17 +182,14 @@
                     </small>
                     <span id="fileUploadError" class="text-danger" style="display: none;">Only .pdf and .docx files are allowed.</span>
                 </div>
- 
-                
+
                 <div class="text-right">
-                    <asp:Button ID="btnSubmit" runat="server" type="submit" CssClass="btn btn-success" Text="Submit Donation" OnClick="btnSubmitNewDonation_Click" />
+                    <asp:Button ID="btnUpdate" runat="server" type="submit" CssClass="btn btn-success" Text="Update Donation"  onClick="btnUpdateDonation_Click"/>
                     <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" Text="Cancel" />
                 </div>
             </div>
         </div>
     </div>
-
-
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
             var urgentYes = document.getElementById('<%= rbUrgentYes.ClientID %>');
@@ -275,6 +272,15 @@
             });
         }
 
+        function showError(message) {
+            Swal.fire({
+                title: 'Error!',
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+
         function validateFileUpload(fileInput) {
             var maxFiles = 5;
             var errorMsg = document.getElementById('fileUploadError');
@@ -336,3 +342,4 @@
         }
     </script>
 </asp:Content>
+

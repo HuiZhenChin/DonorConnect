@@ -111,9 +111,26 @@ namespace DonorConnect
             string fileUpload = "";
             string address = "";
 
-            imgUpload = ConvertToBase64(donationImg.PostedFile);
+            if (donationImg.HasFiles)
+            {
 
-            fileUpload = ConvertToBase64(donationFile.PostedFile);
+                imgUpload = ConvertImgToBase64(donationImg.PostedFiles);
+            }
+
+            else
+            {
+                imgUpload = "";
+            }
+
+            if (donationFile.HasFiles)
+            {
+                fileUpload = ConvertFileToBase64(donationFile.PostedFiles);
+            }
+            
+            else
+            {
+                fileUpload = ""; 
+            }
 
             string urgent = rbUrgentYes.Checked ? "Yes" : "No";
 
@@ -147,7 +164,7 @@ namespace DonorConnect
                             "@orgId = '" + orgId + "', " +
                             "@adminId= NULL, " +
                             "@created_on= NULL, " +
-                            "@restriction= NULL, " +
+                            "@restriction= '" + txtRestrictions.Text + "', " +
                             "@state = '" + txtRegion.SelectedValue + "' ";
 
             DataTable dt_check = _Qry.GetData(sql);
@@ -173,15 +190,50 @@ namespace DonorConnect
 
         }
 
-        private string ConvertToBase64(HttpPostedFile postedFile)
+        private string ConvertImgToBase64(IList<HttpPostedFile> postedFiles)
         {
-            using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+            if (postedFiles == null || postedFiles.Count == 0)
             {
-                postedFile.InputStream.CopyTo(ms);
-                byte[] bytes = ms.ToArray();
-                return Convert.ToBase64String(bytes);
+                return string.Empty;
             }
 
+            List<string> base64Files = new List<string>();
+
+            foreach (HttpPostedFile uploadedFile in postedFiles)
+            {
+                using (BinaryReader reader = new BinaryReader(uploadedFile.InputStream))
+                {
+                    byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
+                    string base64String = Convert.ToBase64String(fileBytes);
+                    base64Files.Add(base64String);
+                }
+            }
+
+            return string.Join(",", base64Files);
+        }
+
+
+        private string ConvertFileToBase64(IList<HttpPostedFile> postedFiles)
+        {
+            if (postedFiles == null || postedFiles.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            List<string> base64Files = new List<string>();
+
+            foreach (HttpPostedFile uploadedFile in postedFiles)
+            {
+                using (BinaryReader reader = new BinaryReader(uploadedFile.InputStream))
+                {
+                    byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
+                    string base64String = Convert.ToBase64String(fileBytes);
+                    string fileName = uploadedFile.FileName;
+                    base64Files.Add($"{fileName}:{base64String}");
+                }
+            }
+
+            return string.Join(",", base64Files);
         }
 
         private string GetOrgId(string username)
