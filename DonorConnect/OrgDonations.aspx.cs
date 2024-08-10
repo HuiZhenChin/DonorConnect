@@ -10,6 +10,7 @@ using System.Web.UI.WebControls;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using System.Net;
 
 namespace DonorConnect
 {
@@ -232,27 +233,147 @@ namespace DonorConnect
         //    BindGridView(selectedStatus);
         //}
 
-        protected void btnDelete_Click(object sender, EventArgs e)
+        protected void btnResubmit_Click(object sender, EventArgs e)
         {
+            // check if the donation has already been resubmitted
             LinkButton btn = (LinkButton)sender;
             string donationPublishId = btn.CommandArgument;
+            string checkSql = "SELECT resubmit FROM [donation_publish] WHERE donationPublishId = '" + donationPublishId + "' ";
+            QRY _QryCheck = new QRY();
+            DataTable dt = _QryCheck.GetData(checkSql);
 
-           
-            string deleteQuery = $"DELETE FROM [donation_publish] WHERE donationPublishId = @donationPublishId";
-            // Execute the delete query with the donationPublishId parameter
+            if (dt.Rows.Count > 0 && dt.Rows[0]["resubmit"].ToString() == "yes")
+            {
+                // show alert if already resubmitted
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('You have already resubmitted your application. You can only resubmit once before approval from admin.');", true);
+                return;
+            }
 
-            BindGridView(); 
+            else
+            {
+                string username = Session["username"].ToString();
+                string orgId = GetOrgId(username);
+
+                // redirect to edit page 
+                Response.Redirect($"EditOrgDonations.aspx?donationPublishId={donationPublishId}&orgId={orgId}");
+
+            }
         }
 
         protected void btnEdit_Click(object sender, EventArgs e)
+        {
+            // check if the donation has already been resubmitted, cannot allow editing
+            LinkButton btn = (LinkButton)sender;
+            string donationPublishId = btn.CommandArgument;
+            string checkSql = "SELECT resubmit FROM [donation_publish] WHERE donationPublishId = '" + donationPublishId + "' ";
+            QRY _QryCheck = new QRY();
+            DataTable dt = _QryCheck.GetData(checkSql);
+
+            if (dt.Rows.Count > 0 && dt.Rows[0]["resubmit"].ToString() == "yes")
+            {
+                // show alert if already resubmitted
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('This is your resubmitted application. You can only edit after getting approval from admin.');", true);
+                return;
+            }
+            else
+            {
+                string username = Session["username"].ToString();
+                string orgId = GetOrgId(username);
+
+                // redirect to edit page 
+                Response.Redirect($"EditOrgDonations.aspx?donationPublishId={donationPublishId}&orgId={orgId}");
+                // send notifications to admin dashboard
+            }
+        }
+
+        protected void btnClose_Click(object sender, EventArgs e)
+        {
+            string donationPublishId = hiddenDonationPublishId.Value;
+            string closureReason = ddlClosureReason.SelectedValue;
+            string otherReason = txtOtherReason.Text;
+
+            if (closureReason == "Other")
+            {
+                closureReason = otherReason;
+            }
+
+            string username = Session["username"].ToString();
+            string orgId = GetOrgId(username);
+
+            // update status become "closed" and check from donation request table to see how many pending requests made by donors
+            string status = "Closed";
+            string sql = "UPDATE [donation_publish] SET " +  
+                                "status = '" + status + "' " +
+                                 "WHERE donationPublishId = '" + donationPublishId + "'";
+
+            QRY _Qry = new QRY();
+            bool success = _Qry.ExecuteNonQuery(sql);
+
+            if (success)
+            {
+                // send email notify admin
+                string sqlemail, sqlupdate;
+               
+                QRY _Qry2 = new QRY();
+                QRY _Qry3 = new QRY();
+
+                sqlemail = "EXEC [admin_reminder_email] " +
+                             "@action = 'CLOSE', " +
+                             "@reason = '" + closureReason + "', " +
+                             "@orgName = '" + username + "' ";
+                _Qry2.ExecuteNonQuery(sqlemail);
+
+                sqlupdate= "UPDATE [donation_publish] SET " +
+                                "closureReason = '" + closureReason + "' " +
+                                 "WHERE donationPublishId = '" + donationPublishId + "'";
+                _Qry3.ExecuteNonQuery(sqlupdate);
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation closed successfully!',);", true);
+                
+                BindGridView();
+            }
+            else
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error closing donations. Please try again!');", true);
+            }
+        }
+
+        protected void btnCancel_Click(object sender, EventArgs e)
         {
             LinkButton btn = (LinkButton)sender;
             string donationPublishId = btn.CommandArgument;
             string username = Session["username"].ToString();
             string orgId = GetOrgId(username);
 
-            // redirect to edit page 
-            Response.Redirect($"EditOrgDonations.aspx?donationPublishId={donationPublishId}&orgId={orgId}");
+            string sql;
+            QRY _Qry = new QRY();
+            
+            sql = "DELETE FROM [donation_publish] WHERE donationPublishId = '" + donationPublishId + "' ";
+
+            bool isDeleted = _Qry.ExecuteNonQuery(sql);
+
+            if (isDeleted)
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation application cancelled successfully!',);", true);
+                //send email notify admin
+                string sqlemail;
+
+                QRY _Qry2 = new QRY();
+
+                sqlemail = "EXEC [admin_reminder_email] " +
+                             "@action = 'CANCEL', " +
+                             "@orgName = '" + username + "' ";
+                _Qry2.ExecuteNonQuery(sqlemail);
+            }
+            else
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error cancelling donation application. Please try again!');", true);
+            }
+
+            BindGridView();
         }
 
 
@@ -260,7 +381,7 @@ namespace DonorConnect
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                // Customize row data if needed
+                // customize row data if needed
             }
         }
 

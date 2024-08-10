@@ -60,6 +60,42 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.Label lblNoResults;
 
         /// <summary>
+        /// ddlClosureReason control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlClosureReason;
+
+        /// <summary>
+        /// hiddenDonationPublishId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hiddenDonationPublishId;
+
+        /// <summary>
+        /// txtOtherReason control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtOtherReason;
+
+        /// <summary>
+        /// btnClose control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnClose;
+
+        /// <summary>
         /// gvDonations control.
         /// </summary>
         /// <remarks>

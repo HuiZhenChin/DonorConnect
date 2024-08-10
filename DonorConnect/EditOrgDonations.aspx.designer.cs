@@ -438,6 +438,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.FileUpload donationImg;
 
         /// <summary>
+        /// imagesContainer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal imagesContainer;
+
+        /// <summary>
         /// donationFile control.
         /// </summary>
         /// <remarks>
@@ -447,6 +456,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.FileUpload donationFile;
 
         /// <summary>
+        /// filesContainer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal filesContainer;
+
+        /// <summary>
         /// btnUpdate control.
         /// </summary>
         /// <remarks>
@@ -454,6 +472,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnUpdate;
+
+        /// <summary>
+        /// btnResubmit control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnResubmit;
 
         /// <summary>
         /// btnCancel control.

@@ -130,6 +130,42 @@
             <asp:Label ID="lblNoResults" runat="server" style="margin-top: 20px;" CssClass="alert alert-warning" Visible="false" Text="No results found." />
         </div>
 
+    <div class="modal fade" id="closureReasonModal" tabindex="-1" role="dialog" aria-labelledby="closureReasonModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="closureReasonModalLabel">Select Closure Reason</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="closureReason">Reason for closure:</label>
+                        <asp:DropDownList ID="ddlClosureReason" runat="server" CssClass="form-control">
+                            <asp:ListItem Value="Donation fulfilled">Donation fulfilled</asp:ListItem>
+                            <asp:ListItem Value="No longer needed">No longer needed</asp:ListItem>
+                            <asp:ListItem Value="Personal reason">Personal reason</asp:ListItem>
+                            <asp:ListItem Value="Other">Other (please specify)</asp:ListItem>
+                        </asp:DropDownList>
+
+                    </div>
+                    <asp:HiddenField ID="hiddenDonationPublishId" runat="server" />
+
+                    <div class="form-group" id="otherReasonGroup" style="display: none;">
+                        <label for="otherReason">Other Reason:</label>
+                        <asp:TextBox ID="txtOtherReason" runat="server" CssClass="form-control" Placeholder="Enter your reason"></asp:TextBox>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <asp:LinkButton ID="btnClose" runat="server" CssClass="btn btn-primary" OnClick="btnClose_Click">Submit</asp:LinkButton>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 <div class="mt-3">
     <asp:GridView ID="gvDonations" runat="server" CssClass="table table-striped" AutoGenerateColumns="False" OnRowDataBound="gvDonations_RowDataBound">
         <Columns>
@@ -153,11 +189,19 @@
                         <strong>Files:</strong><br />
                         <%# String.IsNullOrEmpty(Eval("donationFiles") as string) ? "No file submitted" : Eval("donationFiles") %><br />
 
-                        <!-- Edit Button (conditionally rendered) -->
-                        <asp:LinkButton ID="btnEdit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Edit" CssClass="btn btn-info btn-sm" Visible='<%# Eval("status").ToString() == "Pending Approval" || Eval("status").ToString() == "Opened" %>' OnClick="btnEdit_Click" />
+                       <div class="text-right mt-2">
+                            <!-- Edit Button -->
+                            <asp:LinkButton ID="btnEdit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Edit" CssClass="btn btn-info btn-sm" Visible='<%# Eval("status").ToString() == "Pending Approval" || Eval("status").ToString() == "Opened" %>' OnClick="btnEdit_Click" />
 
-                        <!-- Delete Button (always rendered) -->
-                        <asp:LinkButton ID="btnDelete" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Delete" CssClass="btn btn-danger btn-sm" OnClick="btnDelete_Click" />
+                            <!-- Resubmit Button --> 
+                            <asp:LinkButton ID="btnResubmit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Resubmit" CssClass="btn btn-info btn-sm" Visible='<%# Eval("status").ToString() == "Rejected" %>' OnClick="btnResubmit_Click" />
+
+                            <!-- Close Button -->
+                            <asp:LinkButton ID="btnClose" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Close" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Opened" %>' OnClientClick='<%# "openClosureModal(\"" + Eval("donationPublishId") + "\"); return false;" %>'/>
+
+                           <!-- Cancel Application Button -->
+                            <asp:LinkButton ID="btnCancel" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Cancel" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Pending Approval" %>' OnClick="btnCancel_Click"/>
+                        </div>
                     </div>
                 </ItemTemplate>
             </asp:TemplateField>
@@ -166,4 +210,45 @@
 </div>
 
     </div>
+    <script>
+    $(document).ready(function () {
+  
+        var closureReason = $('#<%= ddlClosureReason.ClientID %>');
+        var otherReasonGroup = $('#otherReasonGroup');
+
+        closureReason.change(function () {
+            if ($(this).val() === 'Other') {
+                otherReasonGroup.show();
+            } else {
+                otherReasonGroup.hide();
+            }
+        });
+    });
+
+
+    function openClosureModal(donationPublishId) {
+        $('#<%= hiddenDonationPublishId.ClientID %>').val(donationPublishId);
+        $('#closureReasonModal').modal('show');
+    }
+
+
+    function showSuccess(message) {
+        Swal.fire({
+            title: 'Success!',
+            text: message,
+            icon: 'success',
+            confirmButtonText: 'OK'
+        });
+    }
+
+    function showError(message) {
+        Swal.fire({
+            title: 'Error!',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+    </script>
+
 </asp:Content>

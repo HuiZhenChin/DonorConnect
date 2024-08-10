@@ -42,15 +42,15 @@
                 <div class="form-group">
                     <label for="urgentRadioGroup">Is your item donation urgent?</label>
                     <div>
-                        <asp:RadioButton ID="rbUrgentYes" runat="server" CssClass="form-check-input" GroupName="urgent" Value="Yes"/>
+                        <asp:RadioButton ID="rbUrgentYes" runat="server" CssClass="form-check-input" GroupName="urgent" Value="Yes" Enabled="false"/>
                         <label for="rbUrgentYes" class="form-check-label" style="margin-left: 10px;">Yes</label>
                     </div>
                     <div>
-                        <asp:RadioButton ID="rbUrgentNo" runat="server" CssClass="form-check-input" GroupName="urgent" Value="No" Checked="True" />
+                        <asp:RadioButton ID="rbUrgentNo" runat="server" CssClass="form-check-input" GroupName="urgent" Value="No" Checked="True" Enabled="false"/>
                         <label for="rbUrgentNo" class="form-check-label" style="margin-left: 10px;">No</label>
                     </div>
                     <small class="form-text text-muted">
-                        <em>Urgent:</em> Select "Yes" if the donation is needed urgently and requires immediate attention. Otherwise, select "No".
+                        <em>This section cannot be modified.</em> 
                     </small>
                 </div>
                 
@@ -167,25 +167,28 @@
 
                 <div class="form-group">
                     <label for="donationImg">Upload Donation Image/ Poster (if any)</label>
-                    <asp:FileUpload ID="donationImg" runat="server" CssClass="form-control-file" AllowMultiple="true" OnChange="validateImageUpload(this)" />
+                    <asp:FileUpload ID="donationImg" runat="server" CssClass="form-control-file" AllowMultiple="true" OnChange="confirmImageUpload(this)" />
                     <small class="form-text text-muted">
                         <em>Accepted Formats: .jpg, .jpeg, .png. Maximum 5 images.</em>
                     </small>
                     <span id="imageUploadError" class="text-danger" style="display: none;">You can upload a maximum of 5 images in .jpg, .jpeg, .png formats.</span>
                 </div>
+                <asp:Literal ID="imagesContainer" runat="server"></asp:Literal>
 
                 <div class="form-group">
                     <label for="donationFile">Upload Donation File Attachment (if any)</label>
-                    <asp:FileUpload ID="donationFile" runat="server" CssClass="form-control-file" AllowMultiple="true" OnChange="validateFileAttachmentUpload(this)" />
+                    <asp:FileUpload ID="donationFile" runat="server" CssClass="form-control-file" AllowMultiple="true" OnChange="confirmFileUpload(this)" />
                     <small class="form-text text-muted">
                         <em>Accepted Formats: .pdf, .docx</em>
                     </small>
                     <span id="fileUploadError" class="text-danger" style="display: none;">Only .pdf and .docx files are allowed.</span>
                 </div>
+                <asp:Literal ID="filesContainer" runat="server"></asp:Literal>
 
                 <div class="text-right">
-                    <asp:Button ID="btnUpdate" runat="server" type="submit" CssClass="btn btn-success" Text="Update Donation"  onClick="btnUpdateDonation_Click"/>
-                    <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" Text="Cancel" />
+                    <asp:Button ID="btnUpdate" runat="server" type="submit" CssClass="btn btn-success" Text="Update Donation"  onClick="btnUpdateDonation_Click" Visible="false"/>
+                     <asp:Button ID="btnResubmit" runat="server" type="submit" CssClass="btn btn-success" Text="Resubmit Application"  onClick="btnResubmitDonation_Click" Visible="false"/>
+                    <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" Text="Cancel" onClick="btnCancelDonation_Click"/>
                 </div>
             </div>
         </div>
@@ -313,7 +316,7 @@
 
             if (!isValid) {
                 errorMsg.style.display = 'block';
-                fileInput.value = ''; // Clear the file input
+                fileInput.value = ''; // clear the file input
             } else {
                 errorMsg.style.display = 'none';
             }
@@ -335,11 +338,52 @@
 
             if (!isValid) {
                 errorMsg.style.display = 'block';
-                fileInput.value = ''; // Clear the file input
+                fileInput.value = ''; // clear the file input
             } else {
                 errorMsg.style.display = 'none';
             }
         }
+
+        function confirmImageUpload(fileInput) {
+            if (fileInput.files.length > 0) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Uploading new images will replace your existing images.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#008000',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, replace them'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        validateImageUpload(fileInput);
+                    } else {
+                        fileInput.value = ''; 
+                    }
+                });
+            }
+        }
+
+        function confirmFileUpload(fileInput) {
+            if (fileInput.files.length > 0) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Uploading new files will replace your existing files.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#008000',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, replace them'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        validateFileAttachmentUpload(fileInput);
+                    } else {
+                        fileInput.value = ''; 
+                    }
+                });
+            }
+        }
+
     </script>
 </asp:Content>
 

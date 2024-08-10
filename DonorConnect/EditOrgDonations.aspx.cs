@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
@@ -24,8 +25,22 @@ namespace DonorConnect
 
                 if (!string.IsNullOrEmpty(donationId))
                 {
-                    Session["donationPublishId"]= donationId;
+                    Session["donationPublishId"] = donationId;
+                    string status = GetOrgStatus(donationId);
                     Session["orgId"] = orgId;
+
+                    // check the status and set button visibility 
+                    if (status == "Rejected")
+                    {
+                        btnResubmit.Visible = true;   
+                        btnUpdate.Visible = false;   
+                    }
+                    else
+                    {
+                        btnUpdate.Visible = true;     
+                        btnResubmit.Visible = false;  
+                    }
+
                     LoadDonationDetails(donationId);
                 }
             }
@@ -58,6 +73,13 @@ namespace DonorConnect
                 PopulateCategories(row["itemCategory"].ToString(),
                                     row["specificItemsForCategory"].ToString(),
                                     row["specificQtyForCategory"].ToString());
+
+                string imagesHtml = ProcessImages(row["donationImage"].ToString());
+                imagesContainer.Text = imagesHtml;
+
+                // Display attachments
+                string filesHtml = ProcessFiles(row["donationAttch"].ToString());
+                filesContainer.Text = filesHtml;
             }
         }
 
@@ -80,7 +102,6 @@ namespace DonorConnect
                 { "Medical Supplies", new Tuple<CheckBox, TextBox, TextBox>(chkMedical, txtSpecificMedical, qtyMedical) },
                 { "Other", new Tuple<CheckBox, TextBox, TextBox>(chkOther, txtSpecificOther, qtyOther) }
             };
-
 
             foreach (var category in itemCategories)
             {
@@ -111,49 +132,29 @@ namespace DonorConnect
                 }
                 else
                 {
-                    // Check "Other" and add new category dynamically
+                    // Handle the "Other" category
                     chkOther.Checked = true;
 
-                    // Create a TextBox for the new category name
-                    TextBox newCategoryName = new TextBox
-                    {
-                        CssClass = "form-control specific-items-input",
-                        Text = trimmedCategory
-                    };
-                    newCategoryName.Attributes.Add("placeholder", "Enter a new category");
+                    // Append the category to the "Other" text box
+                    newCategory.Text = string.IsNullOrEmpty(newCategory.Text) ? trimmedCategory : $"{newCategory.Text}, {trimmedCategory}";
 
-                    // Create TextBox for specific items
-                    TextBox newSpecificItems = new TextBox
-                    {
-                        CssClass = "form-control specific-items-input"
-                    };
-                    newSpecificItems.Attributes.Add("placeholder", "Specify items needed");
-
-                    // Create TextBox for quantity
-                    TextBox newQty = new TextBox
-                    {
-                        CssClass = "form-control specific-qty-input",
-                        TextMode = TextBoxMode.Number
-                    };
-                    newQty.Attributes.Add("placeholder", "Enter quantity");
-
-                    // Assign values if they exist
+                    // Add comma between multiple specific items for "Other" category
                     int index = Array.IndexOf(itemCategories, category);
-                    newSpecificItems.Text = index < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[index])
-                                          ? specificItems[index].Trim('(', ')')
-                                          : string.Empty;
+                    if (index < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[index]))
+                    {
+                        txtSpecificOther.Text = string.IsNullOrEmpty(txtSpecificOther.Text)
+                            ? specificItems[index]
+                            : $"{txtSpecificOther.Text}, {specificItems[index]}"; // Add comma separator
+                    }
 
-                    newQty.Text = index < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[index])
-                                ? specificQty[index].Trim('(', ')')
-                                : string.Empty;
-
-                    // Add the new controls to the placeholder
-                    PlaceholderNewCategory.Controls.Add(new LiteralControl("<br />"));  // Adding a line break
-                    PlaceholderNewCategory.Controls.Add(newCategoryName);
-                    PlaceholderNewCategory.Controls.Add(newSpecificItems);
-                    PlaceholderNewCategory.Controls.Add(newQty);
+                    // Add comma between multiple quantities for "Other" category
+                    if (index < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[index]))
+                    {
+                        qtyOther.Text = string.IsNullOrEmpty(qtyOther.Text)
+                            ? specificQty[index]
+                            : $"{qtyOther.Text}, {specificQty[index]}"; // Add comma separator
+                    }
                 }
-
             }
         }
 
@@ -187,9 +188,58 @@ namespace DonorConnect
             return items.ToArray();
         }
 
+        private string ProcessImages(string base64Images)
+        {
+            if (string.IsNullOrEmpty(base64Images))
+            {
+                return string.Empty;
+            }
+
+            string[] base64ImageArray = base64Images.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            StringBuilder imagesBuilder = new StringBuilder();
+            imagesBuilder.AppendLine("<div class='image-grid'>");
+
+            foreach (string base64Image in base64ImageArray)
+            {
+                imagesBuilder.AppendLine($"<div class='image-item'><img src='data:image/png;base64,{base64Image}' alt='Image' class='img-fluid' /></div>");
+            }
+
+            imagesBuilder.AppendLine("</div>");
+            return imagesBuilder.ToString();
+        }
+
+
+        private string ProcessFiles(string base64Files)
+        {
+            if (string.IsNullOrEmpty(base64Files))
+            {
+                return string.Empty;
+            }
+
+            string[] base64FileArray = base64Files.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            StringBuilder filesBuilder = new StringBuilder();
+
+            foreach (string base64File in base64FileArray)
+            {
+                string[] fileParts = base64File.Split(new char[] { ':' }, 2);
+                if (fileParts.Length == 2)
+                {
+                    string fileName = fileParts[0]; // get original filename
+                    string base64Content = fileParts[1];
+                    string fileExtension = fileName.Split('.').Last().ToLower();  // get file extension
+                    string fileDataUrl = $"data:application/{fileExtension};base64,{base64Content}"; // get url to download from browser
+                    filesBuilder.AppendLine($"<a href='{fileDataUrl}' download='{fileName}'>Download {fileName}</a><br />");
+                }
+            }
+
+            return filesBuilder.ToString();
+        }
+
+
         protected void btnUpdateDonation_Click(object sender, EventArgs e)
         {
-            try {
+            try
+            {
                 string donationId = Session["donationPublishId"].ToString();
 
                 List<string> categories = new List<string>();
@@ -199,67 +249,74 @@ namespace DonorConnect
                 if (chkFood.Checked)
                 {
                     categories.Add("Food");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "" : txtSpecificFood.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : qtyFood.Text);
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "" : $"({txtSpecificFood.Text})");
+                    quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : $"({qtyFood.Text})");
                 }
                 if (chkClothing.Checked)
                 {
                     categories.Add("Clothing");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "" : txtSpecificClothing.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : qtyClothing.Text);
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "" : $"({txtSpecificClothing.Text})");
+                    quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : $"({qtyClothing.Text})");
                 }
                 if (chkBooks.Checked)
                 {
                     categories.Add("Books");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "" : txtSpecificBooks.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : qtyBooks.Text);
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "" : $"({txtSpecificBooks.Text})");
+                    quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : $"({qtyBooks.Text})");
                 }
                 if (chkElectronics.Checked)
                 {
                     categories.Add("Electronics");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "" : txtSpecificElectronics.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : qtyElectronics.Text);
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "" : $"({txtSpecificElectronics.Text})");
+                    quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : $"({qtyElectronics.Text})");
                 }
                 if (chkFurniture.Checked)
                 {
                     categories.Add("Furniture");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "" : txtSpecificFurniture.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : qtyFurniture.Text);
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "" : $"({txtSpecificFurniture.Text})");
+                    quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : $"({qtyFurniture.Text})");
                 }
                 if (chkHygiene.Checked)
                 {
                     categories.Add("Hygiene Products");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "" : txtSpecificHygiene.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : qtyHygiene.Text);
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "" : $"({txtSpecificHygiene.Text})");
+                    quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : $"({qtyHygiene.Text})");
                 }
                 if (chkMedical.Checked)
                 {
                     categories.Add("Medical Supplies");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "" : txtSpecificMedical.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : qtyMedical.Text);
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "" : $"({txtSpecificMedical.Text})");
+                    quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : $"({qtyMedical.Text})");
                 }
                 if (chkToys.Checked)
                 {
                     categories.Add("Toys");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "" : txtSpecificToys.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : qtyToys.Text);
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "" : $"({txtSpecificToys.Text})");
+                    quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : $"({qtyToys.Text})");
                 }
                 if (chkOther.Checked)
                 {
                     categories.Add(newCategory.Text);
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificOther.Text) ? "" : txtSpecificOther.Text);
-                    quantities.Add(string.IsNullOrEmpty(qtyOther.Text) ? "" : qtyOther.Text);
+
+                    // split the specific items and quantities by comma 
+                    var otherSpecificItems = txtSpecificOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    var otherQuantities = qtyOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    // add each specific item and quantity without brackets
+                    specificItems.AddRange(otherSpecificItems.Select(item => item.Trim()));
+                    quantities.AddRange(otherQuantities.Select(qty => qty.Trim()));
                 }
 
+                // construct the strings for database storage
                 string itemCategories = "[" + string.Join(", ", categories) + "]";
-                string specificItemsString = "[" + string.Join(", ", specificItems.Select(item => string.IsNullOrEmpty(item) ? "" : $"({item})")) + "]";
-                string quantitiesString = "[" + string.Join(", ", quantities.Select(qty => string.IsNullOrEmpty(qty) ? "" : $"({qty})")) + "]";
+                string specificItemsString = "[" + string.Join(", ", specificItems) + "]";
+                string quantitiesString = "[" + string.Join(", ", quantities) + "]";
 
                 string sql;
                 QRY _Qry = new QRY();
 
                 string status = GetOrgStatus(donationId);
-                string createdOn= GetOrgCreatedOn(donationId);
+                string createdOn = GetOrgCreatedOn(donationId);
                 string imgUpload = "";
                 string fileUpload = "";
                 string address = "";
@@ -285,10 +342,10 @@ namespace DonorConnect
                     fileUpload = "";
                 }
 
-                string urgent = rbUrgentYes.Checked ? "Yes" : "No";
+                string urgent = GetOrgUrgency(donationId);
 
                 string username = Session["username"].ToString();
-                string orgId= Session["orgId"].ToString();
+                string orgId = Session["orgId"].ToString();
 
                 if (txtAddress.Text == username)
                 {
@@ -326,23 +383,26 @@ namespace DonorConnect
                 if (success)
                 {
 
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('User information updated successfully!',);", true);
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation details updated successfully!',);", true);
+                    // send email notify admin
                 }
                 else
                 {
 
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating user information. Please try again!');", true);
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating donation details. Please try again!');", true);
                 }
+
+                LoadDonationDetails(donationId);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", $"showError('There was an error updating donation details: {ex.Message}');", true);
-             }
-    
-    }
+            }
 
 
+
+        }
 
         private string GetOrgAddress(string donationId)
         {
@@ -397,6 +457,25 @@ namespace DonorConnect
 
             return created_on;
         }
+
+        private string GetOrgUrgency(string donationId)
+        {
+            string sql;
+            string urgency = "";
+            QRY _Qry = new QRY();
+            DataTable _dt;
+            sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + donationId + "' ";
+
+            _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                urgency = _dt.Rows[0]["urgentStatus"].ToString();
+            }
+
+            return urgency;
+        }
+
         private string ConvertImgToBase64(IList<HttpPostedFile> postedFiles)
         {
             if (postedFiles == null || postedFiles.Count == 0)
@@ -442,5 +521,191 @@ namespace DonorConnect
 
             return string.Join(",", base64Files);
         }
+
+        protected void btnCancelDonation_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("OrgDonations.aspx");
+        }
+
+        protected void btnResubmitDonation_Click(object sender, EventArgs e)
+        {
+            
+            // save another data in db, status as pending approval
+            // in admin side let him compare the previous and current application
+            if (!chkFood.Checked && !chkClothing.Checked && !chkBooks.Checked && !chkElectronics.Checked
+                    && !chkFurniture.Checked && !chkHygiene.Checked && !chkMedical.Checked && !chkToys.Checked
+                    && !chkOther.Checked)
+            {
+                lblCategory.Style["display"] = "block";
+                return;
+            }
+
+
+            lblCategory.Visible = false;
+
+            List<string> categories = new List<string>();
+            List<string> specificItems = new List<string>();
+            List<string> quantities = new List<string>();
+
+            if (chkFood.Checked)
+            {
+                categories.Add("Food");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "" : $"({txtSpecificFood.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : $"({qtyFood.Text})");
+            }
+            if (chkClothing.Checked)
+            {
+                categories.Add("Clothing");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "" : $"({txtSpecificClothing.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : $"({qtyClothing.Text})");
+            }
+            if (chkBooks.Checked)
+            {
+                categories.Add("Books");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "" : $"({txtSpecificBooks.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : $"({qtyBooks.Text})");
+            }
+            if (chkElectronics.Checked)
+            {
+                categories.Add("Electronics");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "" : $"({txtSpecificElectronics.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : $"({qtyElectronics.Text})");
+            }
+            if (chkFurniture.Checked)
+            {
+                categories.Add("Furniture");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "" : $"({txtSpecificFurniture.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : $"({qtyFurniture.Text})");
+            }
+            if (chkHygiene.Checked)
+            {
+                categories.Add("Hygiene Products");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "" : $"({txtSpecificHygiene.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : $"({qtyHygiene.Text})");
+            }
+            if (chkMedical.Checked)
+            {
+                categories.Add("Medical Supplies");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "" : $"({txtSpecificMedical.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : $"({qtyMedical.Text})");
+            }
+            if (chkToys.Checked)
+            {
+                categories.Add("Toys");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "" : $"({txtSpecificToys.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : $"({qtyToys.Text})");
+            }
+            if (chkOther.Checked)
+            {
+                categories.Add(newCategory.Text);
+
+                // split the specific items and quantities by comma 
+                var otherSpecificItems = txtSpecificOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                var otherQuantities = qtyOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // add each specific item and quantity without brackets
+                specificItems.AddRange(otherSpecificItems.Select(item => item.Trim()));
+                quantities.AddRange(otherQuantities.Select(qty => qty.Trim()));
+            }
+
+            string itemCategories = "[" + string.Join(", ", categories) + "]";
+            string specificItemsString = "[" + string.Join(", ", specificItems) + "]";
+            string quantitiesString = "[" + string.Join(", ", quantities) + "]";
+
+
+            string sql, sqlupdate;
+            QRY _Qry = new QRY();
+            QRY _QryUpdate = new QRY();
+
+            string status = "Pending Approval";
+            string imgUpload = "";
+            string fileUpload = "";
+            string address = "";
+
+            if (donationImg.HasFiles)
+            {
+
+                imgUpload = ConvertImgToBase64(donationImg.PostedFiles);
+            }
+
+            else
+            {
+                imgUpload = "";
+            }
+
+            if (donationFile.HasFiles)
+            {
+                fileUpload = ConvertFileToBase64(donationFile.PostedFiles);
+            }
+
+            else
+            {
+                fileUpload = "";
+            }
+
+            string urgent = rbUrgentYes.Checked ? "Yes" : "No";
+            string donationId = Session["donationPublishId"].ToString();
+            string username = Session["username"].ToString();
+            string orgId = Session["orgId"].ToString();
+            string resubmit = "yes";
+
+            if (txtAddress.Text == username)
+            {
+                address = GetOrgAddress(username);
+            }
+            else if (txtAddress.Text != username)
+            {
+                address = txtAddress.Text;
+            }
+
+            sqlupdate = "UPDATE [donation_publish] SET " +             
+                              "resubmit = '" + resubmit + "' " +
+                               "WHERE donationPublishId = '" + donationId + "'";
+
+            _QryUpdate.ExecuteNonQuery(sqlupdate);
+
+            sql = "EXEC [create_org_item_donations] " +
+                            "@method = 'INSERT', " +
+                            "@donationPublishId = NULL, " +  //auto-generated in stored procedure
+                            "@title = '" + txtTitle.Text + "', " +
+                            "@peopleNeeded = '" + txtQuantity.Text + "', " +
+                            "@address = '" + address + "', " +
+                            "@desc = '" + txtDescription.Text + "', " +
+                            "@itemCategory = '" + itemCategories + "', " +
+                            "@specificItems = '" + specificItemsString + "', " +
+                            "@specificQty ='" + quantitiesString + "', " +
+                            "@timeRange = '" + txtTimeRange.Text + "', " +
+                            "@urgentStatus = '" + urgent + "', " +
+                            "@status = '" + status + "', " +
+                            "@donationImage = '" + imgUpload + "', " +
+                            "@donationAttch = '" + fileUpload + "', " +
+                            "@orgId = '" + orgId + "', " +
+                            "@adminId= NULL, " +
+                            "@created_on= NULL, " +
+                            "@restriction= '" + txtRestrictions.Text + "', " +
+                            "@state = '" + txtRegion.SelectedValue + "', " +
+                            "@closureReason = NULL, " +
+                            "@resubmit = '" + resubmit + "' ";
+
+            bool success = _Qry.ExecuteNonQuery(sql);
+            string sqlemail;
+            QRY _Qry2 = new QRY();
+
+            if (success)
+            {
+                sqlemail = "EXEC [admin_reminder_email] " +
+                            "@action = 'RESUBMIT', " +
+                            "@orgName = '" + username + "' ";
+                _Qry2.ExecuteNonQuery(sqlemail);
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation details resubmitted successfully! Your application is now pending for approval.',);", true);
+            }
+
+            else
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error resubmitting donation application. Please try again!');", true);
+            }
+        }
+        
     }
 }

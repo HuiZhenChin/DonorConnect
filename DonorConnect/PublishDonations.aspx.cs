@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Xml.Linq;
 
 namespace DonorConnect
 {
@@ -47,61 +48,69 @@ namespace DonorConnect
             if (chkFood.Checked)
             {
                 categories.Add("Food");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "" : txtSpecificFood.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : qtyFood.Text);
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "" : $"({txtSpecificFood.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : $"({qtyFood.Text})");
             }
             if (chkClothing.Checked)
             {
                 categories.Add("Clothing");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "" : txtSpecificClothing.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : qtyClothing.Text);
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "" : $"({txtSpecificClothing.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : $"({qtyClothing.Text})");
             }
             if (chkBooks.Checked)
             {
                 categories.Add("Books");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "" : txtSpecificBooks.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : qtyBooks.Text);
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "" : $"({txtSpecificBooks.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : $"({qtyBooks.Text})");
             }
             if (chkElectronics.Checked)
             {
                 categories.Add("Electronics");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "" : txtSpecificElectronics.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : qtyElectronics.Text);
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "" : $"({txtSpecificElectronics.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : $"({qtyElectronics.Text})");
             }
             if (chkFurniture.Checked)
             {
                 categories.Add("Furniture");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "" : txtSpecificFurniture.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : qtyFurniture.Text);
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "" : $"({txtSpecificFurniture.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : $"({qtyFurniture.Text})");
             }
             if (chkHygiene.Checked)
             {
                 categories.Add("Hygiene Products");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "" : txtSpecificHygiene.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : qtyHygiene.Text);
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "" : $"({txtSpecificHygiene.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : $"({qtyHygiene.Text})");
             }
             if (chkMedical.Checked)
             {
                 categories.Add("Medical Supplies");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "" : txtSpecificMedical.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : qtyMedical.Text);
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "" : $"({txtSpecificMedical.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : $"({qtyMedical.Text})");
             }
             if (chkToys.Checked)
             {
                 categories.Add("Toys");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "" : txtSpecificToys.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : qtyToys.Text);
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "" : $"({txtSpecificToys.Text})");
+                quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : $"({qtyToys.Text})");
             }
             if (chkOther.Checked)
             {
                 categories.Add(newCategory.Text);
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificOther.Text) ? "" : txtSpecificOther.Text);
-                quantities.Add(string.IsNullOrEmpty(qtyOther.Text) ? "" : qtyOther.Text);
+
+                // Split the specific items and quantities by comma for the "Other" category
+                var otherSpecificItems = txtSpecificOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                var otherQuantities = qtyOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // Add each specific item and quantity for the "Other" category without brackets
+                specificItems.AddRange(otherSpecificItems.Select(item => item.Trim()));
+                quantities.AddRange(otherQuantities.Select(qty => qty.Trim()));
             }
 
+            // Construct the strings for saving to the database
             string itemCategories = "[" + string.Join(", ", categories) + "]";
-            string specificItemsString = "[" + string.Join(", ", specificItems.Select(item => string.IsNullOrEmpty(item) ? "" : $"({item})")) + "]";
-            string quantitiesString = "[" + string.Join(", ", quantities.Select(qty => string.IsNullOrEmpty(qty) ? "" : $"({qty})")) + "]";
+            string specificItemsString = "[" + string.Join(", ", specificItems) + "]";
+            string quantitiesString = "[" + string.Join(", ", quantities) + "]";
+
 
             string sql;
             QRY _Qry = new QRY();
@@ -165,7 +174,9 @@ namespace DonorConnect
                             "@adminId= NULL, " +
                             "@created_on= NULL, " +
                             "@restriction= '" + txtRestrictions.Text + "', " +
-                            "@state = '" + txtRegion.SelectedValue + "' ";
+                            "@state = '" + txtRegion.SelectedValue + "', " +
+                            "@closureReason = NULL, " +
+                            "@resubmit = NULL " ;
 
             DataTable dt_check = _Qry.GetData(sql);
 
@@ -176,13 +187,35 @@ namespace DonorConnect
                 {
                     Session["message"] = message;
 
+                    // send email notify admin
+                    string sqlemail;
+                    QRY _Qry2 = new QRY();
+
+                    if (rbUrgentNo.Checked)
+                    {
+                        
+                        sqlemail = "EXEC [admin_reminder_email] " +
+                                 "@action = 'NEW NORMAL APPLICATION', " +
+                                 "@orgName = '" + username + "' ";
+                        _Qry2.ExecuteNonQuery(sqlemail);
+                    }
+
+                    if (rbUrgentYes.Checked)
+                    {
+                        
+                        sqlemail = "EXEC [admin_reminder_email] " +
+                                 "@action = 'NEW URGENT APPLICATION', " +
+                                 "@orgName = '" + username + "' ";
+                        _Qry2.ExecuteNonQuery(sqlemail);
+                    }
+
                     Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
                     clearText();
                 }
 
                 else
                 {
-                    // Show SweetAlert error dialog
+                    // show error dialog
                     ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Error in signing up!', 'error');", true);
                 }
 

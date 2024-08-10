@@ -9,7 +9,6 @@
     <title><%: Page.Title %> - My ASP.NET Application</title>
     <asp:ContentPlaceHolder ID="HeadContent" runat="server"></asp:ContentPlaceHolder>
 
-    <!-- Include Bootstrap CSS from CDN -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
     <%--<link href="~/Content/styles.css" rel="stylesheet" type="text/css" />--%>
 </head>
@@ -44,7 +43,7 @@
                     <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item"><a class="nav-link" runat="server" href="~/Home">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/SignUp">About</a></li>
+                        <li class="nav-item"><a class="nav-link" runat="server" href="~/SignUp">Item Donations</a></li>
                         <li class="nav-item"><a class="nav-link" runat="server" href="~/Login">Contact</a></li>
 
                         <% if (Session["role"] != null) { %>
