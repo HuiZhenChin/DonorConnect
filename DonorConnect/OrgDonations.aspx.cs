@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Net;
+using System.Web.UI.HtmlControls;
 
 namespace DonorConnect
 {
@@ -227,11 +228,6 @@ namespace DonorConnect
             BindGridView(selectedStatus, selectedUrgency);
         }
 
-        //protected void btnFilter_Click(object sender, EventArgs e)
-        //{
-        //    string selectedStatus = ddlStatus.SelectedValue;
-        //    BindGridView(selectedStatus);
-        //}
 
         protected void btnResubmit_Click(object sender, EventArgs e)
         {
@@ -381,9 +377,39 @@ namespace DonorConnect
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                // customize row data if needed
+          
+                var statusLabel = (HtmlGenericControl)e.Row.FindControl("statusLabel");
+                var status = DataBinder.Eval(e.Row.DataItem, "status").ToString();
+
+                // assign icon based on the status
+                string iconClass = GetStatusIcon(status);
+                string iconHtml = $"<i class=\"{iconClass}\"></i>";
+
+                if (statusLabel != null)
+                {
+                    statusLabel.InnerHtml =  status.ToUpper() + " " + iconHtml;
+                   
+                }
             }
         }
+
+        private string GetStatusIcon(string status)
+        {
+            switch (status.ToLower())
+            {
+                case "pending approval":
+                    return "fas fa-hourglass-half"; 
+                case "rejected":
+                    return "fas fa-times";
+                case "closed":
+                    return "fas fa-check"; 
+                case "opened":
+                    return "fas fa-handshake"; 
+                default:
+                    return "fas fa-question"; 
+            }
+        }
+
 
         protected void btnCreateDonation_Click(object sender, EventArgs e)
         {
@@ -408,5 +434,7 @@ namespace DonorConnect
 
             return id;
         }
+
+       
     }
 }

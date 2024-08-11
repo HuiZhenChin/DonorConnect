@@ -48,7 +48,7 @@ namespace DonorConnect
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnFilter;
+        protected global::System.Web.UI.WebControls.LinkButton btnFilter;
 
         /// <summary>
         /// lblNoResults control.

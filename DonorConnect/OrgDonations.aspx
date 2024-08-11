@@ -57,6 +57,23 @@
         .mr-2{
             width: 430px!important;
         }
+
+        .btn-sm {
+            padding: 8px 10px !important;
+            font-size: 16px !important;
+        }
+
+        .filter-btn {
+            background: none;
+            border: none;
+            padding-left: 20px;
+            margin: 0;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+
+
 </style>
 
 </asp:Content>
@@ -122,7 +139,10 @@
             </div>
 
             <div>
-                <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-secondary" OnClick="btnFilter_Click" />
+                <asp:LinkButton ID="btnFilter" runat="server" CssClass="filter-btn" OnClick="btnFilter_Click">
+                        <i class="fas fa-filter" style="color: black;"></i>
+                </asp:LinkButton>
+
             </div>
         </div>
 
@@ -165,49 +185,58 @@
         </div>
     </div>
 
+        <div class="mt-3">
+            <asp:GridView ID="gvDonations" runat="server" CssClass="table table-striped" AutoGenerateColumns="False" OnRowDataBound="gvDonations_RowDataBound">
+                <Columns>
+                    <asp:TemplateField HeaderText="Donation Details">
+                        <ItemTemplate>
+                            <!-- Donation Box -->
+                            <div class='<%# Eval("urgentStatus").ToString().ToLower() == "yes" ? "donation-row urgent" : "donation-row" %>'>
 
-<div class="mt-3">
-    <asp:GridView ID="gvDonations" runat="server" CssClass="table table-striped" AutoGenerateColumns="False" OnRowDataBound="gvDonations_RowDataBound">
-        <Columns>
-            <asp:TemplateField HeaderText="Donation Details">
-                <ItemTemplate>
-                    <div class='<%# Eval("urgentStatus").ToString().ToLower() == "yes" ? "donation-row urgent" : "donation-row" %>'>
-                        <strong>Urgent?</strong> <%# Eval("urgentStatus") %><br />
-                        <strong>ID:</strong> <%# Eval("donationPublishId") %><br />
-                        <strong>Title:</strong> <%# Eval("title") %><br />
-                        <strong>People Needed:</strong> <%# Eval("peopleNeeded") %><br />
-                        <strong>Description:</strong> <%# Eval("description") %><br />
-                        <strong>Restrictions:</strong>
-                        <%# String.IsNullOrEmpty(Eval("restriction") as string) ? "No restriction submitted" : Eval("restriction") %><br />
-                        <strong>Item Details:</strong><br />
-                        <%# Eval("itemDetails") %><br />
-                        <strong>Address:</strong> <%# Eval("address") %><br />
-                        <strong>State:</strong> <%# Eval("donationState") %><br />
-                        <strong>Date Published:</strong> <%# Eval("created_on") %><br />
-                        <strong>Images:</strong><br />
-                        <%# String.IsNullOrEmpty(Eval("donationImages") as string) ? "No image submitted" : Eval("donationImages") %><br />
-                        <strong>Files:</strong><br />
-                        <%# String.IsNullOrEmpty(Eval("donationFiles") as string) ? "No file submitted" : Eval("donationFiles") %><br />
+                                <!-- Status Display -->
+                                <div id="statusLabel" runat="server" class="status-lbl"
+                                    style="position: absolute; top: 10px; right: 10px; padding: 5px; border-radius: 5px; color: black; text-decoration: underline; font-weight: bold; text-transform: uppercase;">
+                                    <%# Eval("status") %>
+                                </div>
 
-                       <div class="text-right mt-2">
-                            <!-- Edit Button -->
-                            <asp:LinkButton ID="btnEdit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Edit" CssClass="btn btn-info btn-sm" Visible='<%# Eval("status").ToString() == "Pending Approval" || Eval("status").ToString() == "Opened" %>' OnClick="btnEdit_Click" />
+                                <strong>Urgent?</strong> <%# Eval("urgentStatus") %><br />
+                                <strong>ID:</strong> <%# Eval("donationPublishId") %><br />
+                                <strong>Title:</strong> <%# Eval("title") %><br />
+                                <strong>People Needed:</strong> <%# Eval("peopleNeeded") %><br />
+                                <strong>Description:</strong> <%# Eval("description") %><br />
+                                <strong>Restrictions:</strong>
+                                <%# String.IsNullOrEmpty(Eval("restriction") as string) ? "No restriction submitted" : Eval("restriction") %><br />
+                                <strong>Item Details:</strong><br />
+                                <%# Eval("itemDetails") %><br />
+                                <strong>Address:</strong> <%# Eval("address") %><br />
+                                <strong>State:</strong> <%# Eval("donationState") %><br />
+                                <strong>Date Published:</strong> <%# Eval("created_on") %><br />
+                                <strong>Images:</strong><br />
+                                <%# String.IsNullOrEmpty(Eval("donationImages") as string) ? "No image submitted" : Eval("donationImages") %><br />
+                                <strong>Files:</strong><br />
+                                <%# String.IsNullOrEmpty(Eval("donationFiles") as string) ? "No file submitted" : Eval("donationFiles") %><br />
 
-                            <!-- Resubmit Button --> 
-                            <asp:LinkButton ID="btnResubmit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Resubmit" CssClass="btn btn-info btn-sm" Visible='<%# Eval("status").ToString() == "Rejected" %>' OnClick="btnResubmit_Click" />
+                                <div class="text-right mt-2">
+                                    <!-- Edit Button -->
+                                    <asp:LinkButton ID="btnEdit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Edit" CssClass="btn btn-info btn-sm" Visible='<%# Eval("status").ToString() == "Pending Approval" || Eval("status").ToString() == "Opened" %>' OnClick="btnEdit_Click" />
 
-                            <!-- Close Button -->
-                            <asp:LinkButton ID="btnClose" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Close" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Opened" %>' OnClientClick='<%# "openClosureModal(\"" + Eval("donationPublishId") + "\"); return false;" %>'/>
+                                    <!-- Resubmit Button -->
+                                    <asp:LinkButton ID="btnResubmit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Resubmit" CssClass="btn btn-info btn-sm" Visible='<%# Eval("status").ToString() == "Rejected" %>' OnClick="btnResubmit_Click" />
 
-                           <!-- Cancel Application Button -->
-                            <asp:LinkButton ID="btnCancel" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Cancel" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Pending Approval" %>' OnClick="btnCancel_Click"/>
-                        </div>
-                    </div>
-                </ItemTemplate>
-            </asp:TemplateField>
-        </Columns>
-    </asp:GridView>
-</div>
+                                    <!-- Close Button -->
+                                    <asp:LinkButton ID="btnClose" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Close" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Opened" %>' OnClientClick='<%# "openClosureModal(\"" + Eval("donationPublishId") + "\"); return false;" %>' />
+
+                                    <!-- Cancel Application Button -->
+                                    <asp:LinkButton ID="btnCancel" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Cancel" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Pending Approval" %>' OnClick="btnCancel_Click" />
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                </Columns>
+            </asp:GridView>
+        </div>
+
+
 
     </div>
     <script>
