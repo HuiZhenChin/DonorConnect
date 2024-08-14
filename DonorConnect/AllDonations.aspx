@@ -7,7 +7,12 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
 
     <style>
   
@@ -58,17 +63,207 @@
          border-color: dimgray;
      }
 
+     .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+    .dropdown-toggle {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .dropdown-menu .dropdown-submenu {
+        position: relative;
+    }
+
+    .dropdown-menu .dropdown-item {
+        color: #000;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown-menu .dropdown-item:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Submenu styles */
+    .submenu {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: 0;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    }
+
+    .dropdown-submenu:hover .submenu {
+        display: block;
+    }
+
+    .submenu-item {
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        color: #000;
+    }
+
+    .submenu-item:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Show the dropdown menu on hover */
+    .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+    /* Container for category columns */
+    .category-container {
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 10px; 
+        padding: 10px; 
+    }
+
+    /* Style for each category column */
+    .category-column {
+        flex: 1 1 200px; 
+        box-sizing: border-box;
+        margin: 10px;
+        border: 1px solid #ccc; 
+        padding: 10px; 
+    }
+
+    /* Style for checkboxes in category columns */
+    .category-checkbox {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    /* Style for items within each category */
+    .item-column {
+        margin-bottom: 5px;
+    }
+
+    /* Style for checkboxes in item columns */
+    .item-checkbox {
+        display: block;
+    }
+
+    /* Container for state cards */
+    .state-container {
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 10px; 
+        padding: 10px; 
+    }
+
+    /* Style for each state card */
+    .state-card {
+        flex: 1 1 150px; 
+        box-sizing: border-box;
+        margin: 10px;
+        border: 1px solid #ccc; 
+        padding: 10px;
+    }
+
+    /* Style for checkboxes in state cards */
+    .state-checkbox {
+        display: block;
+        margin: 0;
+    }
+
+
     </style>
 
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+    <div class="filter-bar d-flex align-items-center mb-4">
+
+        <!-- Search Input -->
+        <asp:TextBox ID="txtSearchKeyword" runat="server" CssClass="form-control" Placeholder="Search by keyword..." AutoPostBack="True" ></asp:TextBox>
+
+        <!-- Categories Button -->
+        <asp:Button ID="btnShowCategories" runat="server" Text="Categories" CssClass="btn btn-primary ml-3" OnClick="LoadCategories" />
+
+         <!-- States Button -->
+        <asp:Button ID="btnShowStates" runat="server" Text="States" CssClass="btn btn-primary ml-3" OnClick="LoadStates" />
+
+    </div>
+
+<!-- Category and Its Specific Items -->
+<div class="category-container">
+    <asp:Repeater ID="rptCategories" runat="server">
+        <ItemTemplate>
+            <div class="category-column">
+                <asp:CheckBox ID="chkCategory" runat="server" Text='<%# Container.DataItem %>'
+                    OnCheckedChanged="CategorySelected" AutoPostBack="True" CssClass="category-checkbox" />
+                <asp:Repeater ID="rptItems" runat="server">
+                    <ItemTemplate>
+                        <div class="item-column">
+                            <asp:CheckBox ID="chkItem" runat="server" Text='<%# Eval("Item") %>'
+                                AutoPostBack="True" CssClass="item-checkbox" />
+                            <asp:HiddenField ID="hfCategory" runat="server" Value='<%# Eval("Category") %>' />
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </div>
+        </ItemTemplate>
+    </asp:Repeater>
+</div>
+
+    <!-- States Repeater -->
+<div class="state-container">
+    <asp:Repeater ID="rptStates" runat="server">
+        <ItemTemplate>
+            <div class="state-card">
+                <asp:CheckBox ID="chkState" runat="server" Text='<%# Container.DataItem %>' 
+                    OnCheckedChanged="StateSelected" AutoPostBack="True" CssClass="state-checkbox" />
+            </div>
+        </ItemTemplate>
+    </asp:Repeater>
+</div>
+
+ 
+    <asp:HiddenField ID="hfStateName" runat="server" />
+
+    <asp:HiddenField ID="hfCategoryName" runat="server" />
+
+
+    <asp:Button ID="btnFilterDonations" runat="server" Text="Filter Donations" OnClick="FilterDonations" CssClass="btn btn-primary" />
+
+
     <asp:GridView ID="gvAllDonations" runat="server" AutoGenerateColumns="False" CssClass="centered-grid" DataKeyNames="donationPublishId" GridLines="None" BorderStyle="None" CellPadding="0">
         <Columns>
             <asp:TemplateField>
                 <ItemTemplate>
                     <div class="row">
-                        <div class="col-md-8">
+                        <%-- Profile Picture and Organization Name --%>
+                        <div class="col-md-3 d-flex">
+                            <img src='<%# String.IsNullOrEmpty(Eval("orgProfilePic") as string) ? "/Image/default_picture.jpg" : "data:image/png;base64," + Eval("orgProfilePic") %>'
+                                 alt="Org Profile Picture"
+                                 style="width: 100px; height: 100px; border-radius: 50%; border: 1px solid black;" />
+                            <strong class="ml-2"><%# Eval("orgName") %></strong>
+                        </div>
+
+                        <%-- Card Body with Donation Details --%>
+                        <div class="col-md-9">
                             <div class="card mb-4 shadow-sm card-custom" style="width: 100%!important;">
                                 <div class="card-body" style="width: 100%!important;">
                                     <div class="row">
@@ -119,6 +314,7 @@
                                             <asp:Label ID="lblItemCategory" runat="server" Text='<%# GetItemCategoryWithIcon(Eval("itemDetails")) %>' />
                                             <div class="row mb-3">
                                                 <div class="col-12 text-right position-absolute" style="bottom: 20px; right: 10px;">
+                                                    <i class="fas fa-heart " style="font-size: 24px; cursor: pointer; padding-right: 20px;" title="Save to Favorites" ></i>
                                                     <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" />
                                                 </div>
                                             </div>
@@ -130,17 +326,18 @@
                     </div>
                 </ItemTemplate>
             </asp:TemplateField>
-            <asp:TemplateField>
-                <ItemTemplate>
-                    <div class="d-flex align-items-center justify-content-center">
-                        <img src='<%# String.IsNullOrEmpty(Eval("orgProfilePic") as string) ? "/Image/default_picture.jpg" : "data:image/png;base64," + Eval("orgProfilePic") %>'
-                             alt="Org Profile Picture"
-                             style="width: 100px; height: 100px; border-radius: 50%; border: 1px solid black; margin-right: 10px;" />
-                        <strong><%# Eval("orgName") %></strong>
-                    </div>
-                </ItemTemplate>
-            </asp:TemplateField>
         </Columns>
     </asp:GridView>
+
+    <script>
+       
+        $(document).ready(function () {
+            
+            $('#filterButton').dropdown();
+        });
+
+     
+    </script>
 </asp:Content>
+
 

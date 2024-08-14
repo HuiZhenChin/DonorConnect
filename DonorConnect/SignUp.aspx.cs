@@ -195,8 +195,12 @@ namespace DonorConnect
                             Session["OrgPassword"] = orgPassword.Text;
                             Session["OrgRegion"] = orgRegion.SelectedValue;
 
-                            string base64BusinessLicense = ConvertToBase64(orgLicense.PostedFile);
-                            Session["OrgLicense"] = base64BusinessLicense;
+                            if (orgLicense.HasFiles)
+                            {
+                                string base64BusinessLicense = ConvertToBase64(orgLicense.PostedFiles);
+                                Session["OrgLicense"] = base64BusinessLicense;
+                            }
+                            
 
                         }
                         break;
@@ -292,11 +296,19 @@ namespace DonorConnect
                             Session["RiderPassword"] = riderPassword.Text;
 
                             // Save the files in session (e.g., as byte arrays)
-                            string base64DrvingLicense = ConvertToBase64(riderCarLicense.PostedFile);
-                            Session["RiderCarLicense"] = base64DrvingLicense;
+                            if (riderCarLicense.HasFiles)
+                            {
+                                string base64DrvingLicense = ConvertToBase64(riderCarLicense.PostedFiles);
+                                Session["RiderCarLicense"] = base64DrvingLicense;
 
-                            string base64FacePic = ConvertToBase64(riderFacePhoto.PostedFile);
-                            Session["RiderFacePhoto"] = base64FacePic;
+                            } 
+                            
+                            if (riderFacePhoto.HasFiles)
+                            {
+                                string base64FacePic = ConvertToBase64(riderFacePhoto.PostedFiles);
+                                Session["RiderFacePhoto"] = base64FacePic;
+                            }
+                            
 
                         }
                         break;
@@ -339,15 +351,38 @@ namespace DonorConnect
         }
 
 
-        private string ConvertToBase64(HttpPostedFile postedFile)
+        //private string ConvertToBase64(HttpPostedFile postedFile)
+        //{
+        //    using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+        //    {
+        //        postedFile.InputStream.CopyTo(ms);
+        //        byte[] bytes = ms.ToArray();
+        //        return Convert.ToBase64String(bytes);
+        //    }
+
+        //}
+
+        private string ConvertToBase64 (IList<HttpPostedFile> postedFiles)
         {
-            using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+            if (postedFiles == null || postedFiles.Count == 0)
             {
-                postedFile.InputStream.CopyTo(ms);
-                byte[] bytes = ms.ToArray();
-                return Convert.ToBase64String(bytes);
+                return string.Empty;
             }
 
+            List<string> base64Files = new List<string>();
+
+            foreach (HttpPostedFile uploadedFile in postedFiles)
+            {
+                using (BinaryReader reader = new BinaryReader(uploadedFile.InputStream))
+                {
+                    byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
+                    string base64String = Convert.ToBase64String(fileBytes);
+                    string fileName = uploadedFile.FileName;
+                    base64Files.Add($"{fileName}:{base64String}");
+                }
+            }
+
+            return string.Join(",", base64Files);
         }
 
 

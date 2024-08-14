@@ -154,17 +154,19 @@
                                     <div class="section-label">Business License</div>
                                     <div class="form-outline mb-4">
                                         <div class="input-with-icon d-flex align-items-center">
-                                            <asp:FileUpload ID="orgLicense" CssClass="form-control form-control-lg" runat="server" AllowMultiple="true" />
+                                            <asp:FileUpload ID="orgLicense" CssClass="form-control form-control-lg" runat="server" AllowMultiple="true" OnChange="validateAttachmentUpload(this)"/>
                                             <div id="showSampleBusinessLicense" style="cursor: pointer; margin-left: 10px;" data-toggle="modal" data-target="#sampleBusinessLicenseModal">
                                                 <i class="fas fa-question-circle fa-lg" style="color: #6E747A;"></i>
                                             </div>
                                         </div>
                                         <asp:Label CssClass="form-label" AssociatedControlID="riderCarLicense" runat="server">Upload Business License (SSM Borang E)*</asp:Label>
-                                        
+                                        <small class="form-text text-muted">
+                                            <em>Accepted Formats: .jpg, .jpeg, .png, .pdf Maximum 5 attachments.</em>
+                                        </small>
+                                        <span id="attchUploadError" class="text-danger" style="display: none;">You have uploaded files in not acceptable format or more than 5 attachments. Note that you can upload maximum 5 attachments in .jpg, .jpeg, .png or .pdf formats.</span>
                                     </div>
-                                        <div class="guidelines">
-                                            <p>Accepted formats: .jpg, .jpeg, .png, .pdf</p>
-                                        </div>
+                                       
+                                    
                                     <asp:label ID="lblOrgLicense" runat="server" CssClass="text-danger"/>
                                     <div></div>
                                     <asp:label ID="lblImgTypeOrgLicense" runat="server" CssClass="text-danger"/>
@@ -230,29 +232,31 @@
                                     </div>
                                     <div class="form-outline mb-4">
                                         <div class="input-with-icon d-flex align-items-center">
-                                            <asp:FileUpload ID="riderCarLicense" CssClass="form-control form-control-lg" runat="server" />
+                                            <asp:FileUpload ID="riderCarLicense" CssClass="form-control form-control-lg" runat="server" AllowMultiple="true" OnChange="validateAttachmentUpload2(this)"/>
                                             <div id="showSampleImage" style="cursor: pointer; margin-left: 10px;" data-toggle="modal" data-target="#sampleImageModal">
                                                 <i class="fas fa-question-circle fa-lg" style="color: #6E747A;"></i>
                                             </div>
                                         </div>
                                         <asp:Label CssClass="form-label" AssociatedControlID="riderCarLicense" runat="server">Upload Driving License*</asp:Label>
-                                        <div class="guidelines">
-                                            <p>Accepted formats: .jpg, .jpeg, .png (only image file)</p> 
-                                        </div>
+                                        <small class="form-text text-muted">
+                                            <em>Accepted Formats: .jpg, .jpeg, .png, .pdf Maximum 5 attachments.</em>
+                                        </small>
+                                        <span id="fileUploadError2" class="text-danger" style="display: none;">You have uploaded files in not acceptable format or more than 5 attachments. Note that you can upload maximum 5 attachments in .jpg, .jpeg, .png or .pdf formats.</span>
                                         <asp:label ID="lblRiderCarLicense" runat="server" CssClass="text-danger"/>
                                         <asp:label ID="lblImgTypeCarLicense" runat="server" CssClass="text-danger"/>
                                     </div>
                                     <div class="form-outline mb-4">
                                         <div class="input-with-icon d-flex align-items-center">
-                                            <asp:FileUpload ID="riderFacePhoto" CssClass="form-control form-control-lg" runat="server" />
+                                            <asp:FileUpload ID="riderFacePhoto" CssClass="form-control form-control-lg" runat="server" OnChange="validateImageUpload(this)"/>
                                             <div id="showSampleFacePhoto" style="cursor: pointer; margin-left: 10px;" data-toggle="modal" data-target="#sampleImageModal2">
                                                 <i class="fas fa-question-circle fa-lg" style="color: #6E747A;"></i>
                                             </div>
                                         </div>
                                         <asp:Label CssClass="form-label" AssociatedControlID="riderFacePhoto" runat="server">Upload Face Photo*</asp:Label>
-                                        <div class="guidelines">
-                                            <p>Accepted format: .jpg, .jpeg, .png (only image file)</p>
-                                        </div>
+                                        <small class="form-text text-muted">
+                                            <em>Accepted Formats: .jpg, .jpeg, .png. Maximum 1 image.</em>
+                                        </small>
+                                        <span id="imageUploadError" class="text-danger" style="display: none;">You have uploaded photo in not acceptable format or more than 1 photo. Note that you can upload one image in .jpg, .jpeg, or .png formats.</span>
                                         <asp:label ID="lblRiderFacePhoto" runat="server" CssClass="text-danger"/>
                                         <asp:label ID="lblImgTypeFacePhoto" runat="server" CssClass="text-danger"/>
                                     </div>
@@ -379,7 +383,78 @@
         window.onload = function () {
             var role = document.getElementById('<%= selectedRole.ClientID %>').value ;
              selectRole(role);
-         };
+        };
+
+        function validateImageUpload(fileInput) {
+            var allowedExtensions = ['jpg', 'jpeg', 'png'];
+            var errorMsg = document.getElementById('imageUploadError');
+            var files = fileInput.files;
+            var isValid = true;
+
+            if (files.length > 5) {
+                isValid = false;
+            } else {
+                for (var i = 0; i < files.length; i++) {
+                    var fileExtension = files[i].name.split('.').pop().toLowerCase();
+                    if (!allowedExtensions.includes(fileExtension)) {
+                        isValid = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!isValid) {
+                errorMsg.style.display = 'block';
+                fileInput.value = ''; // clear the file input
+            } else {
+                errorMsg.style.display = 'none';
+            }
+        }
+
+        function validateAttachmentUpload(fileInput) {
+            var allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg'];
+            var errorMsg = document.getElementById('attchUploadError');
+            var files = fileInput.files;
+            var isValid = true;
+
+            for (var i = 0; i < files.length; i++) {
+                var fileExtension = files[i].name.split('.').pop().toLowerCase();
+                if (!allowedExtensions.includes(fileExtension)) {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (!isValid) {
+                errorMsg.style.display = 'block';
+                fileInput.value = ''; // clear the file input
+            } else {
+                errorMsg.style.display = 'none';
+            }
+        }
+
+        function validateAttachmentUpload2(fileInput) {
+            var allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg'];
+            var errorMsg = document.getElementById('fileUploadError2');
+            var files = fileInput.files;
+            var isValid = true;
+
+            for (var i = 0; i < files.length; i++) {
+                var fileExtension = files[i].name.split('.').pop().toLowerCase();
+                if (!allowedExtensions.includes(fileExtension)) {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (!isValid) {
+                errorMsg.style.display = 'block';
+                fileInput.value = ''; // clear the file input
+            } else {
+                errorMsg.style.display = 'none';
+            }
+        }
+
 
 
     </script>

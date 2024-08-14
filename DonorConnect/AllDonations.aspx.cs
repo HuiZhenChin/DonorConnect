@@ -1,7 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -18,10 +23,18 @@ namespace DonorConnect
             if (!IsPostBack)
             {
                 BindGridView();
+                
             }
         }
 
-        private void BindGridView()
+        public class ItemCategory
+        {
+            public string Item { get; set; }
+            public string Category { get; set; }
+        }
+
+
+        private void BindGridView(string keyword = "", string selectedCategory = "", string selectedLocation = "")
         {
             QRY _Qry = new QRY();
             DataTable _dt = new DataTable();
@@ -31,6 +44,21 @@ namespace DonorConnect
             string strSQL = @"SELECT *, donationPublishId, urgentStatus, title, peopleNeeded, description, restriction, itemCategory, 
                     specificItemsForCategory, specificQtyForCategory, address, donationState, created_on, donationImage, donationAttch, orgId
                  FROM [donation_publish] WHERE status = '" + status + "'";
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                strSQL += " AND (title LIKE '%" + keyword + "%' OR description LIKE '%" + keyword + "%')";
+            }
+
+            if (!string.IsNullOrWhiteSpace(selectedCategory))
+            {
+                strSQL += " AND itemCategory LIKE '%" + selectedCategory + "%'";
+            }
+
+            if (!string.IsNullOrWhiteSpace(selectedLocation))
+            {
+                strSQL += " AND donationState = '" + selectedLocation + "'";
+            }
 
             _dt = _Qry.GetData(strSQL);
             if (_dt.Rows.Count > 0)
@@ -85,8 +113,8 @@ namespace DonorConnect
                     }
 
                     string orgId = row["orgId"].ToString();
-                    string profilePic = GetOrgProfilePic(orgId);
-                    string orgName= GetOrgName(orgId);
+                    string profilePic = GetOrgProfilePic(orgId) ?? "/Image/default_picture.jpg";
+                    string orgName = GetOrgName(orgId);
 
                     DataRow newRow = processedTable.NewRow();
                     newRow["donationPublishId"] = row["donationPublishId"];
@@ -325,6 +353,356 @@ namespace DonorConnect
 
             return name;
         }
+
+        protected void LoadCategories(object sender, EventArgs e)
+        {
+            var categories = GetCategoriesFromDatabase();
+
+            // bind categories
+            rptCategories.DataSource = categories;
+            rptCategories.DataBind();
+
+           
+            rptCategories.Visible = true;
+        }
+
+
+        protected void CategorySelected(object sender, EventArgs e)
+        {
+            foreach (RepeaterItem categoryItem in rptCategories.Items)
+            {
+                // find the checkbox in the current category 
+                var chkCategory = categoryItem.FindControl("chkCategory") as CheckBox;
+                if (chkCategory != null && chkCategory.Checked)
+                {
+                    // get the category name
+                    var category = chkCategory.Text;
+
+                    // find the nested rptItems 
+                    var gvItems = categoryItem.FindControl("rptItems") as Repeater;
+                    if (gvItems != null)
+                    {
+                        // retrieve items for the selected category
+                        var itemsByCategory = GetItemsByCategories(new List<string> { category });
+
+                        // create a list of ItemCategory objects for binding
+                        var itemCategoryList = new List<ItemCategory>();
+                        if (itemsByCategory.ContainsKey(category))
+                        {
+                            foreach (var item in itemsByCategory[category])
+                            {
+                                itemCategoryList.Add(new ItemCategory { Item = item, Category = category });
+                            }
+                        }
+
+                        gvItems.DataSource = itemCategoryList;
+                        gvItems.DataBind();
+
+                        
+                        gvItems.Visible = true;
+                    }
+                }
+            }
+        }
+
+
+
+        private Dictionary<string, List<string>> GetItemsByCategories(List<string> categories)
+        {
+            var itemsByCategory = new Dictionary<string, List<string>>();
+
+            if (categories.Count == 0)
+                return itemsByCategory;
+
+            // retrieve items for the selected categories
+            string categoryList = string.Join("','", categories.Select(c => c.Replace("'", "''"))); 
+            string query = $"SELECT categoryName, specificItems FROM itemCategory WHERE categoryName IN ('{categoryList}')";
+
+            QRY _Qry = new QRY();
+            DataTable dt = _Qry.GetData(query);
+
+            
+            foreach (DataRow row in dt.Rows)
+            {
+                string categoryName = row["categoryName"].ToString();
+                string itemsString = row["specificItems"].ToString();
+
+                
+                var items = itemsString.Split(',').Select(i => i.Trim()).ToList();
+
+                // category is added to the dictionary with its items
+                if (!itemsByCategory.ContainsKey(categoryName))
+                {
+                    itemsByCategory[categoryName] = items;
+                }
+                else
+                {
+                    // if the category already exists, add new items to it (if not already present)
+                    foreach (var item in items)
+                    {
+                        if (!itemsByCategory[categoryName].Contains(item))
+                        {
+                            itemsByCategory[categoryName].Add(item);
+                        }
+                    }
+                }
+            }
+
+            return itemsByCategory;
+        }
+
+
+        private List<string> GetCategoriesFromDatabase()
+        {
+            // retrieve categories from the database
+            string sql = "SELECT categoryName FROM itemCategory";
+
+            var categories = new List<string>();
+            QRY _Qry = new QRY();
+            DataTable _dt;
+
+            _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                foreach (DataRow row in _dt.Rows)
+                {
+                    categories.Add(row["categoryName"].ToString());
+                }
+            }
+
+            return categories;
+        }
+
+
+
+        protected void FilterDonations(object sender, EventArgs e)
+        {
+            var selectedCategories = new List<string>();
+            var selectedItemsDictionary = new Dictionary<string, List<string>>();
+            var selectedStates = hfStateName.Value.Split(',');
+
+            // collect selected categories and items
+            foreach (RepeaterItem categoryItem in rptCategories.Items)
+            {
+                var chkCategory = categoryItem.FindControl("chkCategory") as CheckBox;
+                var rptItems = categoryItem.FindControl("rptItems") as Repeater; 
+
+                if (chkCategory != null && chkCategory.Checked)
+                {
+                    // add the selected category to the list
+                    selectedCategories.Add(chkCategory.Text);
+
+                  
+                    if (rptItems != null)
+                    {
+                        foreach (RepeaterItem item in rptItems.Items)
+                        {
+                            var chkItem = item.FindControl("chkItem") as CheckBox;
+                            if (chkItem != null && chkItem.Checked)
+                            {
+                                var hiddenField = item.FindControl("hfCategory") as HiddenField;
+                                if (hiddenField != null)
+                                {
+                                    var category = hiddenField.Value;
+                                    if (!selectedItemsDictionary.ContainsKey(category))
+                                    {
+                                        selectedItemsDictionary[category] = new List<string>();
+                                    }
+                                    selectedItemsDictionary[category].Add(chkItem.Text);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            // create category and items strings for filtering
+               var categoryString = string.Join(",", selectedCategories);
+               var itemStringList = new List<string>();
+            foreach (var category in selectedCategories)
+            {
+                if (selectedItemsDictionary.ContainsKey(category))
+                {
+                    var items = selectedItemsDictionary[category];
+                    if (items.Count > 0)
+                    {
+                        itemStringList.Add($"({string.Join(",", items)})");
+                    }
+                    else
+                    {
+                        // retrieve all items for the category from the database
+                        var allItems = GetAllItemsForCategory(category); 
+
+                        if (allItems.Count > 0)
+                        {
+                            itemStringList.Add($"({string.Join(",", allItems)}, null)");
+                        }
+                        else
+                        {
+                            itemStringList.Add("null");
+                        }
+                    }
+                }
+                else
+                {
+                    // retrieve all items for the category from the database
+                    var allItems = GetAllItemsForCategory(category); 
+
+                    if (allItems.Count > 0)
+                    {
+                        itemStringList.Add($"({string.Join(",", allItems)}, null)");
+                    }
+                    else
+                    {
+                        itemStringList.Add("null");
+                    }
+                }
+            }
+
+
+            string specificItemsString = string.Join(",", itemStringList);
+            string states = string.Join(",", selectedStates);
+
+            // call the filtered donations method
+            DataTable filteredDonations = GetFilteredDonations(categoryString, specificItemsString, states);
+
+            // add these columns, as they are from different table in database
+            filteredDonations.Columns.Add("orgProfilePic", typeof(string));
+            filteredDonations.Columns.Add("orgName", typeof(string));
+            filteredDonations.Columns.Add("itemDetails", typeof(string));
+            filteredDonations.Columns.Add("donationImages", typeof(string));
+            filteredDonations.Columns.Add("donationFiles", typeof(string));
+
+            // populate the new columns
+            foreach (DataRow row in filteredDonations.Rows)
+            {
+                string orgId = row["orgId"].ToString();
+                row["orgProfilePic"] = GetOrgProfilePic(orgId);
+                row["orgName"] = GetOrgName(orgId);
+
+                
+                string[] itemCategories = row["itemCategory"].ToString().Trim('[', ']').Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] specificItems = SplitItems(row["specificItemsForCategory"].ToString().Trim('[', ']'));
+                string[] specificQty = SplitItems(row["specificQtyForCategory"].ToString().Trim('[', ']'));
+
+                StringBuilder itemDetailsBuilder = new StringBuilder();
+
+                for (int i = 0; i < itemCategories.Length; i++)
+                {
+                    itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + itemCategories[i].Trim() + "):<br />");
+
+                    if (i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]))
+                    {
+                        itemDetailsBuilder.Append("Specific Items Needed: " + specificItems[i].Trim('(', ')') + "<br />");
+                    }
+                    else
+                    {
+                        itemDetailsBuilder.Append("Specific Items Needed: Any<br />");
+                    }
+
+                    if (i < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[i]))
+                    {
+                        itemDetailsBuilder.Append("Specific Quantity Needed: " + specificQty[i].Trim('(', ')') + "<br />");
+                    }
+                    else
+                    {
+                        itemDetailsBuilder.Append("Specific Quantity Needed: Not stated<br />");
+                    }
+
+                    itemDetailsBuilder.Append("<br />");
+                }
+
+                row["itemDetails"] = itemDetailsBuilder.ToString();
+                row["donationImages"] = ProcessImages(row["donationImage"].ToString());
+                row["donationFiles"] = ProcessFiles(row["donationAttch"].ToString());
+            }
+
+            
+            gvAllDonations.DataSource = filteredDonations;
+            gvAllDonations.DataBind();
+        }
+
+
+        private List<string> GetAllItemsForCategory(string category)
+        {
+            var allItems = new List<string>();
+          
+            category = category.Replace("'", "''"); 
+
+           
+            string sql = $"SELECT specificItems FROM itemCategory WHERE categoryName = '{category}'";
+
+            
+            QRY _Qry = new QRY();
+            DataTable _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                foreach (DataRow row in _dt.Rows)
+                {
+                    
+                    var items = row["specificItems"].ToString();
+                    if (!string.IsNullOrEmpty(items))
+                    {
+                        var itemList = items.Split(',').Select(item => item.Trim()).ToList();
+                        allItems.AddRange(itemList);
+                    }
+                }
+            }
+
+            return allItems;
+        }
+
+
+
+        private DataTable GetFilteredDonations(string categoryName, string specificItems, string state)
+        {
+            
+            string sql = "EXEC [filter_donations] " +
+                           "@categoryName = '" + categoryName + "', " +
+                           "@specificItems = '" + specificItems + "', " +
+                           "@state = '" + state + "' ";
+           
+            QRY _Qry = new QRY();
+            DataTable dt = _Qry.GetData(sql);
+
+
+            return dt;
+        }
+
+        protected void LoadStates(object sender, EventArgs e)
+        {
+            // load the list of states
+            rptStates.DataSource = new List<string>
+            {
+                "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan",
+                "Pahang", "Penang", "Perak", "Perlis", "Sabah", "Sarawak",
+                "Selangor", "Terengganu"
+            };
+            rptStates.DataBind();
+            rptStates.Visible = true;
+        }
+
+        protected void StateSelected(object sender, EventArgs e)
+        {
+            // retrieve selected states
+            var selectedStates = new List<string>();
+            foreach (RepeaterItem state in rptStates.Items)
+            {
+                var chkState = (CheckBox)state.FindControl("chkState");
+                if (chkState != null && chkState.Checked)
+                {
+                    selectedStates.Add(chkState.Text);
+                }
+            }
+
+            // store selected states in hidden field 
+            hfStateName.Value = string.Join(",", selectedStates);
+        }
+
+
 
     }
 }
