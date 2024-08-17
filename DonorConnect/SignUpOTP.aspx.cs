@@ -177,6 +177,7 @@ namespace DonorConnect
                 string password = Session["DonorPassword"].ToString();
                 string email = Session["EmailAddress"].ToString();
                 string username = Session["Username"].ToString();
+                string status = "Active";
 
                 // hash the password 
                 string hashedPassword = HashPassword(password);
@@ -190,9 +191,9 @@ namespace DonorConnect
                                    "@donorContactNumber = '" + contactNumber + "', " +
                                    "@donorHashPassword = '" + hashedPassword + "', " +
                                    "@donorNewHashPassword = NULL, " +
-                                   "@donorAddress1 = NULL," +
-                                   "@donorAddress2 = NULL, " +
-                                   "@donorProfilePicBase64 = NULL ";
+                                   "@donorAddress1 = NULL," +    
+                                   "@donorProfilePicBase64 = NULL, " +
+                                   "@status= '" + status + "' ";
 
 
                 DataTable dt_check = NewQry.GetData(donor_sql);

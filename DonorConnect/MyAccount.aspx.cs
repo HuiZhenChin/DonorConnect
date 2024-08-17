@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Policy;
+using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -31,6 +32,7 @@ namespace DonorConnect
                         ShowDonorInfo(username);
                         donorContent.Visible = true;
                         orgContent.Visible = false;
+                        adminContent.Visible = false;
                         selectedRole.Text = "donor";
                         profileUsername.Text = username;
                     }
@@ -39,6 +41,7 @@ namespace DonorConnect
                         ShowOrgInfo(username);
                         donorContent.Visible = false;
                         orgContent.Visible = true;
+                        adminContent.Visible = false;
                         selectedRole.Text = "organization";
                         profileUsername.Text = username;
                     }
@@ -48,11 +51,26 @@ namespace DonorConnect
                         donorContent.Visible = false;
                         orgContent.Visible = false;
                         riderContent.Visible = true;
+                        adminContent.Visible = false;
                         selectedRole.Text = "rider";
                         profileUsername.Text = username;
                         // not allow rider to chg profile pic, will display their uploaded face photo during registration
                         profilePic.Style.Add("pointer-events", "none");
                         profilePic.Style.Add("opacity", "1.0"); 
+                        fileUpload.Enabled = false;
+                    }
+                    else if (role == "admin")
+                    {
+                        ShowAdminInfo(username);
+                        donorContent.Visible = false;
+                        orgContent.Visible = false;
+                        riderContent.Visible = false;
+                        adminContent.Visible = true;
+                        selectedRole.Text = "admin";
+                        profileUsername.Text = username;
+                        // not allow admin to chg profile pic, will display DonorConnect logo
+                        profilePic.Style.Add("pointer-events", "none");
+                        profilePic.Style.Add("opacity", "1.0");
                         fileUpload.Enabled = false;
                     }
                     else
@@ -160,6 +178,23 @@ namespace DonorConnect
             }
         }
 
+        private void ShowAdminInfo(string username)
+        {
+            string sql;
+            QRY _Qry = new QRY();
+            DataTable _dt;
+            sql = "SELECT * FROM [admin] WHERE adminUsername = '" + username + "' ";
+            _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                DataRow row = _dt.Rows[0];
+                txtAdminUsername.Text = row["adminUsername"].ToString();
+                txtAdminEmail.Text = row["adminEmail"].ToString();
+         
+            }
+        }
+
         protected void btnSaveDonorInfo_Click(object sender, EventArgs e)
         {
             UpdateDonorInfo();
@@ -173,6 +208,11 @@ namespace DonorConnect
         protected void btnSaveRiderInfo_Click(object sender, EventArgs e)
         {
             UpdateRiderInfo();
+        }
+
+        protected void btnSaveAdminInfo_Click(object sender, EventArgs e)
+        {
+            UpdateAdminInfo();
         }
 
         private void UpdateDonorInfo()
@@ -310,6 +350,41 @@ namespace DonorConnect
             }
         }
 
+        private void UpdateAdminInfo()
+        {
+            string username = Session["username"].ToString();
+
+            if (string.IsNullOrWhiteSpace(txtAdminEmail.Text))
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('All fields must be filled out.');", true);
+                return;
+            }
+
+            string sql = "UPDATE [admin] SET " +
+                         "adminEmail = '" + txtAdminEmail.Text + "' " +
+                         "WHERE adminUsername = '" + username + "'";
+
+            string sql2 = "UPDATE [user] SET " +
+                   "email = '" + txtAdminEmail.Text + "', " +
+                  "WHERE username = '" + username + "'";
+
+            QRY _Qry = new QRY();
+            bool success = _Qry.ExecuteNonQuery(sql);
+            bool success2 = _Qry.ExecuteNonQuery(sql2);
+
+            if (success || success2)
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('User information updated successfully!',);", true);
+            }
+            else
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error updating user information. Please try again!');", true);
+            }
+        }
+
         private void LoadProfilePicture()
         {
             string base64String = GetProfilePictureFromDb();
@@ -367,6 +442,12 @@ namespace DonorConnect
                     return _dt3.Rows[0]["riderFacePicBase64"].ToString();
                 }
 
+            }
+
+            else if (role == "admin")
+            {
+
+                return ConvertProfilePicToBase64("/Image/logo.jpg");
             }
 
             return null;
@@ -460,6 +541,139 @@ namespace DonorConnect
             {
                 
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", $"showError('Error updating profile picture: {ex.Message}');", true);
+            }
+        }
+
+        private string ConvertProfilePicToBase64(string imagePath)
+        {
+            
+            byte[] imageBytes = System.IO.File.ReadAllBytes(Server.MapPath(imagePath));
+            return Convert.ToBase64String(imageBytes);
+        }
+
+        protected void btnResetPassword_Click(object sender, EventArgs e)
+        {
+            if (Session["username"] != null)
+            {
+                string username = Session["username"].ToString();
+
+                string role = GetUserRoleFromDatabase(username);
+
+                if (txtPassword.Text != txtConfirmPassword.Text)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('Password does not match!');", true);
+                    return;
+                }
+
+                else if (txtPassword.Text == txtConfirmPassword.Text)
+                {
+
+                    string sql;
+                    QRY _Qry = new QRY();
+
+                    string hashedPassword = HashPassword(txtPassword.Text);
+
+                    if (role == "donor")
+                    {
+                        sql = "UPDATE [donor] SET " +
+                         "donorHashPassword = '" + hashedPassword + "' " +
+                        "WHERE donorUsername = '" + username + "'";
+
+                        _Qry.ExecuteNonQuery(sql);
+
+                        bool success = _Qry.ExecuteNonQuery(sql);
+
+                        if (success)
+                        {
+
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Password changed successfully!',);", true);
+                        }
+                        else
+                        {
+
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error changing password. Please try again!');", true);
+                        }
+
+                    }
+                    else if (role == "organization")
+                    {
+                        sql = "UPDATE [organization] SET " +
+                          "orgHashPassword = '" + hashedPassword + "' " +
+                         "WHERE orgName = '" + username + "'";
+
+                        _Qry.ExecuteNonQuery(sql);
+
+                        bool success = _Qry.ExecuteNonQuery(sql);
+
+                        if (success)
+                        {
+
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Password changed successfully!',);", true);
+                        }
+                        else
+                        {
+
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error changing password. Please try again!');", true);
+                        }
+                    }
+                    else if (role == "rider")
+                    {
+                        sql = "UPDATE [delivery_rider] SET " +
+                          "riderHashPassword = '" + hashedPassword + "' " +
+                         "WHERE riderUsername = '" + username + "'";
+
+                        _Qry.ExecuteNonQuery(sql);
+
+                        bool success = _Qry.ExecuteNonQuery(sql);
+
+                        if (success)
+                        {
+
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Password changed successfully!',);", true);
+                        }
+                        else
+                        {
+
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error changing password. Please try again!');", true);
+                        }
+
+                    }
+                    else if (role == "admin")
+                    {
+                        sql = "UPDATE [admin] SET " +
+                           "adminHashPassword = '" + hashedPassword + "' " +
+                          "WHERE adminUsername = '" + username + "'";
+
+                        _Qry.ExecuteNonQuery(sql);
+
+                        bool success = _Qry.ExecuteNonQuery(sql);
+
+                        if (success)
+                        {
+
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Password changed successfully!',);", true);
+                        }
+                        else
+                        {
+
+                            ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error changing password. Please try again!');", true);
+                        }
+                    }
+                }
+            }
+        }
+
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
             }
         }
 

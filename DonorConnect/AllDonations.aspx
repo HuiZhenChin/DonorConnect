@@ -188,16 +188,54 @@
         margin: 0;
     }
 
+    .urgent-card {
+        background-color: #FFF5EE;
+    }
 
+    .card-body {
+        position: relative;
+        padding-top: 20px; 
+    }
+
+    .urgent-card::before {
+        content: "";
+        position: absolute;
+        top: -8px;
+        left: 0;
+        width: 100%;
+        height: 8px; 
+        background: repeating-linear-gradient(
+            45deg,
+            #FAA0A0,
+            #FAA0A0 10px,
+            white 10px,
+            white 20px
+        );
+        z-index: 1; 
+        border-radius: 5px 5px 0 0; 
+
+    }
+
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .image-item img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+    }
     </style>
 
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="filter-bar d-flex align-items-center mb-4">
+    <div class="filter-bar d-flex align-items-center mb-4" style="padding-top:20px;">
 
         <!-- Search Input -->
-        <asp:TextBox ID="txtSearchKeyword" runat="server" CssClass="form-control" Placeholder="Search by keyword..." AutoPostBack="True" ></asp:TextBox>
+        <asp:TextBox ID="txtSearchKeyword" runat="server" CssClass="form-control" Placeholder="Search by keyword..." AutoPostBack="True" OnTextChanged="SearchDonations"></asp:TextBox>
 
         <!-- Categories Button -->
         <asp:Button ID="btnShowCategories" runat="server" Text="Categories" CssClass="btn btn-primary ml-3" OnClick="LoadCategories" />
@@ -217,7 +255,7 @@
                 <asp:Repeater ID="rptItems" runat="server">
                     <ItemTemplate>
                         <div class="item-column">
-                            <asp:CheckBox ID="chkItem" runat="server" Text='<%# Eval("Item") %>'
+                            <asp:CheckBox ID="chkItem" runat="server" Text='<%# Eval("Item") %>' 
                                 AutoPostBack="True" CssClass="item-checkbox" />
                             <asp:HiddenField ID="hfCategory" runat="server" Value='<%# Eval("Category") %>' />
                         </div>
@@ -248,6 +286,9 @@
 
     <asp:Button ID="btnFilterDonations" runat="server" Text="Filter Donations" OnClick="FilterDonations" CssClass="btn btn-primary" />
 
+     <div class="mt-3">
+        <asp:Label ID="lblNoResults" runat="server" style="margin-top: 20px;" CssClass="alert alert-warning" Visible="false" />
+    </div>
 
     <asp:GridView ID="gvAllDonations" runat="server" AutoGenerateColumns="False" CssClass="centered-grid" DataKeyNames="donationPublishId" GridLines="None" BorderStyle="None" CellPadding="0">
         <Columns>
@@ -263,12 +304,14 @@
                         </div>
 
                         <%-- Card Body with Donation Details --%>
-                        <div class="col-md-9">
-                            <div class="card mb-4 shadow-sm card-custom" style="width: 100%!important;">
-                                <div class="card-body" style="width: 100%!important;">
-                                    <div class="row">
-                                        <%-- Left Column with Title and Details --%>
-                                        <div class="col-md-8">
+                      <div class="col-md-9">
+                        <div class="card mb-4 shadow-sm card-custom" style="width: 100%!important;">
+                            <div class="card-body <%# Eval("cardBody") %>" style="width: 100%!important;">
+                                
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <%-- URGENT Label --%>
+                                        <%# Eval("urgentLabel") %>
                                             <%-- Title --%>
                                             <h3 class="card-title text-center"><%# Eval("title") %></h3>
 

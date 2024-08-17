@@ -11,97 +11,79 @@ namespace DonorConnect
 {
 
 
-    public partial class AllDonations
+    public partial class AdminRegister
     {
 
         /// <summary>
-        /// txtSearchKeyword control.
+        /// form1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSearchKeyword;
+        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// btnShowCategories control.
+        /// txtEmail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnShowCategories;
+        protected global::System.Web.UI.WebControls.TextBox txtEmail;
 
         /// <summary>
-        /// btnShowStates control.
+        /// lblEmail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnShowStates;
+        protected global::System.Web.UI.WebControls.Label lblEmail;
 
         /// <summary>
-        /// rptCategories control.
+        /// signupBtn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCategories;
+        protected global::System.Web.UI.WebControls.Button signupBtn;
 
         /// <summary>
-        /// rptStates control.
+        /// otpSection control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptStates;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl otpSection;
 
         /// <summary>
-        /// hfStateName control.
+        /// txtOtp control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfStateName;
+        protected global::System.Web.UI.WebControls.TextBox txtOtp;
 
         /// <summary>
-        /// hfCategoryName control.
+        /// lblOtp control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfCategoryName;
+        protected global::System.Web.UI.WebControls.Label lblOtp;
 
         /// <summary>
-        /// btnFilterDonations control.
+        /// verifyOtpBtn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnFilterDonations;
-
-        /// <summary>
-        /// lblNoResults control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblNoResults;
-
-        /// <summary>
-        /// gvAllDonations control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvAllDonations;
+        protected global::System.Web.UI.WebControls.Button verifyOtpBtn;
     }
 }

@@ -78,7 +78,9 @@ namespace DonorConnect
                 processedTable.Columns.Add("donationFiles");
                 processedTable.Columns.Add("orgProfilePic");
                 processedTable.Columns.Add("orgName");
-
+                processedTable.Columns.Add("urgentLabel");
+                processedTable.Columns.Add("cardBody");
+                
                 foreach (DataRow row in _dt.Rows)
                 {
                     string[] itemCategories = row["itemCategory"].ToString().Trim('[', ']').Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -132,8 +134,34 @@ namespace DonorConnect
                     newRow["orgProfilePic"] = profilePic;
                     newRow["orgName"] = orgName;
 
+                    if (row["urgentStatus"].ToString().ToLower() == "yes")
+                    {
+                        newRow["urgentLabel"] = @"
+                        <div style='color: white; 
+                                    background: red; 
+                                    font-weight: bold; 
+                                    text-align: left;
+                                    padding: 5px 10px;
+                                    height: 50px;
+                                    display: flex;
+                                    align-items: center;
+                                    width: fit-content'>
+                            <i class='fa fa-bullhorn' aria-hidden='true' style='margin-right: 8px;'></i>
+                            URGENT!
+                        </div>";
+
+                        newRow["cardBody"] = "urgent-card";
+                    
+                    }
+                    else
+                    {
+                        newRow["urgentLabel"] = "";
+                    }
+
+
                     processedTable.Rows.Add(newRow);
                 }
+
 
                 gvAllDonations.DataSource = processedTable;
                 gvAllDonations.DataBind();
@@ -392,6 +420,7 @@ namespace DonorConnect
                             foreach (var item in itemsByCategory[category])
                             {
                                 itemCategoryList.Add(new ItemCategory { Item = item, Category = category });
+
                             }
                         }
 
@@ -523,6 +552,8 @@ namespace DonorConnect
                var itemStringList = new List<string>();
             foreach (var category in selectedCategories)
             {
+                
+
                 if (selectedItemsDictionary.ContainsKey(category))
                 {
                     var items = selectedItemsDictionary[category];
@@ -574,6 +605,8 @@ namespace DonorConnect
             filteredDonations.Columns.Add("itemDetails", typeof(string));
             filteredDonations.Columns.Add("donationImages", typeof(string));
             filteredDonations.Columns.Add("donationFiles", typeof(string));
+            filteredDonations.Columns.Add("urgentLabel", typeof(string));
+            filteredDonations.Columns.Add("cardBody", typeof(string));
 
             // populate the new columns
             foreach (DataRow row in filteredDonations.Rows)
@@ -617,12 +650,38 @@ namespace DonorConnect
                 row["itemDetails"] = itemDetailsBuilder.ToString();
                 row["donationImages"] = ProcessImages(row["donationImage"].ToString());
                 row["donationFiles"] = ProcessFiles(row["donationAttch"].ToString());
+
+                if (row["urgentStatus"].ToString().ToLower() == "yes")
+                {
+                    row["urgentLabel"] = @"
+                        <div style='color: white; 
+                                    background: red; 
+                                    font-weight: bold; 
+                                    text-align: left;
+                                    padding: 5px 10px;
+                                    height: 50px;
+                                    display: flex;
+                                    align-items: center;
+                                    width: fit-content'>
+                            <i class='fa fa-bullhorn' aria-hidden='true' style='margin-right: 8px;'></i>
+                            URGENT!
+                        </div>";
+                    row["cardBody"] = "urgent-card";
+                }
+                else
+                {
+                    row["urgentLabel"] = "";
+                   
+                }
             }
 
             
             gvAllDonations.DataSource = filteredDonations;
             gvAllDonations.DataBind();
-        }
+
+            DisplayResultMessage(filteredDonations.Rows.Count);
+        
+    }
 
 
         private List<string> GetAllItemsForCategory(string category)
@@ -702,6 +761,144 @@ namespace DonorConnect
             hfStateName.Value = string.Join(",", selectedStates);
         }
 
+        private void DisplayResultMessage(int resultCount)
+        {
+            if (resultCount == 0)
+            {
+                lblNoResults.Visible = true;
+                lblNoResults.Text = "No donations found matching your criteria.";
+            }
+            else
+            {
+                lblNoResults.Visible = true;
+                lblNoResults.Text = $"{resultCount} donation(s) found.";
+            }
+        }
+
+        protected void SearchDonations(object sender, EventArgs e)
+        {
+            string keyword = txtSearchKeyword.Text.Trim();
+
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+
+                DataTable searchResults = GetDonationsByKeyword(keyword);
+
+                searchResults.Columns.Add("orgProfilePic", typeof(string));
+                searchResults.Columns.Add("orgName", typeof(string));
+                searchResults.Columns.Add("itemDetails", typeof(string));
+                searchResults.Columns.Add("donationImages", typeof(string));
+                searchResults.Columns.Add("donationFiles", typeof(string));
+                searchResults.Columns.Add("urgentLabel", typeof(string));
+                searchResults.Columns.Add("cardBody", typeof(string));
+
+                // populate the new columns
+                foreach (DataRow row in searchResults.Rows)
+                {
+                    string orgId = row["orgId"].ToString();
+                    row["orgProfilePic"] = GetOrgProfilePic(orgId);
+                    row["orgName"] = GetOrgName(orgId);
+
+
+                    string[] itemCategories = row["itemCategory"].ToString().Trim('[', ']').Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] specificItems = SplitItems(row["specificItemsForCategory"].ToString().Trim('[', ']'));
+                    string[] specificQty = SplitItems(row["specificQtyForCategory"].ToString().Trim('[', ']'));
+
+                    StringBuilder itemDetailsBuilder = new StringBuilder();
+
+                    for (int i = 0; i < itemCategories.Length; i++)
+                    {
+                        itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + itemCategories[i].Trim() + "):<br />");
+
+                        if (i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]))
+                        {
+                            itemDetailsBuilder.Append("Specific Items Needed: " + specificItems[i].Trim('(', ')') + "<br />");
+                        }
+                        else
+                        {
+                            itemDetailsBuilder.Append("Specific Items Needed: Any<br />");
+                        }
+
+                        if (i < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[i]))
+                        {
+                            itemDetailsBuilder.Append("Specific Quantity Needed: " + specificQty[i].Trim('(', ')') + "<br />");
+                        }
+                        else
+                        {
+                            itemDetailsBuilder.Append("Specific Quantity Needed: Not stated<br />");
+                        }
+
+                        itemDetailsBuilder.Append("<br />");
+                    }
+
+                    row["itemDetails"] = itemDetailsBuilder.ToString();
+                    row["donationImages"] = ProcessImages(row["donationImage"].ToString());
+                    row["donationFiles"] = ProcessFiles(row["donationAttch"].ToString());
+
+                    if (row["urgentStatus"].ToString().ToLower() == "yes")
+                    {
+                        row["urgentLabel"] = @"
+                        <div style='color: white; 
+                                    background: red; 
+                                    font-weight: bold; 
+                                    text-align: left;
+                                    padding: 5px 10px;
+                                    height: 50px;
+                                    display: flex;
+                                    align-items: center;
+                                    width: fit-content'>
+                            <i class='fa fa-bullhorn' aria-hidden='true' style='margin-right: 8px;'></i>
+                            URGENT!
+                        </div>";
+                        row["cardBody"] = "urgent-card";
+                    }
+                    else
+                    {
+                        row["urgentLabel"] = "";
+
+                    }
+
+                   
+                }
+
+                gvAllDonations.DataSource = searchResults;
+                gvAllDonations.DataBind();
+                DisplayResultMessage(searchResults.Rows.Count);
+            }
+            
+        }
+
+        private DataTable GetDonationsByKeyword(string keyword)
+        {
+            QRY _Qry = new QRY();
+
+            string lowerKeyword = keyword.ToLower();
+
+            string sqlOrgIds = "SELECT orgId FROM organization WHERE LOWER(orgName) LIKE '%" + lowerKeyword + "%'";
+
+            // fetch orgIds from the database
+            DataTable orgIdTable = _Qry.GetData(sqlOrgIds);
+
+            List<string> orgIds = new List<string>();
+            foreach (DataRow row in orgIdTable.Rows)
+            {
+                orgIds.Add(row["orgId"].ToString());
+            }
+            string orgIdList = orgIds.Count > 0 ? string.Join(",", orgIds.Select(id => "'" + id + "'")) : "NULL";
+
+            string status = "Opened";
+
+            // find donations by title or matching orgIds
+            string sqlDonations = "SELECT * FROM donation_publish " +
+                          "WHERE (LOWER(title) LIKE '%" + lowerKeyword + "%' " +
+                          "OR orgId IN (" + orgIdList + ")) " +
+                          "AND status = '" + status + "'";
+
+            DataTable dt = _Qry.GetData(sqlDonations);
+
+            return dt;
+        }
 
 
     }

@@ -362,14 +362,14 @@ namespace DonorConnect
 
         //}
 
-        private string ConvertToBase64 (IList<HttpPostedFile> postedFiles)
+        private string ConvertToBase64(IList<HttpPostedFile> postedFiles)
         {
             if (postedFiles == null || postedFiles.Count == 0)
             {
                 return string.Empty;
             }
 
-            List<string> base64Files = new List<string>();
+            List<string> encryptedFiles = new List<string>();
 
             foreach (HttpPostedFile uploadedFile in postedFiles)
             {
@@ -378,11 +378,47 @@ namespace DonorConnect
                     byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
                     string base64String = Convert.ToBase64String(fileBytes);
                     string fileName = uploadedFile.FileName;
-                    base64Files.Add($"{fileName}:{base64String}");
+
+                    // encrypt the base64 string using AES 256, only encrypt the image string, filename no need
+                    string encryptedBase64String = EncryptStringAES(base64String);
+
+                    encryptedFiles.Add($"{fileName}:{encryptedBase64String}");
                 }
             }
 
-            return string.Join(",", base64Files);
+            return string.Join(",", encryptedFiles);
+        }
+
+        private string EncryptStringAES(string imgString)
+        {
+            // 32-byte encryption key for AES-256
+            byte[] keyBytes = Encoding.UTF8.GetBytes("telleveryoneilovedonorconnectDc!");
+            // 16-byte IV 
+            byte[] ivBytes = Encoding.UTF8.GetBytes("16ByteInitVector");
+
+            using (Aes aesAlg = Aes.Create())
+            {
+                aesAlg.Key = keyBytes;
+                aesAlg.IV = ivBytes;
+                aesAlg.Mode = CipherMode.CBC;
+                aesAlg.Padding = PaddingMode.PKCS7;
+
+                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+
+                using (MemoryStream msEncrypt = new MemoryStream())
+                {
+                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                        {
+                            swEncrypt.Write(imgString);
+                        }
+                    }
+
+                    byte[] encrypted = msEncrypt.ToArray();
+                    return Convert.ToBase64String(encrypted);
+                }
+            }
         }
 
 

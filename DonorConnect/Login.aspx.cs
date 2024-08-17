@@ -56,6 +56,12 @@ namespace DonorConnect
                         Session["role"] = role;
                     }
                  }
+
+                else if (message == "Admin Registration")
+                {
+                    Response.Redirect("~/AdminRegister.aspx");
+                }
+
                 else if (message == "Incorrect Password!")
                 {
                     ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Incorrect Password!', 'error');", true);
@@ -68,6 +74,7 @@ namespace DonorConnect
                 {
                     ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Your application is still pending for approval', 'warning');", true);
                 }
+               
             }
             else
             {

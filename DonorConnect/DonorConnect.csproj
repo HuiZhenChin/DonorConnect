@@ -102,6 +102,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AdminManageApplication.aspx" />
+    <Content Include="AdminManageUser.aspx" />
+    <Content Include="AdminDashboard.aspx" />
+    <Content Include="AdminRegister.aspx" />
+    <Content Include="AdminViewApplication.aspx" />
     <Content Include="AllDonations.aspx" />
     <Content Include="Content\Home.css" />
     <Content Include="Content\Login.css" />
@@ -136,6 +141,7 @@
     <Content Include="Image\driving_license.jpg" />
     <Content Include="Image\invalid_face_photo.jpg" />
     <Content Include="Image\login_pic.jpg" />
+    <Content Include="Image\logo.jpg" />
     <Content Include="Image\main.jpg" />
     <Content Include="Image\delivery_home.jpg" />
     <Content Include="Image\items_home.jpg" />
@@ -215,6 +221,41 @@
     <Content Include="Site.Mobile.Master" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdminManageApplication.aspx.cs">
+      <DependentUpon>AdminManageApplication.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminManageApplication.aspx.designer.cs">
+      <DependentUpon>AdminManageApplication.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminManageUser.aspx.cs">
+      <DependentUpon>AdminManageUser.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminManageUser.aspx.designer.cs">
+      <DependentUpon>AdminManageUser.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminDashboard.aspx.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminDashboard.aspx.designer.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminRegister.aspx.cs">
+      <DependentUpon>AdminRegister.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminRegister.aspx.designer.cs">
+      <DependentUpon>AdminRegister.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AdminViewApplication.aspx.cs">
+      <DependentUpon>AdminViewApplication.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminViewApplication.aspx.designer.cs">
+      <DependentUpon>AdminViewApplication.aspx</DependentUpon>
+    </Compile>
     <Compile Include="AllDonations.aspx.cs">
       <DependentUpon>AllDonations.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

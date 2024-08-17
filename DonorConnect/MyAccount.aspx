@@ -177,6 +177,24 @@
     </asp:Panel>
 </div>
 
+    <div class="section-content" id="adminContent" runat="server">
+    <asp:Panel runat="server">
+        <div class="form-row">
+            <asp:Label runat="server" ID="lblAdminUsername" Text="Username" />
+            <asp:TextBox runat="server" ID="txtAdminUsername" CssClass="form-control" ReadOnly="true" ToolTip="Username cannot be modified"/>
+        </div>
+        <div class="form-row">
+            <asp:Label runat="server" ID="lblAdminEmail" Text="Personal Email Address" />
+            <asp:TextBox runat="server" ID="txtAdminEmail" CssClass="form-control" TextMode="email" ToolTip="Email will be used to receive any urgent notifications."/> 
+        </div>
+   
+        <div class="form-row">
+            <asp:Button runat="server" ID="btnSaveAdminInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveAdminInfo_Click"/>
+            <asp:Button runat="server" ID="btnCancelAdminInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
+        </div>
+    </asp:Panel>
+</div>
+
         <!-- Notifications Section -->
         <div class="section-header" id="notificationsHeader">
             <h5>Notifications</h5>
@@ -191,12 +209,35 @@
                     <asp:CheckBox runat="server" ID="chkSmsNotifications" CssClass="form-check-input" />
                     <asp:Label runat="server" AssociatedControlID="chkSmsNotifications" Text="SMS Notifications" CssClass="form-check-label" />
                 </div>
+
                 <div class="form-row">
                     <asp:Button runat="server" ID="btnSaveNotifications" CssClass="btn btn-primary" Text="Save"/>
                     <asp:Button runat="server" ID="btnCancelNotifications" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
                 </div>
+                
             </asp:Panel>
         </div>
+       <div class="section-header" id="passwordHeader">
+        <h5>Reset Password</h5>
+    </div>
+    <div class="section-content" id="passwordContent" runat="server">
+        <asp:Panel runat="server">
+           <div class="form-row">
+             <asp:Label runat="server" ID="lblPassword" Text="Password" />
+             <asp:TextBox runat="server" ID="txtPassword" CssClass="form-control" Placeholder="Enter your new password"/>
+         </div>
+         <div class="form-row">
+             <asp:Label runat="server" ID="lblConfirmPassword" Text="Confirm Password" />
+             <asp:TextBox runat="server" ID="txtConfirmPassword" CssClass="form-control" TextMode="password" Placeholder="Enter your password again"/> 
+         </div>
+   
+         <div class="form-row">
+             <asp:Button runat="server" ID="btnSavePwd" CssClass="btn btn-primary" Text="Reset" OnClick="btnResetPassword_Click"/>
+             <asp:Button runat="server" ID="btnCancelPwd" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
+         </div>
+        
+    </asp:Panel>
+</div>
     </div>
     <script>
         $(document).ready(function () {
@@ -206,14 +247,23 @@
                 $('#<%= donorContent.ClientID %>').show();
                 $('#<%= orgContent.ClientID %>').hide();
                 $('#<%= riderContent.ClientID %>').hide();
+                $('#<%= adminContent.ClientID %>').hide();
             } else if (selectedRole === "organization") {
                 $('#<%= donorContent.ClientID %>').hide();
                 $('#<%= orgContent.ClientID %>').show();
                 $('#<%= riderContent.ClientID %>').hide();
+                $('#<%= adminContent.ClientID %>').hide();
             } else if (selectedRole === "rider") {
                 $('#<%= donorContent.ClientID %>').hide();
                 $('#<%= orgContent.ClientID %>').hide();
                 $('#<%= riderContent.ClientID %>').show();
+                $('#<%= adminContent.ClientID %>').hide();
+            } else if (selectedRole === "admin") {
+                $('#<%= donorContent.ClientID %>').hide();
+                $('#<%= orgContent.ClientID %>').hide();
+                $('#<%= riderContent.ClientID %>').hide();
+                $('#<%= adminContent.ClientID %>').show();
+
             }
 
             $('#userInfoHeader').click(function () {
@@ -223,12 +273,19 @@
                     $('#<%= orgContent.ClientID %>').toggle();
                 } else if (selectedRole === "rider") {
                     $('#<%= riderContent.ClientID %>').toggle();
+                } else if (selectedRole === "admin") {
+                    $('#<%= adminContent.ClientID %>').toggle();
                 }
+            });
+
+            $('#passwordHeader').click(function () {
+                $('#<%= passwordContent.ClientID %>').toggle();
             });
 
             $('#notificationsHeader').click(function () {
                 $('#<%= notificationsContent.ClientID %>').toggle();
             });
+
         });
 
 
