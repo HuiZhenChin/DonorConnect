@@ -11,8 +11,14 @@ namespace DonorConnect
 {
     public class QRY
     {
+        private SqlCommand command;
 
-        public DataTable GetData(string _SQL)
+        public QRY()
+        {
+            command = new SqlCommand();
+        }
+
+        public DataTable GetData(string _SQL, Dictionary<string, object> parameters = null)
         {
             DataTable dt = new DataTable();
 
@@ -21,6 +27,15 @@ namespace DonorConnect
                 con.Open();
                 using (SqlCommand cmd = new SqlCommand(_SQL, con))
                 {
+                    if (parameters != null)
+                    {
+                       
+                        foreach (var param in parameters)
+                        {
+                            cmd.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
+                        }
+                    }
+
                     SqlDataAdapter adpt = new SqlDataAdapter(cmd);
                     cmd.CommandTimeout = 1000;
                     adpt.Fill(dt);
@@ -28,6 +43,7 @@ namespace DonorConnect
             }
             return dt;
         }
+
 
         public DataSet GetDataDS(string _SQL)
         {
@@ -68,7 +84,28 @@ namespace DonorConnect
             }
         }
 
-        public bool ExecuteNonQuery(string sql)
+        //public bool ExecuteNonQuery(string sql)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString))
+        //        {
+        //            using (SqlCommand cmd = new SqlCommand(sql, conn))
+        //            {
+        //                conn.Open();
+        //                cmd.ExecuteNonQuery();
+        //                return true; // success
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error: {ex.Message}");
+        //        return false; // failure
+        //    }
+        //}
+
+        public bool ExecuteNonQuery(string sql, Dictionary<string, object> parameters = null)
         {
             try
             {
@@ -76,6 +113,15 @@ namespace DonorConnect
                 {
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
+                        // Add parameters if any
+                        if (parameters != null)
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+                        }
+
                         conn.Open();
                         cmd.ExecuteNonQuery();
                         return true; // success
@@ -90,6 +136,31 @@ namespace DonorConnect
         }
 
 
+        public string GetScalarValue(string sqlQuery)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(sqlQuery, conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        return result != null ? result.ToString() : null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            
+                throw new Exception("An error occurred while executing the scalar query.", ex);
+            }
+        }
+
+        public void AddParameter(string parameterName, object value)
+        {
+            command.Parameters.AddWithValue(parameterName, value);
+        }
 
     }
 }

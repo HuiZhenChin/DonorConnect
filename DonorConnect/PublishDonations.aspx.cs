@@ -123,7 +123,7 @@ namespace DonorConnect
             if (donationImg.HasFiles)
             {
 
-                imgUpload = ConvertImgToBase64(donationImg.PostedFiles);
+                imgUpload = ImageFileProcessing.ConvertToBase64(donationImg.PostedFiles);
             }
 
             else
@@ -133,7 +133,7 @@ namespace DonorConnect
 
             if (donationFile.HasFiles)
             {
-                fileUpload = ConvertFileToBase64(donationFile.PostedFiles);
+                fileUpload = ImageFileProcessing.ConvertToBase64(donationFile.PostedFiles);
             }
             
             else
@@ -223,52 +223,7 @@ namespace DonorConnect
 
         }
 
-        private string ConvertImgToBase64(IList<HttpPostedFile> postedFiles)
-        {
-            if (postedFiles == null || postedFiles.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            List<string> base64Files = new List<string>();
-
-            foreach (HttpPostedFile uploadedFile in postedFiles)
-            {
-                using (BinaryReader reader = new BinaryReader(uploadedFile.InputStream))
-                {
-                    byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
-                    string base64String = Convert.ToBase64String(fileBytes);
-                    base64Files.Add(base64String);
-                }
-            }
-
-            return string.Join(",", base64Files);
-        }
-
-
-        private string ConvertFileToBase64(IList<HttpPostedFile> postedFiles)
-        {
-            if (postedFiles == null || postedFiles.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            List<string> base64Files = new List<string>();
-
-            foreach (HttpPostedFile uploadedFile in postedFiles)
-            {
-                using (BinaryReader reader = new BinaryReader(uploadedFile.InputStream))
-                {
-                    byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
-                    string base64String = Convert.ToBase64String(fileBytes);
-                    string fileName = uploadedFile.FileName;
-                    base64Files.Add($"{fileName}:{base64String}");
-                }
-            }
-
-            return string.Join(",", base64Files);
-        }
-
+      
         private string GetOrgId(string username)
         {
             string sql;

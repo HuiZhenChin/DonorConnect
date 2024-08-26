@@ -11,7 +11,7 @@ namespace DonorConnect
 {
 
 
-    public partial class AdminManageApplication
+    public partial class AdminManageDonationRequest
     {
 
         /// <summary>
@@ -24,57 +24,30 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.DropDownList ddlStatus;
 
         /// <summary>
-        /// application control.
+        /// donation_request control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl application;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl donation_request;
 
         /// <summary>
-        /// lblApplication control.
+        /// lblRequest control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblApplication;
+        protected global::System.Web.UI.WebControls.Label lblRequest;
 
         /// <summary>
-        /// lblOrg control.
+        /// gvDonation control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblOrg;
-
-        /// <summary>
-        /// gvOrg control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvOrg;
-
-        /// <summary>
-        /// lblRider control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblRider;
-
-        /// <summary>
-        /// gvRider control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvRider;
+        protected global::System.Web.UI.WebControls.GridView gvDonation;
     }
 }

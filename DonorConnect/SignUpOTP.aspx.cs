@@ -397,8 +397,6 @@ namespace DonorConnect
             }
         }
 
-        // do encryption for license
-
 
 
 

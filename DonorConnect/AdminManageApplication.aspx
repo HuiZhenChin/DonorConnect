@@ -52,13 +52,19 @@
 
   <%--  gridview--%>
 
+    <asp:DropDownList ID="ddlStatus" runat="server" CssClass="form-control w-25 mb-4" AutoPostBack="True" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged">
+        <asp:ListItem Text="Pending Approval" Value="Pending Approval" Selected="True"></asp:ListItem>
+        <asp:ListItem Text="Rejected" Value="Rejected"></asp:ListItem>
+    </asp:DropDownList>
+
+
     <div class="card-deck">
         <div class="card mt-3 shadow-sm">
             <div class="card-body">
 
                 <div id="application" runat="server">
                     <asp:Label ID="lblApplication" runat="server" CssClass="d-block text-center mb-4" Text="List of Applications" Style="font-weight: bold; font-size: 24px;"></asp:Label>
-
+                    <asp:Label ID="lblOrg" runat="server" CssClass="d-block mb-4" Text="Organizations" Visible="false" Style="font-weight: bold; font-size: 20px;"></asp:Label>
                     <asp:GridView ID="gvOrg" runat="server" CssClass="table table-bordered custom" AutoGenerateColumns="False" OnRowDataBound="gvOrg_RowDataBound">
                         <Columns>
 
@@ -76,6 +82,7 @@
                             </asp:TemplateField>
                         </Columns>
                     </asp:GridView>
+                    <asp:Label ID="lblRider" runat="server" CssClass="d-block mb-4" Text="Delivery Riders" Visible="false" Style="font-weight: bold; font-size: 20px;"></asp:Label>
                     <asp:GridView ID="gvRider" runat="server" CssClass="table table-bordered custom" AutoGenerateColumns="False" OnRowDataBound="gvRider_RowDataBound">
                         <Columns>
 

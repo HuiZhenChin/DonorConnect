@@ -163,13 +163,7 @@ namespace DonorConnect
                             isValid = false;
                         }
 
-                        string[] allowedExtensionsOrg = { ".jpg", ".jpeg", ".png", ".pdf" };
-                        bool isValidBusinessLicense = allowedExtensionsOrg.Contains(Path.GetExtension(orgLicense.FileName).ToLower());
-                        if (!isValidBusinessLicense)
-                        {
-                            lblImgTypeOrgLicense.Text = "Invalid file type. Accepted formats: .jpg, .jpeg, .png, .pdf";
-                            isValid = false;
-                        }
+                      
                         string orgSQL;
                         QRY _Qry1 = new QRY();
                         DataTable _dt1;
@@ -197,7 +191,7 @@ namespace DonorConnect
 
                             if (orgLicense.HasFiles)
                             {
-                                string base64BusinessLicense = ConvertToBase64(orgLicense.PostedFiles);
+                                string base64BusinessLicense = ImageFileProcessing.ConvertToBase64(orgLicense.PostedFiles);
                                 Session["OrgLicense"] = base64BusinessLicense;
                             }
                             
@@ -262,16 +256,7 @@ namespace DonorConnect
                             isValid = false;
                         }
 
-                        string[] allowedExtensionsRider = { ".jpg", ".jpeg", ".png" };
-                        bool isValidCarLicense = allowedExtensionsRider.Contains(Path.GetExtension(riderCarLicense.FileName).ToLower());
-                        bool isValidFacePhoto = allowedExtensionsRider.Contains(Path.GetExtension(riderFacePhoto.FileName).ToLower());
-
-                        if (!isValidCarLicense || !isValidFacePhoto)
-                        {
-                            lblImgTypeCarLicense.Text = "Invalid file type. Accepted formats: .jpg, .jpeg, .png, .pdf";
-                            lblImgTypeFacePhoto.Text = "Invalid file type. Accepted formats: .jpg, .jpeg, .png, .pdf";
-                            isValid = false;
-                        }
+                       
                         string riderSQL;
                         QRY _Qry2 = new QRY();
                         DataTable _dt2;
@@ -298,14 +283,14 @@ namespace DonorConnect
                             // Save the files in session (e.g., as byte arrays)
                             if (riderCarLicense.HasFiles)
                             {
-                                string base64DrvingLicense = ConvertToBase64(riderCarLicense.PostedFiles);
+                                string base64DrvingLicense = ImageFileProcessing.ConvertToBase64(riderCarLicense.PostedFiles);
                                 Session["RiderCarLicense"] = base64DrvingLicense;
 
                             } 
                             
                             if (riderFacePhoto.HasFiles)
                             {
-                                string base64FacePic = ConvertToBase64(riderFacePhoto.PostedFiles);
+                                string base64FacePic = ImageFileProcessing.ConvertToBase64(riderFacePhoto.PostedFiles);
                                 Session["RiderFacePhoto"] = base64FacePic;
                             }
                             
@@ -362,94 +347,7 @@ namespace DonorConnect
 
         //}
 
-        private string ConvertToBase64(IList<HttpPostedFile> postedFiles)
-        {
-            if (postedFiles == null || postedFiles.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            List<string> encryptedFiles = new List<string>();
-
-            foreach (HttpPostedFile uploadedFile in postedFiles)
-            {
-                using (BinaryReader reader = new BinaryReader(uploadedFile.InputStream))
-                {
-                    byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
-                    string base64String = Convert.ToBase64String(fileBytes);
-                    string fileName = uploadedFile.FileName;
-
-                    // encrypt the base64 string using AES 256, only encrypt the image string, filename no need
-                    string encryptedBase64String = EncryptStringAES(base64String);
-
-                    encryptedFiles.Add($"{fileName}:{encryptedBase64String}");
-                }
-            }
-
-            return string.Join(",", encryptedFiles);
-        }
-
-        private string EncryptStringAES(string imgString)
-        {
-            // 32-byte encryption key for AES-256
-            byte[] keyBytes = Encoding.UTF8.GetBytes("telleveryoneilovedonorconnectDc!");
-            // 16-byte IV 
-            byte[] ivBytes = Encoding.UTF8.GetBytes("16ByteInitVector");
-
-            using (Aes aesAlg = Aes.Create())
-            {
-                aesAlg.Key = keyBytes;
-                aesAlg.IV = ivBytes;
-                aesAlg.Mode = CipherMode.CBC;
-                aesAlg.Padding = PaddingMode.PKCS7;
-
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-                using (MemoryStream msEncrypt = new MemoryStream())
-                {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                        {
-                            swEncrypt.Write(imgString);
-                        }
-                    }
-
-                    byte[] encrypted = msEncrypt.ToArray();
-                    return Convert.ToBase64String(encrypted);
-                }
-            }
-        }
-
-
-        //public void clearText()
-        //{
-        //    donorName.Text = "";
-        //    donorUsername.Text = "";
-        //    donorEmail.Text = "";
-        //    donorContactNumber.Text = "";
-        //    donorPassword.Text = "";
-        //    donorConfirmPassword.Text = "";
-        //    orgName.Text = "";
-        //    orgEmail.Text = "";
-        //    orgContactNumber.Text = "";
-        //    orgAddress.Text = "";
-        //    orgRegion.Text = "";
-        //    picName.Text = "";
-        //    picEmail.Text = "";
-        //    picNumber.Text = "";
-        //    orgPassword.Text = "";
-        //    orgConfirmPassword.Text = "";
-        //    riderName.Text = "";
-        //    riderUsername.Text = "";
-        //    riderEmail.Text = "";
-        //    riderContactNumber.Text = "";
-        //    riderPassword.Text = "";
-        //    riderConfirmPassword.Text = "";
-        //    vehicleType.Text = "";
-        //    vehiclePlateNo.Text = "";
-
-        //}
+       
 
     }
 

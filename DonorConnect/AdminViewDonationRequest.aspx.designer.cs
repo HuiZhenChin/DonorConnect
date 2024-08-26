@@ -11,70 +11,61 @@ namespace DonorConnect
 {
 
 
-    public partial class AdminManageApplication
+    public partial class AdminViewDonationRequest
     {
 
         /// <summary>
-        /// ddlStatus control.
+        /// donationRequest control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlStatus;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl donationRequest;
 
         /// <summary>
-        /// application control.
+        /// lblDonation control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl application;
+        protected global::System.Web.UI.WebControls.Label lblDonation;
 
         /// <summary>
-        /// lblApplication control.
+        /// rptDonation control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblApplication;
+        protected global::System.Web.UI.WebControls.Repeater rptDonation;
 
         /// <summary>
-        /// lblOrg control.
+        /// txtReason control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblOrg;
+        protected global::System.Web.UI.WebControls.TextBox txtReason;
 
         /// <summary>
-        /// gvOrg control.
+        /// hfDonationRequestId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvOrg;
+        protected global::System.Web.UI.WebControls.HiddenField hfDonationRequestId;
 
         /// <summary>
-        /// lblRider control.
+        /// btnSubmitRejection control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblRider;
-
-        /// <summary>
-        /// gvRider control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvRider;
+        protected global::System.Web.UI.WebControls.LinkButton btnSubmitRejection;
     }
 }

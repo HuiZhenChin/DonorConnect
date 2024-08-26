@@ -114,7 +114,7 @@ namespace DonorConnect
 
             string sql = "SELECT orgId, orgName, orgEmail, orgContactNumber, orgAddress, picName, picEmail, picContactNumber, " +
               "orgDescription, orgRegion, createdOn, orgStatus, adminId FROM organization " +
-              "WHERE orgStatus != 'Pending Approval' ";
+              "WHERE orgStatus NOT IN ('Pending Approval', 'Rejected')"; 
 
             QRY _Qry = new QRY();
             DataTable _dt;
@@ -133,7 +133,7 @@ namespace DonorConnect
         private void BindRiderGridView()
         {
 
-            string sql = "SELECT riderId, riderUsername, riderFullName, riderEmail, riderContactNumber, vehicleType, vehiclePlateNumber, registerDate, riderStatus, adminId FROM delivery_rider WHERE riderStatus != 'Pending Approval'";
+            string sql = "SELECT riderId, riderUsername, riderFullName, riderEmail, riderContactNumber, vehicleType, vehiclePlateNumber, registerDate, riderStatus, adminId FROM delivery_rider WHERE riderStatus NOT IN('Pending Approval', 'Rejected')"; 
 
 
             QRY _Qry = new QRY();

@@ -53,7 +53,7 @@ namespace DonorConnect
             string username = Session["username"].ToString();
             //string id = GetOrgId(username);
             string strSQL = @"SELECT urgentStatus, title, peopleNeeded, description, restriction, itemCategory, 
-                             specificItemsForCategory, specificQtyForCategory, address, donationState, created_on, status, donationImage, donationAttch
+                             specificItemsForCategory, specificQtyForCategory, address, donationState, created_on, status, donationImage, donationAttch, rejectedReason
                       FROM [donation_publish] 
                       WHERE donationPublishId  = '" + donationId + "' ";
 
@@ -69,17 +69,29 @@ namespace DonorConnect
                 txtRegion.SelectedValue = row["donationState"].ToString();
                 txtDescription.Text = row["description"].ToString();
                 txtRestrictions.Text = row["restriction"].ToString();
+                
                 // auto checked and filled item category, specific items and quantity
                 PopulateCategories(row["itemCategory"].ToString(),
                                     row["specificItemsForCategory"].ToString(),
                                     row["specificQtyForCategory"].ToString());
 
-                string imagesHtml = ProcessImages(row["donationImage"].ToString());
+                string imagesHtml = ImageFileProcessing.ProcessImages(row["donationImage"].ToString());
                 imagesContainer.Text = imagesHtml;
 
                 // Display attachments
-                string filesHtml = ProcessFiles(row["donationAttch"].ToString());
+                string filesHtml = ImageFileProcessing.ProcessImages(row["donationAttch"].ToString());
                 filesContainer.Text = filesHtml;
+
+                if (row["rejectedReason"] != DBNull.Value && !string.IsNullOrEmpty(row["rejectedReason"].ToString()))
+                {
+                    txtReason.Text = row["rejectedReason"].ToString();
+                    reason.Style["display"] = "block";
+                }
+                else
+                {
+                    reason.Style["display"] = "none";
+                }
+
             }
         }
 
@@ -188,53 +200,6 @@ namespace DonorConnect
             return items.ToArray();
         }
 
-        private string ProcessImages(string base64Images)
-        {
-            if (string.IsNullOrEmpty(base64Images))
-            {
-                return string.Empty;
-            }
-
-            string[] base64ImageArray = base64Images.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            StringBuilder imagesBuilder = new StringBuilder();
-            imagesBuilder.AppendLine("<div class='image-grid'>");
-
-            foreach (string base64Image in base64ImageArray)
-            {
-                imagesBuilder.AppendLine($"<div class='image-item'><img src='data:image/png;base64,{base64Image}' alt='Image' class='img-fluid' /></div>");
-            }
-
-            imagesBuilder.AppendLine("</div>");
-            return imagesBuilder.ToString();
-        }
-
-
-        private string ProcessFiles(string base64Files)
-        {
-            if (string.IsNullOrEmpty(base64Files))
-            {
-                return string.Empty;
-            }
-
-            string[] base64FileArray = base64Files.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            StringBuilder filesBuilder = new StringBuilder();
-
-            foreach (string base64File in base64FileArray)
-            {
-                string[] fileParts = base64File.Split(new char[] { ':' }, 2);
-                if (fileParts.Length == 2)
-                {
-                    string fileName = fileParts[0]; // get original filename
-                    string base64Content = fileParts[1];
-                    string fileExtension = fileName.Split('.').Last().ToLower();  // get file extension
-                    string fileDataUrl = $"data:application/{fileExtension};base64,{base64Content}"; // get url to download from browser
-                    filesBuilder.AppendLine($"<a href='{fileDataUrl}' download='{fileName}'>Download {fileName}</a><br />");
-                }
-            }
-
-            return filesBuilder.ToString();
-        }
-
 
         protected void btnUpdateDonation_Click(object sender, EventArgs e)
         {
@@ -324,7 +289,7 @@ namespace DonorConnect
                 if (donationImg.HasFiles)
                 {
 
-                    imgUpload = ConvertImgToBase64(donationImg.PostedFiles);
+                    imgUpload = ImageFileProcessing.ConvertToBase64(donationImg.PostedFiles);
                 }
 
                 else
@@ -334,7 +299,7 @@ namespace DonorConnect
 
                 if (donationFile.HasFiles)
                 {
-                    fileUpload = ConvertFileToBase64(donationFile.PostedFiles);
+                    fileUpload = ImageFileProcessing.ConvertToBase64(donationFile.PostedFiles);
                 }
 
                 else
@@ -476,52 +441,6 @@ namespace DonorConnect
             return urgency;
         }
 
-        private string ConvertImgToBase64(IList<HttpPostedFile> postedFiles)
-        {
-            if (postedFiles == null || postedFiles.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            List<string> base64Files = new List<string>();
-
-            foreach (HttpPostedFile uploadedFile in postedFiles)
-            {
-                using (BinaryReader reader = new BinaryReader(uploadedFile.InputStream))
-                {
-                    byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
-                    string base64String = Convert.ToBase64String(fileBytes);
-                    base64Files.Add(base64String);
-                }
-            }
-
-            return string.Join(",", base64Files);
-        }
-
-
-        private string ConvertFileToBase64(IList<HttpPostedFile> postedFiles)
-        {
-            if (postedFiles == null || postedFiles.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            List<string> base64Files = new List<string>();
-
-            foreach (HttpPostedFile uploadedFile in postedFiles)
-            {
-                using (BinaryReader reader = new BinaryReader(uploadedFile.InputStream))
-                {
-                    byte[] fileBytes = reader.ReadBytes((int)uploadedFile.InputStream.Length);
-                    string base64String = Convert.ToBase64String(fileBytes);
-                    string fileName = uploadedFile.FileName;
-                    base64Files.Add($"{fileName}:{base64String}");
-                }
-            }
-
-            return string.Join(",", base64Files);
-        }
-
         protected void btnCancelDonation_Click(object sender, EventArgs e)
         {
             Response.Redirect("OrgDonations.aspx");
@@ -625,7 +544,7 @@ namespace DonorConnect
             if (donationImg.HasFiles)
             {
 
-                imgUpload = ConvertImgToBase64(donationImg.PostedFiles);
+                imgUpload = ImageFileProcessing.ConvertToBase64(donationImg.PostedFiles);
             }
 
             else
@@ -635,7 +554,7 @@ namespace DonorConnect
 
             if (donationFile.HasFiles)
             {
-                fileUpload = ConvertFileToBase64(donationFile.PostedFiles);
+                fileUpload = ImageFileProcessing.ConvertToBase64(donationFile.PostedFiles);
             }
 
             else
@@ -699,6 +618,7 @@ namespace DonorConnect
                 _Qry2.ExecuteNonQuery(sqlemail);
 
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation details resubmitted successfully! Your application is now pending for approval.',);", true);
+                Response.Redirect("OrgDonations.aspx");
             }
 
             else

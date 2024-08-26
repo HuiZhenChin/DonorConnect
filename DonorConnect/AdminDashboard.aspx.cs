@@ -23,5 +23,10 @@ namespace DonorConnect
         {
             Response.Redirect("~/AdminManageApplication.aspx");
         }
+
+        protected void btnRequest_click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/AdminManageDonationRequest.aspx");
+        }
     }
 }

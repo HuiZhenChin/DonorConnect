@@ -80,7 +80,7 @@ namespace DonorConnect
                 processedTable.Columns.Add("orgName");
                 processedTable.Columns.Add("urgentLabel");
                 processedTable.Columns.Add("cardBody");
-                
+
                 foreach (DataRow row in _dt.Rows)
                 {
                     string[] itemCategories = row["itemCategory"].ToString().Trim('[', ']').Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -88,6 +88,8 @@ namespace DonorConnect
                     string[] specificQty = SplitItems(row["specificQtyForCategory"].ToString().Trim('[', ']'));
 
                     StringBuilder itemDetailsBuilder = new StringBuilder();
+
+                    bool isUrgent = row["urgentStatus"].ToString().ToLower() == "yes";
 
                     for (int i = 0; i < itemCategories.Length; i++)
                     {
@@ -102,11 +104,11 @@ namespace DonorConnect
                             itemDetailsBuilder.Append("Specific Items Needed: Any<br />");
                         }
 
-                        if (i < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[i]))
+                        if (isUrgent && i < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[i]))
                         {
                             itemDetailsBuilder.Append("Specific Quantity Needed: " + specificQty[i].Trim('(', ')') + "<br />");
                         }
-                        else
+                        else if (isUrgent)
                         {
                             itemDetailsBuilder.Append("Specific Quantity Needed: Not stated<br />");
                         }
@@ -134,7 +136,7 @@ namespace DonorConnect
                     newRow["orgProfilePic"] = profilePic;
                     newRow["orgName"] = orgName;
 
-                    if (row["urgentStatus"].ToString().ToLower() == "yes")
+                    if (isUrgent)
                     {
                         newRow["urgentLabel"] = @"
                         <div style='color: white; 
@@ -151,13 +153,11 @@ namespace DonorConnect
                         </div>";
 
                         newRow["cardBody"] = "urgent-card";
-                    
                     }
                     else
                     {
                         newRow["urgentLabel"] = "";
                     }
-
 
                     processedTable.Rows.Add(newRow);
                 }

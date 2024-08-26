@@ -38,7 +38,13 @@
             </div>
             <div class="card-body">
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" HeaderText="Please correct the following errors:" />
-                
+
+                <div class="form-group" id="reason" style="display:none;" runat="server">
+                    <label for="txtReason">Rejection Reason</label>
+                    <asp:TextBox ID="txtReason" runat="server" CssClass="form-control" ReadOnly="true"/>
+                    
+                </div>
+
                 <div class="form-group">
                     <label for="urgentRadioGroup">Is your item donation urgent?</label>
                     <div>

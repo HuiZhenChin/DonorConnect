@@ -103,11 +103,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AdminManageApplication.aspx" />
+    <Content Include="AdminManageDonationRequest.aspx" />
     <Content Include="AdminManageUser.aspx" />
     <Content Include="AdminDashboard.aspx" />
     <Content Include="AdminRegister.aspx" />
     <Content Include="AdminViewApplication.aspx" />
+    <Content Include="AdminViewDonationRequest.aspx" />
     <Content Include="AllDonations.aspx" />
+    <Content Include="ApplicationResubmit.aspx" />
     <Content Include="Content\Home.css" />
     <Content Include="Content\Login.css" />
     <Content Include="Content\Delivery.css" />
@@ -228,6 +231,13 @@
     <Compile Include="AdminManageApplication.aspx.designer.cs">
       <DependentUpon>AdminManageApplication.aspx</DependentUpon>
     </Compile>
+    <Compile Include="AdminManageDonationRequest.aspx.cs">
+      <DependentUpon>AdminManageDonationRequest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminManageDonationRequest.aspx.designer.cs">
+      <DependentUpon>AdminManageDonationRequest.aspx</DependentUpon>
+    </Compile>
     <Compile Include="AdminManageUser.aspx.cs">
       <DependentUpon>AdminManageUser.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -256,12 +266,26 @@
     <Compile Include="AdminViewApplication.aspx.designer.cs">
       <DependentUpon>AdminViewApplication.aspx</DependentUpon>
     </Compile>
+    <Compile Include="AdminViewDonationRequest.aspx.cs">
+      <DependentUpon>AdminViewDonationRequest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminViewDonationRequest.aspx.designer.cs">
+      <DependentUpon>AdminViewDonationRequest.aspx</DependentUpon>
+    </Compile>
     <Compile Include="AllDonations.aspx.cs">
       <DependentUpon>AllDonations.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="AllDonations.aspx.designer.cs">
       <DependentUpon>AllDonations.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ApplicationResubmit.aspx.cs">
+      <DependentUpon>ApplicationResubmit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ApplicationResubmit.aspx.designer.cs">
+      <DependentUpon>ApplicationResubmit.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="EditOrgDonations.aspx.cs">
@@ -289,6 +313,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="ImageFileProcessing.cs" />
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

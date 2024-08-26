@@ -12,8 +12,8 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
      <asp:Button ID="btnUser" runat="server" Text="Manage User" CssClass="btn btn-primary" OnClick="btnUser_click" />
-     <asp:Button ID="btnDonationRequest" runat="server" Text="Donation Request" CssClass="btn btn-secondary" OnClick="btnApplication_click"/>
-     <asp:Button ID="btnApplication" runat="server" Text="Application" CssClass="btn btn-success"/>
+     <asp:Button ID="btnDonationRequest" runat="server" Text="Donation Request" CssClass="btn btn-secondary" OnClick="btnRequest_click"/>
+     <asp:Button ID="btnApplication" runat="server" Text="Application" CssClass="btn btn-success" OnClick="btnApplication_click"/>
      <asp:Button ID="btnDelivery" runat="server" Text="Delivery" CssClass="btn btn-warning" />
 
 </asp:Content>
