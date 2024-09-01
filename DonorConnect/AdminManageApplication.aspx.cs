@@ -71,8 +71,8 @@ namespace DonorConnect
             string orgId = btnViewOrg.CommandArgument;
           
             Session["SelectedOrgId"] = orgId;
-
-            string status = GetOrgStatus(orgId);
+            Organization org = new Organization("", orgId, "", "", "");
+            string status = org.GetOrgStatus();
 
             if (status == "Pending Approval")
             {
@@ -140,24 +140,7 @@ namespace DonorConnect
             BindRiderGridView(selectedStatus);
         }
 
-        private string GetOrgStatus(string orgId)
-        {
-            string sql;
-            string status = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [organization] WHERE orgId = '" + orgId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                status = _dt.Rows[0]["orgStatus"].ToString();
-            }
-
-            return status;
-        }
-
+       
         private string GetRiderStatus(string riderId)
         {
             string sql;

@@ -48,49 +48,49 @@ namespace DonorConnect
             if (chkFood.Checked)
             {
                 categories.Add("Food");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "" : $"({txtSpecificFood.Text})");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "null" : $"({txtSpecificFood.Text})");
                 quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : $"({qtyFood.Text})");
             }
             if (chkClothing.Checked)
             {
                 categories.Add("Clothing");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "" : $"({txtSpecificClothing.Text})");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "null" : $"({txtSpecificClothing.Text})");
                 quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : $"({qtyClothing.Text})");
             }
             if (chkBooks.Checked)
             {
                 categories.Add("Books");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "" : $"({txtSpecificBooks.Text})");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "null" : $"({txtSpecificBooks.Text})");
                 quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : $"({qtyBooks.Text})");
             }
             if (chkElectronics.Checked)
             {
                 categories.Add("Electronics");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "" : $"({txtSpecificElectronics.Text})");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "null" : $"({txtSpecificElectronics.Text})");
                 quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : $"({qtyElectronics.Text})");
             }
             if (chkFurniture.Checked)
             {
                 categories.Add("Furniture");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "" : $"({txtSpecificFurniture.Text})");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "null" : $"({txtSpecificFurniture.Text})");
                 quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : $"({qtyFurniture.Text})");
             }
             if (chkHygiene.Checked)
             {
                 categories.Add("Hygiene Products");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "" : $"({txtSpecificHygiene.Text})");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "null" : $"({txtSpecificHygiene.Text})");
                 quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : $"({qtyHygiene.Text})");
             }
             if (chkMedical.Checked)
             {
                 categories.Add("Medical Supplies");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "" : $"({txtSpecificMedical.Text})");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "null" : $"({txtSpecificMedical.Text})");
                 quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : $"({qtyMedical.Text})");
             }
             if (chkToys.Checked)
             {
                 categories.Add("Toys");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "" : $"({txtSpecificToys.Text})");
+                specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "null" : $"({txtSpecificToys.Text})");
                 quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : $"({qtyToys.Text})");
             }
             if (chkOther.Checked)
@@ -144,11 +144,12 @@ namespace DonorConnect
             string urgent = rbUrgentYes.Checked ? "Yes" : "No";
 
             string username = Session["username"].ToString();
-            string orgId = GetOrgId(username);
+            Organization org = new Organization(username, "", "", "", "");
+            string orgId = org.GetOrgId();
 
             if (txtAddress.Text == username)
             {
-                address = GetOrgAddress(username);
+                address = org.GetOrgAddress();
             }
             else if (txtAddress.Text != username)
             {
@@ -223,42 +224,6 @@ namespace DonorConnect
 
         }
 
-      
-        private string GetOrgId(string username)
-        {
-            string sql;
-            string id = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [organization] WHERE orgName = '" + username + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                id = _dt.Rows[0]["orgId"].ToString();
-            }
-
-            return id;
-        }
-
-        private string GetOrgAddress(string username)
-        {
-            string sql;
-            string address = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [organization] WHERE orgName = '" + username + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                address = _dt.Rows[0]["orgAddress"].ToString();
-            }
-
-            return address;
-        }
 
         protected void clearText()
         {

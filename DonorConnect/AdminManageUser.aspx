@@ -5,8 +5,9 @@
      <title>User Management</title>
      <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         .custom {
@@ -60,6 +61,17 @@
         <div class="card mt-3 shadow-sm">
             <div class="card-body">
 
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control" placeholder="Search by keyword..."></asp:TextBox>
+                    </div>
+                    <div class="col-md-4">
+                        <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary" OnClick="btnSearch_Click" />
+                         <i class="fa fa-info-circle ms-3" style="cursor: pointer; margin-left: 20px;" data-toggle="modal" data-target="#searchInfoModal"></i>
+                    </div>
+
+                </div>
+
                 <div id= "donor" style=" display: none;" runat="server">
                 <asp:Label ID="lblDonor" runat="server" CssClass="d-block text-center mb-4" Text="List of Donors" Style="font-weight: bold; font-size: 24px;" ></asp:Label>
 
@@ -75,7 +87,7 @@
                         <asp:BoundField DataField="status" HeaderText="Status" SortExpression="Status" />
                         <asp:TemplateField>
                             <ItemTemplate>
-                                <%--view is to view donations--%>
+                                <%--view is to view information--%>
                                 <asp:LinkButton ID="btnViewDonor" runat="server" CommandArgument='<%# Eval("donorId") %>' Text="View" CssClass="btn btn-info btn-sm" />
                                 <asp:LinkButton ID="btnTerminateDonor" runat="server" Style="margin-left: 10px;" CommandArgument='<%# Eval("donorId") %>' Text="Terminate" CssClass="btn btn-danger btn-sm" />
                             </ItemTemplate>
@@ -104,7 +116,7 @@
                         <asp:BoundField DataField="adminId" HeaderText="Approved By" SortExpression="Approved By" />
                         <asp:TemplateField>
                             <ItemTemplate>
-                                <%--view is to view donations--%>
+                                <%--view is to view information and donations--%>
                                 <asp:LinkButton ID="btnViewOrg" runat="server" CommandArgument='<%# Eval("orgId") %>' Text="View" CssClass="btn btn-info btn-sm" />
                                 <asp:LinkButton ID="btnBusinessLicense" runat="server" CommandArgument='<%# Eval("orgId") %>' Text="Files" CssClass="btn btn-info btn-sm" />
                                 <asp:LinkButton ID="btnTerminateOrg" runat="server" Style="margin-left: 10px;" CommandArgument='<%# Eval("orgId") %>' Text="Terminate" CssClass="btn btn-danger btn-sm" />
@@ -132,7 +144,7 @@
                             <asp:BoundField DataField="adminId" HeaderText="Approved By" SortExpression="Approved By" />
                             <asp:TemplateField>
                                 <ItemTemplate>
-                                    <%--view is to view donations--%>
+                                    <%--view is to view information and delivery--%>
                                     <asp:LinkButton ID="btnViewRider" runat="server" CommandArgument='<%# Eval("riderId") %>' Text="View" CssClass="btn btn-info btn-sm" />
                                     <asp:LinkButton ID="btnDrivingLicense" runat="server" CommandArgument='<%# Eval("riderId") %>' Text="Files" CssClass="btn btn-info btn-sm" />
                                     <asp:LinkButton ID="btnTerminateOrg" runat="server" Style="margin-left: 10px;" CommandArgument='<%# Eval("riderId") %>' Text="Terminate" CssClass="btn btn-danger btn-sm" />
@@ -156,7 +168,7 @@
                         <asp:BoundField DataField="isMain" HeaderText="Head of Admin" SortExpression="Head of Admin" />
                         <asp:TemplateField>
                             <ItemTemplate>
-                                <%--view is to view donations--%>
+                                <%--view is to view information--%>
                                 <asp:LinkButton ID="btnViewAdmin" runat="server" CommandArgument='<%# Eval("adminId") %>' Text="View" CssClass="btn btn-info btn-sm" />
                                 <asp:LinkButton ID="btnTerminateAdmin" runat="server" Style="margin-left: 10px;" CommandArgument='<%# Eval("adminId") %>' Text="Terminate" CssClass="btn btn-danger btn-sm" />
                             </ItemTemplate>
@@ -165,6 +177,49 @@
                 </asp:GridView>
                 </div>
                 </div>
+        </div>
+    </div>
+
+    <%--Search Guidance Dialog Box--%>
+    <div class="modal fade" id="searchInfoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="infoModalLabel">Searchable Criteria</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Criteria</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Donor</td>
+                                <td>Username, Name, Email Address, Donor's Address</td>
+                            </tr>
+                            <tr>
+                                <td>Organization</td>
+                                <td>Org Name, Email Address, PIC Name, Org Address</td>
+                            </tr>
+                            <tr>
+                                <td>Delivery Rider</td>
+                                <td>Username, Full Name, Email Address, Contact Number, Vehicle Plate Number</td>
+                            </tr>
+                            <tr>
+                                <td>Admin</td>
+                                <td>Username, Email Address</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 

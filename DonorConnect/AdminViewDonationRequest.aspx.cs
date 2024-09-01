@@ -153,7 +153,8 @@ namespace DonorConnect
                 if (row["FieldName"].ToString() == "Organization")
                 {
                     string id = row["FieldValue"].ToString();
-                    string orgName = GetName(id);
+                    Organization org = new Organization("", id, "", "", "");
+                    string orgName = org.GetOrgName();
                     row["FieldValue"] = orgName;
                 }
 
@@ -515,7 +516,8 @@ namespace DonorConnect
             string donationPublishId = Session["SelectedDonationPublishId"] as string;
             string adminId = Session["username"].ToString();
             string status = "Opened";
-            string id = GetId(donationPublishId);
+            DonationPublish dp = new DonationPublish(donationPublishId, "", "", "", "", "", "");
+            string id = dp.GetId();
 
             string sql = "UPDATE [donation_publish] SET " +
                                 "status = '" + status + "', " +
@@ -563,7 +565,8 @@ namespace DonorConnect
             string adminId = Session["username"].ToString();
             string rejectionReason = txtReason.Text;
             string status = "Rejected";
-            string id= GetId(donationPublishId);
+            DonationPublish dp = new DonationPublish(donationPublishId, "", "", "", "", "", "");
+            string id= dp.GetId();
             bool isRejected = false;
 
 
@@ -613,42 +616,7 @@ namespace DonorConnect
         }
 
 
-        private string GetName(string orgId)
-        {
-            string sql;
-            string name = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [organization] WHERE orgId = '" + orgId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                name = _dt.Rows[0]["orgName"].ToString();
-            }
-
-            return name;
-        }
-
-
-        private string GetId(string donationPublishId)
-        {
-            string sql;
-            string id = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + donationPublishId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                id = _dt.Rows[0]["orgId"].ToString();
-            }
-
-            return id;
-        }
+       
 
     }
 }

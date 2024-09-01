@@ -26,7 +26,8 @@ namespace DonorConnect
                 if (!string.IsNullOrEmpty(donationId))
                 {
                     Session["donationPublishId"] = donationId;
-                    string status = GetOrgStatus(donationId);
+                    DonationPublish dp = new DonationPublish(donationId, "", "", "", "", "", "");
+                    string status = dp.GetStatus();
                     Session["orgId"] = orgId;
 
                     // check the status and set button visibility 
@@ -214,49 +215,49 @@ namespace DonorConnect
                 if (chkFood.Checked)
                 {
                     categories.Add("Food");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "" : $"({txtSpecificFood.Text})");
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "null" : $"({txtSpecificFood.Text})");
                     quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : $"({qtyFood.Text})");
                 }
                 if (chkClothing.Checked)
                 {
                     categories.Add("Clothing");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "" : $"({txtSpecificClothing.Text})");
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "null" : $"({txtSpecificClothing.Text})");
                     quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : $"({qtyClothing.Text})");
                 }
                 if (chkBooks.Checked)
                 {
                     categories.Add("Books");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "" : $"({txtSpecificBooks.Text})");
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "null" : $"({txtSpecificBooks.Text})");
                     quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : $"({qtyBooks.Text})");
                 }
                 if (chkElectronics.Checked)
                 {
                     categories.Add("Electronics");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "" : $"({txtSpecificElectronics.Text})");
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "null" : $"({txtSpecificElectronics.Text})");
                     quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : $"({qtyElectronics.Text})");
                 }
                 if (chkFurniture.Checked)
                 {
                     categories.Add("Furniture");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "" : $"({txtSpecificFurniture.Text})");
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "null" : $"({txtSpecificFurniture.Text})");
                     quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : $"({qtyFurniture.Text})");
                 }
                 if (chkHygiene.Checked)
                 {
                     categories.Add("Hygiene Products");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "" : $"({txtSpecificHygiene.Text})");
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "null" : $"({txtSpecificHygiene.Text})");
                     quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : $"({qtyHygiene.Text})");
                 }
                 if (chkMedical.Checked)
                 {
                     categories.Add("Medical Supplies");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "" : $"({txtSpecificMedical.Text})");
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "null" : $"({txtSpecificMedical.Text})");
                     quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : $"({qtyMedical.Text})");
                 }
                 if (chkToys.Checked)
                 {
                     categories.Add("Toys");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "" : $"({txtSpecificToys.Text})");
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "null" : $"({txtSpecificToys.Text})");
                     quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : $"({qtyToys.Text})");
                 }
                 if (chkOther.Checked)
@@ -280,8 +281,9 @@ namespace DonorConnect
                 string sql;
                 QRY _Qry = new QRY();
 
-                string status = GetOrgStatus(donationId);
-                string createdOn = GetOrgCreatedOn(donationId);
+                DonationPublish dp = new DonationPublish(donationId, "", "", "", "", "", "");
+                string status = dp.GetStatus();
+                string createdOn = dp.GetCreatedOn();
                 string imgUpload = "";
                 string fileUpload = "";
                 string address = "";
@@ -307,14 +309,15 @@ namespace DonorConnect
                     fileUpload = "";
                 }
 
-                string urgent = GetOrgUrgency(donationId);
+                DonationPublish dp2 = new DonationPublish(donationId, "", "", "", "", "", "");
+                string urgent = dp2.GetUrgency();
 
                 string username = Session["username"].ToString();
                 string orgId = Session["orgId"].ToString();
-
+                Organization org = new Organization(username, "", "", "", "");
                 if (txtAddress.Text == username)
                 {
-                    address = GetOrgAddress(username);
+                    address = org.GetOrgAddress();
                 }
                 else if (txtAddress.Text != username)
                 {
@@ -369,78 +372,7 @@ namespace DonorConnect
 
         }
 
-        private string GetOrgAddress(string donationId)
-        {
-            string sql;
-            string address = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + donationId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                address = _dt.Rows[0]["orgAddress"].ToString();
-            }
-
-            return address;
-        }
-
-        private string GetOrgStatus(string donationId)
-        {
-            string sql;
-            string status = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + donationId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                status = _dt.Rows[0]["status"].ToString();
-            }
-
-            return status;
-        }
-
-        private string GetOrgCreatedOn(string donationId)
-        {
-            string sql;
-            string created_on = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + donationId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                created_on = _dt.Rows[0]["created_on"].ToString();
-            }
-
-            return created_on;
-        }
-
-        private string GetOrgUrgency(string donationId)
-        {
-            string sql;
-            string urgency = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + donationId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                urgency = _dt.Rows[0]["urgentStatus"].ToString();
-            }
-
-            return urgency;
-        }
-
+   
         protected void btnCancelDonation_Click(object sender, EventArgs e)
         {
             Response.Redirect("OrgDonations.aspx");
@@ -567,10 +499,11 @@ namespace DonorConnect
             string username = Session["username"].ToString();
             string orgId = Session["orgId"].ToString();
             string resubmit = "yes";
+            Organization org = new Organization(username, "", "", "", "");
 
             if (txtAddress.Text == username)
             {
-                address = GetOrgAddress(username);
+                address = org.GetOrgAddress();
             }
             else if (txtAddress.Text != username)
             {
@@ -626,6 +559,8 @@ namespace DonorConnect
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error resubmitting donation application. Please try again!');", true);
             }
         }
-        
+
+      
+
     }
 }

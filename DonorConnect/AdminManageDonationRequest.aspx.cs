@@ -103,9 +103,10 @@ namespace DonorConnect
 
             Session["SelectedDonationPublishId"] = donationPublishId;
 
-            string status = GetStatus(donationPublishId);
+            DonationPublish dp = new DonationPublish(donationPublishId, "", "", "", "", "", "");
+            string status = dp.GetStatus();
 
-            string urgency = GetUrgency(donationPublishId);
+            string urgency = dp.GetUrgency();
 
             if (status == "Pending Approval")
             {
@@ -127,42 +128,6 @@ namespace DonorConnect
             string selectedStatus = ddlStatus.SelectedValue;
             BindDonationGridView(selectedStatus);
             
-        }
-
-        private string GetStatus(string donationPublishId)
-        {
-            string sql;
-            string status = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + donationPublishId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                status = _dt.Rows[0]["status"].ToString();
-            }
-
-            return status;
-        }
-
-        private string GetUrgency(string donationPublishId)
-        {
-            string sql;
-            string urgency = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + donationPublishId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                urgency = _dt.Rows[0]["urgentStatus"].ToString();
-            }
-
-            return urgency;
         }
 
 

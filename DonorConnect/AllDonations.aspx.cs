@@ -10,6 +10,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.Script.Services;
+using System.Web.Services;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -17,13 +19,16 @@ namespace DonorConnect
 {
     public partial class AllDonations : System.Web.UI.Page
     {
+        // a dictionary to store available category with its items for all opened donations
+        private Dictionary<string, List<string>> categoryItemDict = new Dictionary<string, List<string>>();
+
         protected void Page_Load(object sender, EventArgs e)
         {
 
             if (!IsPostBack)
             {
                 BindGridView();
-                
+                Session["AvailableCategoryItem"] = categoryItemDict;
             }
         }
 
@@ -93,11 +98,23 @@ namespace DonorConnect
 
                     for (int i = 0; i < itemCategories.Length; i++)
                     {
-                        itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + itemCategories[i].Trim() + "):<br />");
+                        string category = itemCategories[i].Trim();
+                        string items = i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]) ? specificItems[i].Trim('(', ')') : "Any";
+
+                        // Store in dictionary
+                        if (!categoryItemDict.ContainsKey(category))
+                        {
+                            categoryItemDict[category] = new List<string>();
+                        }
+
+                        categoryItemDict[category].Add(items);
+
+                        // Existing logic to build itemDetails
+                        itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + category + "):<br />");
 
                         if (i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]))
                         {
-                            itemDetailsBuilder.Append("Specific Items Needed: " + specificItems[i].Trim('(', ')') + "<br />");
+                            itemDetailsBuilder.Append("Specific Items Needed: " + items + "<br />");
                         }
                         else
                         {
@@ -114,11 +131,12 @@ namespace DonorConnect
                         }
 
                         itemDetailsBuilder.Append("<br />");
-                    }
+                    }                
 
                     string orgId = row["orgId"].ToString();
-                    string profilePic = GetOrgProfilePic(orgId) ?? "/Image/default_picture.jpg";
-                    string orgName = GetOrgName(orgId);
+                    Organization org = new Organization("", orgId, "", "", "");
+                    string profilePic = org.GetOrgProfilePic() ?? "/Image/default_picture.jpg";
+                    string orgName = org.GetOrgName();
 
                     DataRow newRow = processedTable.NewRow();
                     newRow["donationPublishId"] = row["donationPublishId"];
@@ -252,6 +270,11 @@ namespace DonorConnect
             return filesBuilder.ToString();
         }
 
+        public Dictionary<string, List<string>> GetCategoryItemDictionary()
+        {
+            return Session["AvailableCategoryItem"] as Dictionary<string, List<string>>;
+        }
+
         protected void gvAllDonations_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
@@ -346,42 +369,6 @@ namespace DonorConnect
             }
         }
 
-        private string GetOrgProfilePic(string orgId)
-        {
-            string sql;
-            string profilepic = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [organization] WHERE orgId = '" + orgId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                profilepic = _dt.Rows[0]["orgProfilePicBase64"].ToString();
-            }
-
-            return profilepic;
-        }
-
-        private string GetOrgName(string orgId)
-        {
-            string sql;
-            string name = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [organization] WHERE orgId = '" + orgId + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                name = _dt.Rows[0]["orgName"].ToString();
-            }
-
-            return name;
-        }
-
         protected void LoadCategories(object sender, EventArgs e)
         {
             var categories = GetCategoriesFromDatabase();
@@ -395,40 +382,35 @@ namespace DonorConnect
         }
 
 
+
         protected void CategorySelected(object sender, EventArgs e)
         {
-            foreach (RepeaterItem categoryItem in rptCategories.Items)
+            var categoryItemDictionary = Session["AvailableCategoryItem"] as Dictionary<string, List<string>>;
+
+            if (categoryItemDictionary != null)
             {
-                // find the checkbox in the current category 
-                var chkCategory = categoryItem.FindControl("chkCategory") as CheckBox;
-                if (chkCategory != null && chkCategory.Checked)
+                var itemsByCategory = GetItemsByCategories(categoryItemDictionary);
+
+                foreach (RepeaterItem categoryItem in rptCategories.Items)
                 {
-                    // get the category name
-                    var category = chkCategory.Text;
-
-                    // find the nested rptItems 
-                    var gvItems = categoryItem.FindControl("rptItems") as Repeater;
-                    if (gvItems != null)
+                    var chkCategory = categoryItem.FindControl("chkCategory") as CheckBox;
+                    if (chkCategory != null && chkCategory.Checked)
                     {
-                        // retrieve items for the selected category
-                        var itemsByCategory = GetItemsByCategories(new List<string> { category });
+                        var category = chkCategory.Text;
 
-                        // create a list of ItemCategory objects for binding
-                        var itemCategoryList = new List<ItemCategory>();
-                        if (itemsByCategory.ContainsKey(category))
+                        var gvItems = categoryItem.FindControl("rptItems") as Repeater;
+                        if (gvItems != null && itemsByCategory.ContainsKey(category))
                         {
-                            foreach (var item in itemsByCategory[category])
+                            var itemCategoryList = itemsByCategory[category].Select(item => new ItemCategory
                             {
-                                itemCategoryList.Add(new ItemCategory { Item = item, Category = category });
+                                Item = item,
+                                Category = category
+                            }).ToList();
 
-                            }
+                            gvItems.DataSource = itemCategoryList;
+                            gvItems.DataBind();
+                            gvItems.Visible = true;
                         }
-
-                        gvItems.DataSource = itemCategoryList;
-                        gvItems.DataBind();
-
-                        
-                        gvItems.Visible = true;
                     }
                 }
             }
@@ -436,44 +418,51 @@ namespace DonorConnect
 
 
 
-        private Dictionary<string, List<string>> GetItemsByCategories(List<string> categories)
+
+        private Dictionary<string, List<string>> GetItemsByCategories(Dictionary<string, List<string>> categoryItemDictionary)
         {
             var itemsByCategory = new Dictionary<string, List<string>>();
 
-            if (categories.Count == 0)
+            if (categoryItemDictionary.Count == 0)
                 return itemsByCategory;
 
-            // retrieve items for the selected categories
-            string categoryList = string.Join("','", categories.Select(c => c.Replace("'", "''"))); 
+            // Filter the dictionary to only include categories that are already stored
+            string categoryList = string.Join("','", categoryItemDictionary.Keys.Select(c => c.Replace("'", "''")));
+
             string query = $"SELECT categoryName, specificItems FROM itemCategory WHERE categoryName IN ('{categoryList}')";
 
             QRY _Qry = new QRY();
             DataTable dt = _Qry.GetData(query);
 
-            
             foreach (DataRow row in dt.Rows)
             {
                 string categoryName = row["categoryName"].ToString();
                 string itemsString = row["specificItems"].ToString();
 
-                
                 var items = itemsString.Split(',').Select(i => i.Trim()).ToList();
 
-                // category is added to the dictionary with its items
-                if (!itemsByCategory.ContainsKey(categoryName))
+                // Initialize a list to store the matched items
+                var matchedItems = new List<string>();
+
+                if (categoryItemDictionary.ContainsKey(categoryName))
                 {
-                    itemsByCategory[categoryName] = items;
-                }
-                else
-                {
-                    // if the category already exists, add new items to it (if not already present)
-                    foreach (var item in items)
+                    foreach (var item in categoryItemDictionary[categoryName])
                     {
-                        if (!itemsByCategory[categoryName].Contains(item))
+                        // Compare each item using a LIKE match
+                        foreach (var dbItem in items)
                         {
-                            itemsByCategory[categoryName].Add(item);
+                            if (item.IndexOf(dbItem, StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                matchedItems.Add(dbItem);
+                            }
                         }
                     }
+
+                    // Remove duplicates and merge the matched items with the existing ones in the dictionary
+                    matchedItems = matchedItems.Distinct().ToList();
+
+                    // Add the matched items to the final dictionary
+                    itemsByCategory[categoryName] = matchedItems;
                 }
             }
 
@@ -612,8 +601,9 @@ namespace DonorConnect
             foreach (DataRow row in filteredDonations.Rows)
             {
                 string orgId = row["orgId"].ToString();
-                row["orgProfilePic"] = GetOrgProfilePic(orgId);
-                row["orgName"] = GetOrgName(orgId);
+                Organization org = new Organization("", orgId, "", "", "");
+                row["orgProfilePic"] = org.GetOrgProfilePic();
+                row["orgName"] = org.GetOrgName();
 
                 
                 string[] itemCategories = row["itemCategory"].ToString().Trim('[', ']').Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -797,8 +787,9 @@ namespace DonorConnect
                 foreach (DataRow row in searchResults.Rows)
                 {
                     string orgId = row["orgId"].ToString();
-                    row["orgProfilePic"] = GetOrgProfilePic(orgId);
-                    row["orgName"] = GetOrgName(orgId);
+                    Organization org = new Organization("", orgId, "", "", "");
+                    row["orgProfilePic"] = org.GetOrgProfilePic();
+                    row["orgName"] = org.GetOrgName();
 
 
                     string[] itemCategories = row["itemCategory"].ToString().Trim('[', ']').Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -900,6 +891,98 @@ namespace DonorConnect
             return dt;
         }
 
+        [System.Web.Services.WebMethod]
+        public static List<Dictionary<string, string>> GetActiveOrganizationAddresses()
+        {
+            List<Dictionary<string, string>> organizationInfo = new List<Dictionary<string, string>>();
+
+            QRY _Qry = new QRY();
+
+            string sql = "SELECT orgId, orgName, orgAddress FROM organization WHERE orgStatus = 'Active'";
+
+            DataTable _dt = _Qry.GetData(sql);
+
+            foreach (DataRow row in _dt.Rows)
+            {
+                var organization = new Dictionary<string, string>
+            {
+                { "orgId", row["orgId"].ToString() },
+                { "orgName", row["orgName"].ToString() },
+                { "orgAddress", row["orgAddress"].ToString() }
+            };
+                organizationInfo.Add(organization);
+            }
+
+            return organizationInfo;
+        }
+
+        [System.Web.Services.WebMethod]
+        public static List<Dictionary<string, string>> GetDonationsByOrg(string orgName)
+        {
+            List<Dictionary<string, string>> donationList = new List<Dictionary<string, string>>();
+
+            QRY _Qry = new QRY();
+            Organization org = new Organization(orgName, "", "", "", "");
+            string orgId = org.GetOrgId();
+
+            if (!string.IsNullOrEmpty(orgId))
+            {
+                
+                string sql = "SELECT title, itemCategory FROM donation_publish WHERE orgId = @orgId";
+                Dictionary<string, object> parameters = new Dictionary<string, object>
+                {
+                    { "@orgId", orgId }
+                };
+
+                DataTable _dt = _Qry.GetData(sql, parameters);
+
+                foreach (DataRow row in _dt.Rows)
+                {
+                    string itemCategory = row["itemCategory"].ToString().Trim('[', ']');
+                    var donation = new Dictionary<string, string>
+                    {
+                        { "title", row["title"].ToString() },
+                        { "itemCategory", itemCategory } 
+                    };
+                    donationList.Add(donation);
+                }
+            }
+
+            return donationList;
+        }
+
+        protected void btnDonate_Click(object sender, EventArgs e)
+        {
+            
+            if (Session["username"] == null)
+            {
+                
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('Please login or sign up if you do not have an account yet to donate items to this organization.');", true);
+            }
+            else
+            {
+                
+                string username = Session["username"].ToString();
+             
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('Hi');", true);
+            }
+        }
+
+        protected void btnSaveFav_Click(object sender, EventArgs e)
+        {
+            if (Session["username"] == null)
+            {
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('Please login or sign up if you do not have an account yet to save this donation to the cart.');", true);
+            }
+            else
+            {
+
+                string username = Session["username"].ToString();
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('Hi');", true);
+            }
+        }
 
     }
 }

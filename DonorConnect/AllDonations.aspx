@@ -12,8 +12,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHd69lOb31ywFRMu99sos-ysgl-uCtidY&map_ids=69dfb9f5c086e55e&callback=console.debug&libraries=maps,marker&v=beta"></script>
 
-
+   
     <style>
   
      .category-box {
@@ -69,7 +70,7 @@
 }
 
     .dropdown-toggle {
-        background-color: #007bff;
+       
         color: white;
         border: none;
         padding: 10px 20px;
@@ -243,7 +244,16 @@
          <!-- States Button -->
         <asp:Button ID="btnShowStates" runat="server" Text="States" CssClass="btn btn-primary ml-3" OnClick="LoadStates" />
 
+       <asp:Button ID="btnShowMap" runat="server" Text="Show Map" CssClass="btn btn-primary ml-3" 
+        OnClientClick="getUserCurrentLocation(); initMap(); return false;" />
+
+        
+
     </div>
+
+    <!-- Map Container (Initially hidden) -->
+    <div id="map" style="height: 400px; width: 100%; display: none;"></div>
+
 
 <!-- Category and Its Specific Items -->
 <div class="category-container">
@@ -357,8 +367,8 @@
                                             <asp:Label ID="lblItemCategory" runat="server" Text='<%# GetItemCategoryWithIcon(Eval("itemDetails")) %>' />
                                             <div class="row mb-3">
                                                 <div class="col-12 text-right position-absolute" style="bottom: 20px; right: 10px;">
-                                                    <i class="fas fa-heart " style="font-size: 24px; cursor: pointer; padding-right: 20px;" title="Save to Favorites" ></i>
-                                                    <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" />
+                                                    <asp:LinkButton class="fas fa-heart " style="font-size: 24px; color: black; cursor: pointer; padding-right: 20px;" title="Save to Favorites" runat="server" OnClick="btnSaveFav_Click"></asp:LinkButton>
+                                                    <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" OnClick="btnDonate_Click"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -378,6 +388,181 @@
             
             $('#filterButton').dropdown();
         });
+
+        function showErrorMsg(message) {
+            Swal.fire({
+                title: 'Error!',
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+
+        function getUserCurrentLocation() {
+            if (navigator.geolocation) {
+               
+                navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                    enableHighAccuracy: true,
+                    timeout: 10000, // wait up to 10 seconds
+                    maximumAge: 0    // don't use a cached position
+                });
+            } else {
+                alert("Geolocation is not supported by the browser.");
+            }
+        }
+
+        //function getUserCurrentLocation() {
+        //    if (navigator.geolocation) {
+        //        navigator.geolocation.getCurrentPosition(showPosition, showError);
+        //    } else {
+        //        alert("Geolocation is not supported by the browser.");
+        //    }
+        //}
+
+
+        // show, plot the map and center it at the user's location
+        function showPosition(position) {
+            var userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            // display the map 
+            document.getElementById('map').style.display = 'block';
+
+            // display the map centered at the user's location
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: userLocation,
+                zoom: 12
+            });
+
+            // mark user's location
+            var marker = new google.maps.Marker({
+                map: map,
+                position: userLocation,
+                title: "You are here!"
+            });
+
+            // mark organization addresses location
+            fetchAddressesAndDisplayMarkers(map);
+        }
+
+        // handle errors in getting the user's location
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is not available.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("Unknown error occurred.");
+                    break;
+            }
+        }
+
+        // initialise map
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 40.1215, lng: -100.4504 },
+                zoom: 4,
+                mapId: '69dfb9f5c086e55e' // valid map ID get from Google Cloud Console
+            });
+
+            // fetch active organization addresses from database
+            fetchAddressesAndDisplayMarkers(map);
+        }
+
+        // fetch addresses from server side and display them on the map
+        function fetchAddressesAndDisplayMarkers(map) {
+            $.ajax({
+                async: false,
+                type: 'POST',
+                url: 'AllDonations.aspx/GetActiveOrganizationAddresses',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (response) {
+                    var organizationInfo = response.d;
+
+                    var geocoder = new google.maps.Geocoder();
+                    organizationInfo.forEach(function (org) {
+                        var orgName = org.orgName;
+                        var orgAddress = org.orgAddress;
+
+                        geocodeAddress(orgAddress, orgName, geocoder, map);
+                    });
+                },
+                error: function (error) {
+                    console.error('Error fetching addresses:', error);
+                }
+            });
+        }
+
+        function fetchDonationsAndShowInfo(orgName, marker, map) {
+            $.ajax({
+                type: 'POST',
+                url: 'AllDonations.aspx/GetDonationsByOrg',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ orgName: orgName }),
+                dataType: 'json',
+                success: function (response) {
+                    var donations = response.d;
+                    var contentString = '<div><h3>' + orgName + '</h3><ul>';
+
+                    if (donations.length > 0) {
+                        donations.forEach(function (donation) {
+                            contentString += '<li><b>' + donation.title + '</b>: ' + donation.itemCategory + '</li>';
+                        });
+                    } else {
+                        contentString += '<li>No donations available.</li>';
+                    }
+
+                    contentString += '</ul>';
+                    contentString += '<button onclick="window.location.href=\'' + encodeURIComponent(orgName) + '\'">View Details</button>';
+                    contentString += '</div>';
+
+                    var infoBox = new google.maps.InfoWindow({
+                        content: contentString
+                    });
+
+                    infoBox.open(map, marker);
+                },
+                error: function (error) {
+                    console.error('Error fetching donations:', error);
+                }
+            });
+        }
+
+        function geocodeAddress(address, orgName, geocoder, map) {
+            geocoder.geocode({ 'address': address }, function (results, status) {
+                if (status === google.maps.GeocoderStatus.OK) {
+                    var location = results[0].geometry.location;
+
+                    var marker = new google.maps.Marker({
+                        position: location,
+                        map: map,
+                        title: orgName,
+                        icon: {
+                            url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                            scaledSize: new google.maps.Size(40, 40)
+                        }
+                    });
+
+                    // Add click event listener to marker
+                    google.maps.event.addListener(marker, 'click', function () {
+                        fetchDonationsAndShowInfo(orgName, marker, map);
+                    });
+
+                    map.setCenter(location);
+                } else {
+                    console.error('Geocode was not successful with this reason: ' + status);
+                }
+            });
+        }
 
      
     </script>

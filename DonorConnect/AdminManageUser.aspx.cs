@@ -13,7 +13,7 @@ namespace DonorConnect
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            BindDonorsGridView();
         }
 
         protected void gvDonors_RowDataBound(object sender, GridViewRowEventArgs e)
@@ -167,6 +167,106 @@ namespace DonorConnect
             admin.Style["display"] = "block";
 
         }
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            string keyword = txtSearch.Text.Trim();
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                SearchAll(keyword);
+            }
+            else
+            {
+                // Default view
+                BindDonorsGridView();
+                BindOrgGridView();
+                BindRiderGridView();
+                BindAdminGridView();
+            }
+        }
+
+        private void SearchAll(string keyword)
+        {
+            bool donorIsFound = SearchDonor(keyword);
+            bool orgIsFound = SearchOrg(keyword);
+            bool riderIsFound = SearchRider(keyword);
+            bool adminIsFound = SearchAdmin(keyword);
+
+            // Show/Hide sections based on results
+            donor.Style["display"] = donorIsFound ? "block" : "none";
+            org.Style["display"] = orgIsFound ? "block" : "none";
+            rider.Style["display"] = riderIsFound ? "block" : "none";
+            admin.Style["display"] = adminIsFound ? "block" : "none";
+        }
+
+        private bool SearchDonor(string keyword)
+        {
+            string sql = "SELECT donorId, donorUsername, donorName, donorEmail, donorContactNumber, donorAddress1, createdOn, status " +
+                         "FROM donor WHERE donorUsername LIKE '%" + keyword + "%' OR donorName LIKE '%" + keyword + "%' OR donorEmail LIKE '%" + keyword + "%' OR donorAddress1 LIKE '%" + keyword + "%'";
+
+            QRY _Qry = new QRY();
+            DataTable _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                gvDonors.DataSource = _dt;
+                gvDonors.DataBind();
+                return true; // results found
+            }
+            return false; // no results
+        }
+
+        private bool SearchOrg(string keyword)
+        {
+            string sql = "SELECT orgId, orgName, orgEmail, orgContactNumber, orgAddress, picName, picEmail, picContactNumber, orgDescription, orgRegion, createdOn, orgStatus, adminId " +
+                         "FROM organization WHERE orgName LIKE '%" + keyword + "%' OR orgEmail LIKE '%" + keyword + "%' OR picName LIKE '%" + keyword + "%' OR orgAddress LIKE '%" + keyword + "%'";
+
+            QRY _Qry = new QRY();
+            DataTable _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                gvOrg.DataSource = _dt;
+                gvOrg.DataBind();
+                return true; 
+            }
+            return false; 
+        }
+
+        private bool SearchRider(string keyword)
+        {
+            string sql = "SELECT riderId, riderUsername, riderFullName, riderEmail, riderContactNumber, vehicleType, vehiclePlateNumber, registerDate, riderStatus, adminId " +
+                         "FROM delivery_rider WHERE riderUsername LIKE '%" + keyword + "%' OR riderFullName LIKE '%" + keyword + "%' OR riderEmail LIKE '%" + keyword + "%' OR riderContactNumber LIKE '%" + keyword + "%' OR vehiclePlateNumber LIKE '%" + keyword + "%'";
+
+            QRY _Qry = new QRY();
+            DataTable _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                gvRider.DataSource = _dt;
+                gvRider.DataBind();
+                return true; 
+            }
+            return false; 
+        }
+
+        private bool SearchAdmin(string keyword)
+        {
+            string sql = "SELECT adminId, adminUsername, adminEmail, status, created_on, isMain " +
+                         "FROM admin WHERE adminUsername LIKE '%" + keyword + "%' OR adminEmail LIKE '%" + keyword + "%'";
+
+            QRY _Qry = new QRY();
+            DataTable _dt = _Qry.GetData(sql);
+
+            if (_dt.Rows.Count > 0)
+            {
+                gvAdmin.DataSource = _dt;
+                gvAdmin.DataBind();
+                return true; 
+            }
+            return false; 
+        }
+
 
     }
 }

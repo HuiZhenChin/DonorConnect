@@ -30,7 +30,8 @@ namespace DonorConnect
             QRY _Qry = new QRY();
             DataTable _dt = new DataTable();
             string username = Session["username"].ToString();
-            string id = GetOrgId(username);
+            Organization org = new Organization(username, "", "", "", "");
+            string id = org.GetOrgId();
             string strSQL = @"SELECT donationPublishId, urgentStatus, title, peopleNeeded, description, restriction, itemCategory, 
                              specificItemsForCategory, specificQtyForCategory, address, donationState, created_on, status, donationImage, donationAttch
                       FROM [donation_publish] 
@@ -248,7 +249,8 @@ namespace DonorConnect
             else
             {
                 string username = Session["username"].ToString();
-                string orgId = GetOrgId(username);
+                Organization org = new Organization(username, "", "", "", "");
+                string orgId = org.GetOrgId();
 
                 // redirect to edit page 
                 Response.Redirect($"EditOrgDonations.aspx?donationPublishId={donationPublishId}&orgId={orgId}");
@@ -274,7 +276,8 @@ namespace DonorConnect
             else
             {
                 string username = Session["username"].ToString();
-                string orgId = GetOrgId(username);
+                Organization org = new Organization(username, "", "", "", "");
+                string orgId = org.GetOrgId();
 
                 // redirect to edit page 
                 Response.Redirect($"EditOrgDonations.aspx?donationPublishId={donationPublishId}&orgId={orgId}");
@@ -294,7 +297,8 @@ namespace DonorConnect
             }
 
             string username = Session["username"].ToString();
-            string orgId = GetOrgId(username);
+            Organization org = new Organization(username, "", "", "", "");
+            string orgId = org.GetOrgId();
 
             // update status become "closed" and check from donation request table to see how many pending requests made by donors
             string status = "Closed";
@@ -340,7 +344,8 @@ namespace DonorConnect
             LinkButton btn = (LinkButton)sender;
             string donationPublishId = btn.CommandArgument;
             string username = Session["username"].ToString();
-            string orgId = GetOrgId(username);
+            Organization org = new Organization(username, "", "", "", "");
+            string orgId = org.GetOrgId();
 
             string sql;
             QRY _Qry = new QRY();
@@ -415,24 +420,6 @@ namespace DonorConnect
         {
             // redirect to a page to create a new donation
             Response.Redirect("~/PublishDonations.aspx");
-        }
-
-        private string GetOrgId(string username)
-        {
-            string sql;
-            string id = "";
-            QRY _Qry = new QRY();
-            DataTable _dt;
-            sql = "SELECT * FROM [organization] WHERE orgName = '" + username + "' ";
-
-            _dt = _Qry.GetData(sql);
-
-            if (_dt.Rows.Count > 0)
-            {
-                id = _dt.Rows[0]["orgId"].ToString();
-            }
-
-            return id;
         }
 
        

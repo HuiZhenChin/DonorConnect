@@ -288,6 +288,8 @@
       <DependentUpon>ApplicationResubmit.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="Class\DonationPublish.cs" />
+    <Compile Include="Class\Organization.cs" />
     <Compile Include="EditOrgDonations.aspx.cs">
       <DependentUpon>EditOrgDonations.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
