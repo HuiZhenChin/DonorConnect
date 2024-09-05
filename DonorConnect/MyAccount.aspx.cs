@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -676,6 +677,21 @@ namespace DonorConnect
                 return builder.ToString();
             }
         }
+
+        protected void btnPreview_Click(object sender, EventArgs e)
+        {
+         
+            string username= Session["username"].ToString();
+
+            string role = Session["role"].ToString();
+
+            if (username != null && role != null)
+            {
+                Response.Redirect($"PreviewPublicInfo.aspx?role={role}&username={username}");
+
+            }
+        }
+
 
     }
 }

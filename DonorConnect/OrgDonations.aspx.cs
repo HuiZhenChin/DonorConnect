@@ -110,8 +110,8 @@ namespace DonorConnect
                     newRow["created_on"] = row["created_on"];
                     newRow["status"] = row["status"];
                     newRow["itemDetails"] = itemDetailsBuilder.ToString();
-                    newRow["donationImages"] = ProcessImages(row["donationImage"].ToString());
-                    newRow["donationFiles"] = ProcessFiles(row["donationAttch"].ToString()); 
+                    newRow["donationImages"] = ImageFileProcessing.ProcessImages(row["donationImage"].ToString());
+                    newRow["donationFiles"] = ImageFileProcessing.ProcessFiles(row["donationAttch"].ToString()); 
 
 
                     processedTable.Rows.Add(newRow);
@@ -158,55 +158,6 @@ namespace DonorConnect
 
             return items.ToArray();
         }
-
-        private string ProcessImages(string base64Images)
-        {
-            if (string.IsNullOrEmpty(base64Images))
-            {
-                return string.Empty;
-            }
-
-            string[] base64ImageArray = base64Images.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            StringBuilder imagesBuilder = new StringBuilder();
-            imagesBuilder.AppendLine("<div class='image-grid'>");
-
-            foreach (string base64Image in base64ImageArray)
-            {
-                imagesBuilder.AppendLine($"<div class='image-item'><img src='data:image/png;base64,{base64Image}' alt='Image' class='img-fluid' /></div>");
-            }
-
-            imagesBuilder.AppendLine("</div>");
-            return imagesBuilder.ToString();
-        }
-
-
-        private string ProcessFiles(string base64Files)
-        {
-            if (string.IsNullOrEmpty(base64Files))
-            {
-                return string.Empty;
-            }
-
-            string[] base64FileArray = base64Files.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            StringBuilder filesBuilder = new StringBuilder();
-
-            foreach (string base64File in base64FileArray)
-            {
-                string[] fileParts = base64File.Split(new char[] { ':' }, 2);
-                if (fileParts.Length == 2)
-                {
-                    string fileName = fileParts[0]; // get original filename
-                    string base64Content = fileParts[1];
-                    string fileExtension = fileName.Split('.').Last().ToLower();  // get file extension
-                    string fileDataUrl = $"data:application/{fileExtension};base64,{base64Content}"; // get url to download from browser
-                    filesBuilder.AppendLine($"<a href='{fileDataUrl}' download='{fileName}'>Download {fileName}</a><br />");
-                }
-            }
-
-            return filesBuilder.ToString();
-        }
-
-
 
         protected void ddlStatus_SelectedIndexChanged(object sender, EventArgs e)
         {

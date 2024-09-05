@@ -44,6 +44,58 @@ namespace DonorConnect
             return imagesBuilder.ToString();
         }
 
+
+        public static string ProcessFiles(string encryptedBase64File)
+        {
+            if (string.IsNullOrEmpty(encryptedBase64File))
+            {
+                return string.Empty;
+            }
+
+            // decrypt the base64 files string
+            string decryptedBase64Files = DecryptAndSaveFiles(encryptedBase64File);
+
+            // split the decrypted string into individual base64 file entries
+            string[] base64FileArray = decryptedBase64Files.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            StringBuilder filesBuilder = new StringBuilder();
+
+            foreach (string base64File in base64FileArray)
+            {
+                // split each entry into file type and base64 content
+                string[] fileParts = base64File.Split(new char[] { ':' }, 2);
+                if (fileParts.Length == 2)
+                {
+                    string fileName = fileParts[0]; // get the filename
+                    string base64Content = fileParts[1].Trim();
+
+                    string fileExtension = fileName.Split('.').Last().ToLower();  // get the file extension
+
+                    string mimeType;
+                    switch (fileExtension)
+                    {
+                        case "pdf":
+                            mimeType = "application/pdf";
+                            break;
+                        case "docx":
+                            mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                            break;
+                        default:
+                            continue; // skip unknown file types
+                    }
+
+                    // URL for the file
+                    string fileDataUrl = $"data:{mimeType};base64,{base64Content}";
+
+                    // download link for the file
+                    filesBuilder.AppendLine($"<a href='{fileDataUrl}' download='{fileName}'>Download {fileName}</a><br />");
+                }
+            }
+
+            return filesBuilder.ToString();
+        }
+
+
         public static string DecryptAndSaveFiles(string encryptedImg)
         {
             var fileEntries = encryptedImg.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -57,23 +109,38 @@ namespace DonorConnect
                     throw new ArgumentException("Invalid encrypted file data format.");
                 }
 
-                string fileName = fileParts[0];
+                string fileName = fileParts[0];  // extract filename
                 string encryptedBase64String = fileParts[1];
 
                 string decryptedBase64String = DecryptImages(encryptedBase64String);
 
+                // check the file type and convert to its correct format
                 if (fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                 {
-                    decryptedFilesBuilder.AppendLine($"pdf:{decryptedBase64String}");
+                    decryptedFilesBuilder.AppendLine($"{fileName}:{decryptedBase64String}");
+                }
+                else if (fileName.EndsWith(".docx", StringComparison.OrdinalIgnoreCase))
+                {
+                    decryptedFilesBuilder.AppendLine($"{fileName}:{decryptedBase64String}");
+                }
+                else if (fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                         fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                         fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    // handle image formats (png, jpg, jpeg)
+                    decryptedFilesBuilder.AppendLine(decryptedBase64String);
                 }
                 else
                 {
+                    // if file type is unknown, skip it or handle it as a general case
                     decryptedFilesBuilder.AppendLine(decryptedBase64String);
                 }
             }
 
             return decryptedFilesBuilder.ToString();
         }
+
+
 
         public static string DecryptImages(string encryptedBase64String)
         {

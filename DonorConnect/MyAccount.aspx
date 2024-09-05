@@ -14,6 +14,12 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
    <div class="container">
+       <!-- Preview Info Icon -->
+        <div style="top: 10px;">
+            <asp:LinkButton ID="btnPreview" runat="server" CssClass="btn btn-link" OnClick="btnPreview_Click" ToolTip="Preview Public Information">
+                <i class="fas fa-eye" style="font-size: 24px; color: #000;"></i>
+            </asp:LinkButton>
+        </div>
          <!-- Profile Picture Section -->
         <div class="profile-pic" id="profilePic" runat="server" onclick="triggerFileUpload()" style="background-color: #f5f5f5; padding: 20px;">
             <label class="-label" for="fileUpload" style="cursor: pointer;">

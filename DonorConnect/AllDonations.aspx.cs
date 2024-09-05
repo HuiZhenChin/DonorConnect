@@ -29,6 +29,13 @@ namespace DonorConnect
             {
                 BindGridView();
                 Session["AvailableCategoryItem"] = categoryItemDict;
+
+                string donationPublishId = Request.QueryString["donationPublishId"];
+                if (!string.IsNullOrEmpty(donationPublishId))
+                {
+                    // scroll to the specific donation
+                    ClientScript.RegisterStartupScript(this.GetType(), "ScrollToDonation", $"scrollToSelectedDonation('{donationPublishId}');", true);
+                }
             }
         }
 
@@ -66,6 +73,20 @@ namespace DonorConnect
             }
 
             _dt = _Qry.GetData(strSQL);
+
+            string username = Session["username"]?.ToString();
+            HashSet<string> savedDonations = new HashSet<string>();
+
+            if (!string.IsNullOrEmpty(username))
+            {
+                // fetch saved donations for the user
+                DataTable savedDonationsTable = _Qry.GetData($"SELECT donationPublishId FROM saved_favourite_donation WHERE username = '{username}'");
+                foreach (DataRow savedRow in savedDonationsTable.Rows)
+                {
+                    savedDonations.Add(savedRow["donationPublishId"].ToString());
+                }
+            }
+
             if (_dt.Rows.Count > 0)
             {
                 DataTable processedTable = new DataTable();
@@ -85,6 +106,7 @@ namespace DonorConnect
                 processedTable.Columns.Add("orgName");
                 processedTable.Columns.Add("urgentLabel");
                 processedTable.Columns.Add("cardBody");
+                processedTable.Columns.Add("saveButton");
 
                 foreach (DataRow row in _dt.Rows)
                 {
@@ -101,22 +123,29 @@ namespace DonorConnect
                         string category = itemCategories[i].Trim();
                         string items = i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]) ? specificItems[i].Trim('(', ')') : "Any";
 
-                        // Store in dictionary
+                        // Replace "null" with an empty string
+                        items = items.Replace("null", "").Trim();
+
+                        if (string.IsNullOrEmpty(items))
+                        {
+                            items = "Any";
+                        }
+
+                        // store in dictionary
                         if (!categoryItemDict.ContainsKey(category))
                         {
                             categoryItemDict[category] = new List<string>();
                         }
 
                         categoryItemDict[category].Add(items);
-
-                        // Existing logic to build itemDetails
+                   
                         itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + category + "):<br />");
 
                         if (i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]))
                         {
                             itemDetailsBuilder.Append("Specific Items Needed: " + items + "<br />");
                         }
-                        else
+                        else if (specificItems[i] == "null")
                         {
                             itemDetailsBuilder.Append("Specific Items Needed: Any<br />");
                         }
@@ -149,8 +178,8 @@ namespace DonorConnect
                     newRow["donationState"] = row["donationState"];
                     newRow["created_on"] = row["created_on"];
                     newRow["itemDetails"] = itemDetailsBuilder.ToString();
-                    newRow["donationImages"] = ProcessImages(row["donationImage"].ToString());
-                    newRow["donationFiles"] = ProcessFiles(row["donationAttch"].ToString());
+                    newRow["donationImages"] = ImageFileProcessing.ProcessImages(row["donationImage"].ToString());
+                    newRow["donationFiles"] = ImageFileProcessing.ProcessFiles(row["donationAttch"].ToString());
                     newRow["orgProfilePic"] = profilePic;
                     newRow["orgName"] = orgName;
 
@@ -175,6 +204,16 @@ namespace DonorConnect
                     else
                     {
                         newRow["urgentLabel"] = "";
+                    }
+
+                    string donationId = row["donationPublishId"].ToString();
+                    if (savedDonations.Contains(donationId))
+                    {
+                        newRow["saveButton"] = "black";
+                    }
+                    else
+                    {
+                        newRow["saveButton"] = "lightgray";
                     }
 
                     processedTable.Rows.Add(newRow);
@@ -223,53 +262,7 @@ namespace DonorConnect
             return items.ToArray();
         }
 
-        private string ProcessImages(string base64Images)
-        {
-            if (string.IsNullOrEmpty(base64Images))
-            {
-                return string.Empty;
-            }
-
-            string[] base64ImageArray = base64Images.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            StringBuilder imagesBuilder = new StringBuilder();
-            imagesBuilder.AppendLine("<div class='image-grid'>");
-
-            foreach (string base64Image in base64ImageArray)
-            {
-                imagesBuilder.AppendLine($"<div class='image-item'><img src='data:image/png;base64,{base64Image}' alt='Image' class='img-fluid' /></div>");
-            }
-
-            imagesBuilder.AppendLine("</div>");
-            return imagesBuilder.ToString();
-        }
-
-
-        private string ProcessFiles(string base64Files)
-        {
-            if (string.IsNullOrEmpty(base64Files))
-            {
-                return string.Empty;
-            }
-
-            string[] base64FileArray = base64Files.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            StringBuilder filesBuilder = new StringBuilder();
-
-            foreach (string base64File in base64FileArray)
-            {
-                string[] fileParts = base64File.Split(new char[] { ':' }, 2);
-                if (fileParts.Length == 2)
-                {
-                    string fileName = fileParts[0]; // get original filename
-                    string base64Content = fileParts[1];
-                    string fileExtension = fileName.Split('.').Last().ToLower();  // get file extension
-                    string fileDataUrl = $"data:application/{fileExtension};base64,{base64Content}"; // get url to download from browser
-                    filesBuilder.AppendLine($"<a href='{fileDataUrl}' download='{fileName}'>Download {fileName}</a><br />");
-                }
-            }
-
-            return filesBuilder.ToString();
-        }
-
+       
         public Dictionary<string, List<string>> GetCategoryItemDictionary()
         {
             return Session["AvailableCategoryItem"] as Dictionary<string, List<string>>;
@@ -557,11 +550,11 @@ namespace DonorConnect
 
                         if (allItems.Count > 0)
                         {
-                            itemStringList.Add($"({string.Join(",", allItems)}, null)");
+                            itemStringList.Add($"({string.Join(",", allItems)}, '')");
                         }
                         else
                         {
-                            itemStringList.Add("null");
+                            itemStringList.Add("");
                         }
                     }
                 }
@@ -572,11 +565,11 @@ namespace DonorConnect
 
                     if (allItems.Count > 0)
                     {
-                        itemStringList.Add($"({string.Join(",", allItems)}, null)");
+                        itemStringList.Add($"({string.Join(",", allItems)}, '')");
                     }
                     else
                     {
-                        itemStringList.Add("null");
+                        itemStringList.Add("");
                     }
                 }
             }
@@ -588,6 +581,20 @@ namespace DonorConnect
             // call the filtered donations method
             DataTable filteredDonations = GetFilteredDonations(categoryString, specificItemsString, states);
 
+            string username = Session["username"]?.ToString();
+            HashSet<string> savedDonations = new HashSet<string>();
+            QRY _Qry = new QRY();
+
+            if (!string.IsNullOrEmpty(username))
+            {
+                // fetch saved donations for the user
+                DataTable savedDonationsTable = _Qry.GetData($"SELECT donationPublishId FROM saved_favourite_donation WHERE username = '{username}'");
+                foreach (DataRow savedRow in savedDonationsTable.Rows)
+                {
+                    savedDonations.Add(savedRow["donationPublishId"].ToString());
+                }
+            }
+
             // add these columns, as they are from different table in database
             filteredDonations.Columns.Add("orgProfilePic", typeof(string));
             filteredDonations.Columns.Add("orgName", typeof(string));
@@ -596,6 +603,7 @@ namespace DonorConnect
             filteredDonations.Columns.Add("donationFiles", typeof(string));
             filteredDonations.Columns.Add("urgentLabel", typeof(string));
             filteredDonations.Columns.Add("cardBody", typeof(string));
+            filteredDonations.Columns.Add("saveButton");
 
             // populate the new columns
             foreach (DataRow row in filteredDonations.Rows)
@@ -614,11 +622,31 @@ namespace DonorConnect
 
                 for (int i = 0; i < itemCategories.Length; i++)
                 {
-                    itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + itemCategories[i].Trim() + "):<br />");
-
-                    if (i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]))
+                    // replace "null" with "Any"
+                    string itemCategory = itemCategories[i].Trim();
+                    if (itemCategory.Equals("null", StringComparison.OrdinalIgnoreCase))
                     {
-                        itemDetailsBuilder.Append("Specific Items Needed: " + specificItems[i].Trim('(', ')') + "<br />");
+                        itemCategory = "Any";
+                    }
+
+                    itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + itemCategory + "):<br />");
+
+                    if (i < specificItems.Length)
+                    {
+                        string specificItem = specificItems[i].Trim('(', ')');
+                        if (specificItem.Equals("null", StringComparison.OrdinalIgnoreCase))
+                        {
+                            specificItem = "Any";
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(specificItem))
+                        {
+                            itemDetailsBuilder.Append("Specific Items Needed: " + specificItem + "<br />");
+                        }
+                        else
+                        {
+                            itemDetailsBuilder.Append("Specific Items Needed: Any<br />");
+                        }
                     }
                     else
                     {
@@ -638,8 +666,8 @@ namespace DonorConnect
                 }
 
                 row["itemDetails"] = itemDetailsBuilder.ToString();
-                row["donationImages"] = ProcessImages(row["donationImage"].ToString());
-                row["donationFiles"] = ProcessFiles(row["donationAttch"].ToString());
+                row["donationImages"] = ImageFileProcessing.ProcessImages(row["donationImage"].ToString());
+                row["donationFiles"] = ImageFileProcessing.ProcessFiles(row["donationAttch"].ToString());
 
                 if (row["urgentStatus"].ToString().ToLower() == "yes")
                 {
@@ -662,6 +690,16 @@ namespace DonorConnect
                 {
                     row["urgentLabel"] = "";
                    
+                }
+
+                string donationId = row["donationPublishId"].ToString();
+                if (savedDonations.Contains(donationId))
+                {
+                    row["saveButton"] = "black";
+                }
+                else
+                {
+                    row["saveButton"] = "lightgray";
                 }
             }
 
@@ -775,6 +813,20 @@ namespace DonorConnect
 
                 DataTable searchResults = GetDonationsByKeyword(keyword);
 
+                string username = Session["username"]?.ToString();
+                HashSet<string> savedDonations = new HashSet<string>();
+                QRY _Qry = new QRY();
+
+                if (!string.IsNullOrEmpty(username))
+                {
+                    // fetch saved donations for the user
+                    DataTable savedDonationsTable = _Qry.GetData($"SELECT donationPublishId FROM saved_favourite_donation WHERE username = '{username}'");
+                    foreach (DataRow savedRow in savedDonationsTable.Rows)
+                    {
+                        savedDonations.Add(savedRow["donationPublishId"].ToString());
+                    }
+                }
+
                 searchResults.Columns.Add("orgProfilePic", typeof(string));
                 searchResults.Columns.Add("orgName", typeof(string));
                 searchResults.Columns.Add("itemDetails", typeof(string));
@@ -782,6 +834,7 @@ namespace DonorConnect
                 searchResults.Columns.Add("donationFiles", typeof(string));
                 searchResults.Columns.Add("urgentLabel", typeof(string));
                 searchResults.Columns.Add("cardBody", typeof(string));
+                searchResults.Columns.Add("saveButton");
 
                 // populate the new columns
                 foreach (DataRow row in searchResults.Rows)
@@ -800,11 +853,31 @@ namespace DonorConnect
 
                     for (int i = 0; i < itemCategories.Length; i++)
                     {
-                        itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + itemCategories[i].Trim() + "):<br />");
-
-                        if (i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]))
+                        // Replace "null" with "Any"
+                        string itemCategory = itemCategories[i].Trim();
+                        if (itemCategory.Equals("null", StringComparison.OrdinalIgnoreCase))
                         {
-                            itemDetailsBuilder.Append("Specific Items Needed: " + specificItems[i].Trim('(', ')') + "<br />");
+                            itemCategory = "Any";
+                        }
+
+                        itemDetailsBuilder.Append("Item Category " + (i + 1) + " (" + itemCategory + "):<br />");
+
+                        if (i < specificItems.Length)
+                        {
+                            string specificItem = specificItems[i].Trim('(', ')');
+                            if (specificItem.Equals("null", StringComparison.OrdinalIgnoreCase))
+                            {
+                                specificItem = "Any";
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(specificItem))
+                            {
+                                itemDetailsBuilder.Append("Specific Items Needed: " + specificItem + "<br />");
+                            }
+                            else
+                            {
+                                itemDetailsBuilder.Append("Specific Items Needed: Any<br />");
+                            }
                         }
                         else
                         {
@@ -824,8 +897,8 @@ namespace DonorConnect
                     }
 
                     row["itemDetails"] = itemDetailsBuilder.ToString();
-                    row["donationImages"] = ProcessImages(row["donationImage"].ToString());
-                    row["donationFiles"] = ProcessFiles(row["donationAttch"].ToString());
+                    row["donationImages"] = ImageFileProcessing.ProcessImages(row["donationImage"].ToString());
+                    row["donationFiles"] = ImageFileProcessing.ProcessFiles(row["donationAttch"].ToString());
 
                     if (row["urgentStatus"].ToString().ToLower() == "yes")
                     {
@@ -850,7 +923,17 @@ namespace DonorConnect
 
                     }
 
-                   
+                    string donationId = row["donationPublishId"].ToString();
+                    if (savedDonations.Contains(donationId))
+                    {
+                        row["saveButton"] = "black";
+                    }
+                    else
+                    {
+                        row["saveButton"] = "lightgray";
+                    }
+
+
                 }
 
                 gvAllDonations.DataSource = searchResults;
@@ -972,17 +1055,102 @@ namespace DonorConnect
         {
             if (Session["username"] == null)
             {
-
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('Please login or sign up if you do not have an account yet to save this donation to the cart.');", true);
             }
             else
             {
-
                 string username = Session["username"].ToString();
+                LinkButton btn = (LinkButton)sender;
+                string donationPublishId = btn.CommandArgument;
 
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('Hi');", true);
+                // check if the donation is already saved
+                if (IsDonationAlreadySaved(username, donationPublishId))
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('This donation is already saved to your favorites.');", true);
+                }
+                else
+                {
+                    // save donation to favorites
+                    SaveToFavorite(username, donationPublishId);
+                }
             }
         }
+
+        private bool IsDonationAlreadySaved(string username, string donationPublishId)
+        {
+           
+            QRY _Qry = new QRY();
+            string strSQL = "SELECT COUNT(*) FROM saved_favourite_donation WHERE username = @Username AND donationPublishId = @DonationPublishId";
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@Username", username },
+                { "@DonationPublishId", donationPublishId }
+            };
+
+            // Execute query to check if any record exists
+            string count = _Qry.GetScalarValue(strSQL, parameters);
+
+            int countInt = 0;
+
+            if (!int.TryParse(count, out countInt))
+            {               
+                countInt = 0; 
+            }
+
+            return countInt > 0;
+        }
+
+        private void SaveToFavorite(string username, string donationPublishId)
+        {
+            QRY _Qry = new QRY();
+            string id = GetCurrentSavedDonationId(_Qry);
+
+            string strSQL = "INSERT INTO saved_favourite_donation(savedDonationId, username, donationPublishId, savedOn) VALUES (@SavedDonationId, @Username, @DonationPublishId, GETDATE())";
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@SavedDonationId", id },
+                { "@Username", username },
+                { "@DonationPublishId", donationPublishId }
+            };
+
+           bool success= _Qry.ExecuteNonQuery(strSQL, parameters);
+
+            if (success)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation saved to favorites successfully.');", true);
+                
+            }
+
+            else
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('There was an error saving the donation. Please try again!');", true);
+            }
+        }
+
+        private string GetCurrentSavedDonationId(QRY qry)
+        {
+            string sql = "SELECT TOP 1 savedDonationId FROM saved_favourite_donation ORDER BY savedDonationId DESC";
+            DataTable dt = qry.GetData(sql);
+
+            if (dt.Rows.Count > 0)
+            {
+                string latestId = dt.Rows[0]["savedDonationId"].ToString();
+               
+                int latestNum = int.Parse(latestId.Substring(1));
+                int newNum = latestNum + 1;
+                return "S" + newNum.ToString();
+            }
+            else
+            {
+                // when no IDs exist, start with 'S1'
+                return "S1";
+            }
+        }
+
+
+
 
     }
 }

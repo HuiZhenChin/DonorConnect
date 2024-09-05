@@ -11,7 +11,17 @@ namespace DonorConnect
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!IsPostBack)
+            {
 
+            }
         }
+
+        protected void btnViewDonation_Click(object sender, EventArgs e)
+        {
+
+            Response.Redirect("~/AllDonations.aspx");
+        }
+
     }
 }

@@ -17,7 +17,9 @@ namespace DonorConnect
         protected void Page_Load(object sender, EventArgs e)
         {
             string id = Request.QueryString["id"];
-            string reject = Request.QueryString["reject"];
+            string reject = Request.QueryString["rejectDonationRequest"];
+            string open = Request.QueryString["open"];
+            string close = Request.QueryString["closeDonationRequest"];
 
             if (!string.IsNullOrEmpty(id))
             {   
@@ -129,7 +131,7 @@ namespace DonorConnect
                 donationPublishId = '" + donationPublishId.Replace("'", "''") + @"'
             UNION ALL
             SELECT 
-                'Date Registered' AS FieldName, CAST(created_on AS NVARCHAR(MAX)) AS FieldValue 
+                'Date Submitted' AS FieldName, CAST(created_on AS NVARCHAR(MAX)) AS FieldValue 
             FROM 
                 donation_publish
             WHERE 
@@ -141,7 +143,66 @@ namespace DonorConnect
                 donation_publish
             WHERE 
                 donationPublishId = '" + donationPublishId.Replace("'", "''") + @"'
+            
             ";
+
+            string reject = Request.QueryString["rejectDonationRequest"];
+            if (reject == "Yes")
+            {
+                sql += @"
+                UNION ALL
+                SELECT 
+                    'Rejected Reason' AS FieldName, rejectedReason AS FieldValue 
+                FROM 
+                    donation_publish
+                WHERE 
+                    donationPublishId = '" + donationPublishId.Replace("'", "''") + @"'
+                UNION ALL
+                SELECT 
+                    'Handled By' AS FieldName, adminId AS FieldValue 
+                FROM 
+                    donation_publish
+                WHERE 
+                    donationPublishId = '" + donationPublishId.Replace("'", "''") + @"'
+                ";
+                }
+
+                string close = Request.QueryString["closeDonationRequest"];
+                if (close == "Yes")
+                {
+                    sql += @"
+                    UNION ALL
+                    SELECT 
+                        'Closure Reason' AS FieldName, closureReason AS FieldValue 
+                    
+                    FROM 
+                        donation_publish
+                    WHERE 
+                        donationPublishId = '" + donationPublishId.Replace("'", "''") + @"'
+                    UNION ALL
+                    SELECT 
+                        'Handled By' AS FieldName, adminId AS FieldValue 
+                    FROM 
+                        donation_publish
+                    WHERE 
+                        donationPublishId = '" + donationPublishId.Replace("'", "''") + @"'
+                    ";
+                }
+
+                string open = Request.QueryString["open"];
+                if (open == "Yes")
+                {
+                    sql += @"
+                       
+                        UNION ALL
+                        SELECT 
+                            'Handled By' AS FieldName, adminId AS FieldValue 
+                        FROM 
+                            donation_publish
+                        WHERE 
+                            donationPublishId = '" + donationPublishId.Replace("'", "''") + @"'
+                        ";
+                }
 
             _dt = _Qry.GetData(sql);
 
@@ -169,7 +230,7 @@ namespace DonorConnect
                 if (row["FieldName"].ToString() == "Attachment(s)")
                 {
                     string decryptedFile = row["FieldValue"].ToString();
-                    string processedFileHtml = ImageFileProcessing.ProcessImages(decryptedFile);
+                    string processedFileHtml = ImageFileProcessing.ProcessFiles(decryptedFile);
                     row["FieldValue"] = processedFileHtml;
                 }
             }
@@ -225,8 +286,32 @@ namespace DonorConnect
 
         protected void rptDonation_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            if (e.Item.ItemType == ListItemType.Footer)
             {
+                LinkButton btnApprove = (LinkButton)e.Item.FindControl("btnApprove");
+                LinkButton btnReject = (LinkButton)e.Item.FindControl("btnReject");
+
+                if (btnApprove != null && btnReject != null)
+                {
+                    string reject = Request.QueryString["rejectDonationRequest"];
+                    string open = Request.QueryString["open"];
+                    string close = Request.QueryString["closeDonationRequest"];
+
+                    if (reject == "Yes" || close == "Yes" || open == "Yes")
+                    {
+                        btnApprove.Visible = false;
+                        btnReject.Visible = false;
+                    }
+                    else
+                    {
+                        btnApprove.Visible = true;
+                        btnReject.Visible = true;
+                    }
+                }
+            }
+            else if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                
                 Repeater rptCategoryDetails = (Repeater)e.Item.FindControl("rptCategoryDetails");
                 string fieldName = DataBinder.Eval(e.Item.DataItem, "FieldName").ToString();
                 string fieldValue = DataBinder.Eval(e.Item.DataItem, "FieldValue").ToString();
@@ -237,6 +322,8 @@ namespace DonorConnect
                     string specificItems = GetFieldValue(e.Item, "Specific Items Needed");
                     string specificQuantities = GetFieldValue(e.Item, "Specific Quantities Needed");
 
+                    specificItems = ReplaceNull(specificItems);
+              
                     string[] categories = SplitItems(fieldValue);
                     string[] items = SplitItems(specificItems);
                     string[] quantities = SplitItems(specificQuantities);
@@ -295,38 +382,6 @@ namespace DonorConnect
                 // hide or show category based on data presence
                 var categoryRow = (HtmlGenericControl)e.Item.FindControl("categoryRow");
                 categoryRow.Visible = fieldName == "Item Categories";
-
-                LinkButton btnApprove = (LinkButton)e.Item.FindControl("btnApprove");
-                LinkButton btnReject = (LinkButton)e.Item.FindControl("btnReject");
-
-                string reject = Request.QueryString["reject"];
-
-
-                if (reject == "Yes")
-                {
-                    if (btnApprove != null)
-                    {
-                        btnApprove.Visible = false;
-                    }
-
-                    if (btnReject != null)
-                    {
-                        btnReject.Visible = false;
-                    }
-                    else
-                    {
-                        if (btnApprove != null)
-                        {
-                            btnApprove.Visible = true;
-
-                            if (btnReject != null)
-                            {
-                                btnReject.Visible = true;
-                            }
-                        }
-
-                    }
-                }
 
                 string urgency = Request.QueryString["urgent"];
 
@@ -427,15 +482,17 @@ namespace DonorConnect
                 existingItems = dt.Rows[0]["specificItems"].ToString();
             }
 
-            // store as newitems, added to exisingitems, if there is any existing items found
             string[] itemList = items.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             string newItems = string.Join(",", itemList);
+
             if (!string.IsNullOrEmpty(existingItems))
             {
-                newItems = $"{newItems}";
+              
+                existingItems = existingItems.TrimEnd(','); 
+                newItems = $"{existingItems},{newItems}";
             }
 
-            
+
             string sql;
             var parameters = new Dictionary<string, object>
             {
@@ -615,8 +672,16 @@ namespace DonorConnect
             }
         }
 
+        private string ReplaceNull(string input)
+        {
+            if (input == "null")
+                return "";
 
        
+            return input.Replace("null", "").Trim();
+        }
+
+
 
     }
 }

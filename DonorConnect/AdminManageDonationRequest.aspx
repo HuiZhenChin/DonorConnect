@@ -91,7 +91,7 @@
                             <asp:BoundField DataField="donationState" HeaderText="State" SortExpression="State" />
                             <asp:BoundField DataField="restriction" HeaderText="Restriction" SortExpression="Restriction" />
                             <asp:BoundField DataField="created_on" HeaderText="Date Submitted" SortExpression="Date Submitted" />
-                            <asp:BoundField DataField="adminId" HeaderText="Approved By" SortExpression="Approved By" />
+                            <asp:BoundField DataField="adminId" HeaderText="Handled By" SortExpression="Handled By" />
                             <asp:TemplateField>
                                 <ItemTemplate>
                                     <%--view is to view donations--%>

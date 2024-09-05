@@ -304,13 +304,17 @@
         <Columns>
             <asp:TemplateField>
                 <ItemTemplate>
-                    <div class="row">
+                    <div class="row" data-donation-id='<%# Eval("donationPublishId") %>'>                
                         <%-- Profile Picture and Organization Name --%>
                         <div class="col-md-3 d-flex">
                             <img src='<%# String.IsNullOrEmpty(Eval("orgProfilePic") as string) ? "/Image/default_picture.jpg" : "data:image/png;base64," + Eval("orgProfilePic") %>'
                                  alt="Org Profile Picture"
                                  style="width: 100px; height: 100px; border-radius: 50%; border: 1px solid black;" />
-                            <strong class="ml-2"><%# Eval("orgName") %></strong>
+                            <a href='<%# "PreviewPublicInfo.aspx?role=organization&username=" + Eval("orgName") %>' style="text-decoration: none; color: black;">
+                                <strong class="ml-2"><%# Eval("orgName") %></strong>
+                            </a>
+
+
                         </div>
 
                         <%-- Card Body with Donation Details --%>
@@ -328,7 +332,7 @@
                                             <%-- People Needed and State --%>
                                             <div class="row mb-3">
                                                 <div class="col-md-6">
-                                                    <strong>People Needed:</strong>
+                                                    <strong>People In Need For Items:</strong>
                                                     <i class="icon icon-people-needed"></i><%# Eval("peopleNeeded") %>
                                                 </div>
                                                 <div class="col-md-6 text-right">
@@ -367,7 +371,7 @@
                                             <asp:Label ID="lblItemCategory" runat="server" Text='<%# GetItemCategoryWithIcon(Eval("itemDetails")) %>' />
                                             <div class="row mb-3">
                                                 <div class="col-12 text-right position-absolute" style="bottom: 20px; right: 10px;">
-                                                    <asp:LinkButton class="fas fa-heart " style="font-size: 24px; color: black; cursor: pointer; padding-right: 20px;" title="Save to Favorites" runat="server" OnClick="btnSaveFav_Click"></asp:LinkButton>
+                                                    <asp:LinkButton class="fas fa-heart " style='<%# "font-size: 24px; cursor: pointer; padding-right: 20px; color: " + Eval("saveButton") %>' title="Save to Favorites" runat="server" OnClick="btnSaveFav_Click" CommandArgument='<%# Eval("donationPublishId") %>'></asp:LinkButton>
                                                     <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" OnClick="btnDonate_Click"/>
                                                 </div>
                                             </div>
@@ -395,6 +399,20 @@
                 text: message,
                 icon: 'error',
                 confirmButtonText: 'OK'
+            });
+        }
+
+        function showSuccess(message) {
+            Swal.fire({
+                text: message,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                timer: 5000,
+                timerProgressBar: true,
+                willClose: () => {
+
+                    window.location.href = 'AllDonations.aspx';
+                }
             });
         }
 
@@ -522,8 +540,9 @@
                     }
 
                     contentString += '</ul>';
-                    contentString += '<button onclick="window.location.href=\'' + encodeURIComponent(orgName) + '\'">View Details</button>';
-                    contentString += '</div>';
+                    var url = 'PreviewPublicInfo.aspx?role=organization&username=' + encodeURIComponent(orgName);
+                    console.log('Redirect URL:', url); 
+                    contentString += '<button onclick="window.open(\'' + url + '\', \'_blank\')">View Details</button>';
 
                     var infoBox = new google.maps.InfoWindow({
                         content: contentString
@@ -562,6 +581,15 @@
                     console.error('Geocode was not successful with this reason: ' + status);
                 }
             });
+        }
+
+        function scrollToSelectedDonation(donationPublishId) {
+            
+            var donation = document.querySelector(`[data-donation-id='${donationPublishId}']`);
+            if (donation) {
+               
+                donation.scrollIntoView({ behavior: 'smooth' });
+            }
         }
 
      

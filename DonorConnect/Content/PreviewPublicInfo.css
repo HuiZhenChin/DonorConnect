@@ -1,0 +1,72 @@
+﻿    .profile-pic img {
+        position: relative !important;
+    }
+
+    .ticket-card {
+        display: flex;
+        background: #fff;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .date {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+        color: #fff;
+        width: 100px;
+    }
+
+        .date time {
+            display: block;
+            text-align: center;
+        }
+
+            .date time span {
+                display: block;
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+
+    .card-content {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .ticket-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .event-date,
+    .event-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+        .event-date i,
+        .event-info i {
+            margin-right: 5px;
+        }
+
+    .btn-tickets {
+        margin-top: auto;
+        align-self: flex-start;
+        color: #fff;
+        background-color: #007bff;
+        padding: 8px 12px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+        .btn-tickets:hover {
+            background-color: #0056b3;
+        }

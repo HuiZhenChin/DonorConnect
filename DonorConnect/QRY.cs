@@ -136,15 +136,47 @@ namespace DonorConnect
         }
 
 
-        public string GetScalarValue(string sqlQuery)
+        //public string GetScalarValue(string sql, Dictionary<string, object> parameters = null)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString))
+        //        {
+        //            conn.Open();
+        //            using (SqlCommand cmd = new SqlCommand(sql, conn))
+        //            {
+        //                object result = cmd.ExecuteScalar();
+        //                return result != null ? result.ToString() : null;
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        throw new Exception("An error occurred while executing the scalar query.", ex);
+        //    }
+        //}
+
+        public string GetScalarValue(string sql, Dictionary<string, object> parameters = null)
         {
             try
             {
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString))
                 {
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand(sqlQuery, conn))
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
+                      
+                        if (parameters != null)
+                        {
+                            foreach (var param in parameters)
+                            {
+                               
+                                cmd.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
+                            }
+                        }
+
+                        
                         object result = cmd.ExecuteScalar();
                         return result != null ? result.ToString() : null;
                     }
@@ -152,7 +184,7 @@ namespace DonorConnect
             }
             catch (Exception ex)
             {
-            
+                // You may want to log the exception message or details here for further troubleshooting
                 throw new Exception("An error occurred while executing the scalar query.", ex);
             }
         }

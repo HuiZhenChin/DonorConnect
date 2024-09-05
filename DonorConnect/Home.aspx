@@ -11,7 +11,7 @@
         <div class="main-background">
             <div class="text2">CONNECT WITH IMPACT AND LOVE</div>
             <div class="text1">Inspiring Changes</div>
-             <button class="button-view-donations">View Donations</button>
+             <asp:button class="button-view-donations" OnClick="btnViewDonation_Click" runat="server" Text="View Donations"></asp:button>
         </div>
         <div style="width: 100%; background: white; padding: 20px 0;"></div>
         <div>

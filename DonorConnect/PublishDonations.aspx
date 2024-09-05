@@ -100,7 +100,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Item Categories</label>
+                    <label>Item Categories </label>
+                    <label style="font-style:italic; color: gray;">(For Specific Items Needed for each category, please add a comma <b> ","</b> if you have more than one item needed for that category.)</label>
                     <div class="category-row">
                         <div class="category-checkbox">
                             <asp:CheckBox ID="chkFood" runat="server" Text="Food"/>

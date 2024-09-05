@@ -118,7 +118,19 @@ namespace DonorConnect
             else if (status == "Rejected")
             {
                 string reject = "Yes";
-                Response.Redirect($"AdminViewDonationRequest.aspx?id={donationPublishId}&urgent={urgency}&reject={reject}");
+                Response.Redirect($"AdminViewDonationRequest.aspx?id={donationPublishId}&urgent={urgency}&rejectDonationRequest={reject}");
+            }
+
+            else if (status == "Closed")
+            {
+                string close = "Yes";
+                Response.Redirect($"AdminViewDonationRequest.aspx?id={donationPublishId}&urgent={urgency}&closeDonationRequest={close}");
+            }
+
+            else if (status == "Opened")
+            {
+                string open = "Yes";
+                Response.Redirect($"AdminViewDonationRequest.aspx?id={donationPublishId}&urgent={urgency}&open={open}");
             }
         }
 
