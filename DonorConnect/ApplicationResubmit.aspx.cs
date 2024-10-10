@@ -22,6 +22,14 @@ namespace DonorConnect
                 
                 if (!string.IsNullOrEmpty(riderId))
                 {
+                    string resubmitStatus = GetValue("resubmitApplication", riderId);
+                    if (resubmitStatus == "Yes")
+                    {
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showInfo('You have already resubmitted your application. Please wait for information from our team.');", true);
+                       
+                        return;
+                    }
+
                     riderDetails.Style["display"] = "block";
                     riderUsername.Text = GetValue("riderUsername", riderId);
                     riderName.Text = GetValue("riderFullName", riderId);
@@ -51,6 +59,14 @@ namespace DonorConnect
 
                 if (!string.IsNullOrEmpty(orgId))
                 {
+                    string resubmitStatus = GetValue("resubmitApplication", orgId);
+                    if (resubmitStatus == "Yes")
+                    {
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showInfo('You have already resubmitted your application. Please wait for information from our team.');", true);
+
+                        return;
+                    }
+
                     orgDetails.Style["display"] = "block";
                     orgName.Text = GetValue("orgName", orgId);
                     orgEmail.Text = GetValue("orgEmail", orgId);
@@ -155,7 +171,7 @@ namespace DonorConnect
                
                 if (riderPassword.Text != riderConfirmPassword.Text)
                 {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Password and Confirm Password do not match!', 'warning');", true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showError('Password and Confirm Password do not match!', 'warning');", true);
                     isValid = false;
                 }
 
@@ -260,17 +276,18 @@ namespace DonorConnect
             {
                 riderFacePicImage = GetValue("riderFacePicBase64", riderId);
             }
-       
+
             string sql = "UPDATE [delivery_rider] SET " +
                        "riderFullName = '" + riderName.Text + "', " +
                        "riderEmail = '" + riderEmail.Text + "', " +
                        "riderContactNumber = '" + riderContactNumber.Text + "', " +
                        "vehicleType = '" + vehicleType.SelectedValue + "', " +
-                       "vehiclePlateNumber = '" + vehiclePlateNo.Text  + "', " +
+                       "vehiclePlateNumber = '" + vehiclePlateNo.Text + "', " +
                        "drivingLicenseImageBase64 = '" + drivingLicenseImage + "', " +
                        "riderFacePicBase64 = '" + riderFacePicImage + "', " +
                        "riderHashPassword = '" + password + "', " +
-                       "riderStatus = '" + status + "' " +
+                       "riderStatus = '" + status + "', " +
+                       "resubmitApplication = 'Yes' " +  
                       "WHERE riderId = '" + riderId + "'";
 
             bool success = _Qry.ExecuteNonQuery(sql);
@@ -307,18 +324,20 @@ namespace DonorConnect
 
 
             string sql = "UPDATE [organization] SET " +
-                      "orgName = '" + orgName.Text + "', " +
-                      "orgEmail = '" + orgEmail.Text + "', " +
-                      "orgContactNumber = '" + orgContactNumber.Text + "', " +
-                      "orgAddress = '" + orgAddress.Text + "', " +
-                      "picName = '" + picName.Text + "', " +
-                      "picEmail = '" + picEmail.Text + "', " +
-                      "picContactNumber = '" + picNumber.Text + "', " +
-                      "orgRegion = '" + orgRegion.SelectedValue + "', " +
-                      "businessLicenseImageBase64 = '" + businessLicenseImage + "', " +
-                      "orgHashPassword = '" + password + "', " +
-                      "orgStatus = '" + status + "' " +
-                     "WHERE orgId = '" + orgId + "'";
+                          "orgName = '" + orgName.Text + "', " +
+                          "orgEmail = '" + orgEmail.Text + "', " +
+                          "orgContactNumber = '" + orgContactNumber.Text + "', " +
+                          "orgAddress = '" + orgAddress.Text + "', " +
+                          "picName = '" + picName.Text + "', " +
+                          "picEmail = '" + picEmail.Text + "', " +
+                          "picContactNumber = '" + picNumber.Text + "', " +
+                          "orgRegion = '" + orgRegion.SelectedValue + "', " +
+                          "businessLicenseImageBase64 = '" + businessLicenseImage + "', " +
+                          "orgHashPassword = '" + password + "', " +
+                          "orgStatus = '" + status + "', " +
+                          "resubmitApplication = 'Yes' " +  
+                         "WHERE orgId = '" + orgId + "'";
+
 
             bool success = _Qry.ExecuteNonQuery(sql);
 

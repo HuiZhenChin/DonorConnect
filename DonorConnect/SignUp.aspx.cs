@@ -163,7 +163,7 @@ namespace DonorConnect
                             isValid = false;
                         }
 
-                      
+
                         string orgSQL;
                         QRY _Qry1 = new QRY();
                         DataTable _dt1;
@@ -194,7 +194,7 @@ namespace DonorConnect
                                 string base64BusinessLicense = ImageFileProcessing.ConvertToBase64(orgLicense.PostedFiles);
                                 Session["OrgLicense"] = base64BusinessLicense;
                             }
-                            
+
 
                         }
                         break;
@@ -228,6 +228,11 @@ namespace DonorConnect
                         if (vehicleType.SelectedValue == "")
                         {
                             lblVehicleType.Text = "Vehicle Type is required";
+                            isValid = false;
+                        }
+                        if (riderRegion.SelectedValue == "")
+                        {
+                            lblRiderRegion.Text = "Preferred Region is required";
                             isValid = false;
                         }
                         if (riderPassword.Text == "")
@@ -277,6 +282,7 @@ namespace DonorConnect
                             Session["RiderEmail"] = riderEmail.Text;
                             Session["RiderContactNumber"] = riderContactNumber.Text;
                             Session["VehiclePlateNo"] = vehiclePlateNo.Text;
+                            Session["RiderRegion"] = riderRegion.SelectedValue;  
                             Session["VehicleType"] = vehicleType.SelectedValue;
                             Session["RiderPassword"] = riderPassword.Text;
 

@@ -19,9 +19,20 @@ namespace DonorConnect
 
                 string username = Request.QueryString["username"];
 
+                string orgName = Request.QueryString["orgName"];
+
                 if (role == "organization")
                 {
-                    ShowOrgInfo(username);
+                    if(username != null)
+                    {
+                        ShowOrgInfo(username);
+                    }
+
+                    else if (orgName != null)
+                    {
+                        ShowOrgInfo(orgName);
+                    }
+                    
                 }
 
                 else if (role == "rider")

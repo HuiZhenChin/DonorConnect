@@ -479,6 +479,7 @@ namespace DonorConnect
             string riderToken = Hash(riderId + DateTime.Now.ToString());
             bool isRiderRejected = false;
             bool isOrgRejected = false;
+            string resubmit = "No";
 
             if (!string.IsNullOrEmpty(riderId) && !string.IsNullOrEmpty(rejectionReason))
             {
@@ -486,7 +487,8 @@ namespace DonorConnect
                 string sql = "UPDATE [delivery_rider] SET " +
                              "riderStatus = '" + status + "', " +
                              "adminId = '" + adminId + "', " +
-                             "rejectedReason = '" + rejectionReason + "' " +
+                             "rejectedReason = '" + rejectionReason + "', " +
+                             "resubmitApplication = '" + resubmit + "' " +
                              "WHERE riderId = '" + riderId + "'";
 
                 QRY _Qry = new QRY();
@@ -520,7 +522,8 @@ namespace DonorConnect
                 string sql2 = "UPDATE [organization] SET " +
                               "orgStatus = '" + status + "', " +
                               "adminId = '" + adminId + "', " +
-                              "rejectedReason = '" + rejectionReason + "' " +
+                              "rejectedReason = '" + rejectionReason + "', " +
+                              "resubmitApplication = '" + resubmit + "' " +
                               "WHERE orgId = '" + orgId + "'";
 
                 QRY _Qry2 = new QRY();

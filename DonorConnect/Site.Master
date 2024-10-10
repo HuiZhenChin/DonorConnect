@@ -46,17 +46,18 @@
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item"><a class="nav-link" runat="server" href="~/Home">Home</a></li>
                         <li class="nav-item"><a class="nav-link" runat="server" href="~/AllDonations">Donations</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/Login">Contact</a></li>
+                        <li class="nav-item"><a class="nav-link" runat="server" href="~/FAQ">FAQ</a></li>
+                        <li class="nav-item"><a class="nav-link" runat="server" href="~/Contact">Contact</a></li>
 
                         <% if (Session["role"] != null) { %>
                             <% if (Session["role"].ToString() == "donor") { %>
-                                <li class="nav-item"><a class="nav-link" runat="server" href="">My Donations</a></li>
+                                <li class="nav-item"><a class="nav-link" runat="server" href="~/MyDonations">My Donations</a></li>
                                 <li class="nav-item"><a class="nav-link" runat="server" href="">Dashboard</a></li>
                             <% } else if (Session["role"].ToString() == "organization") { %>
                                 <li class="nav-item"><a class="nav-link" runat="server" href="~/OrgDonations">Manage Donations</a></li>
-                                <li class="nav-item"><a class="nav-link" runat="server" href="">Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" runat="server" href="~/OrgViewDonationRequest">Dashboard</a></li>
                             <% } else if (Session["role"].ToString() == "rider") { %>
-                                <li class="nav-item"><a class="nav-link" runat="server" href="~">My Deliveries</a></li>
+                                <li class="nav-item"><a class="nav-link" runat="server" href="~/AcceptDelivery">My Deliveries</a></li>
                                 <li class="nav-item"><a class="nav-link" runat="server" href="">Dashboard</a></li>
                             <% } else if (Session["role"].ToString() == "admin") { %>
                                 <li class="nav-item"><a class="nav-link" runat="server" href="">Message</a></li>
@@ -74,7 +75,7 @@
                         else
                         { %>       
                         <li class="nav-item">
-                            <a class="nav-link" href="">
+                            <a class="nav-link" href="Notifications">
                                 <i class="fas fa-bell text-white"></i>
                             </a>
                         </li>
@@ -107,11 +108,13 @@
 
         <div class="body-content">
             <asp:ContentPlaceHolder ID="MainContent" runat="server">
-            </asp:ContentPlaceHolder>
-            <hr />
-            <footer>
-                <p>&copy; <%: DateTime.Now.Year %> by DonorConnect</p>
-            </footer>
+                </asp:ContentPlaceHolder>
+
+                <!-- Footer section -->
+                <footer>
+                    <p>&copy; <%: DateTime.Now.Year %> by DonorConnect</p>
+                </footer>
+            
         </div>
     </form>
 

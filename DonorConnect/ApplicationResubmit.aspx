@@ -85,14 +85,20 @@
                 }
             }
 
-            function showSuccess(message) {
-                Swal.fire({
-                    title: 'Success!',
-                    text: message,
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-            }
+             function showSuccess(message) {
+                 Swal.fire({
+                     title: 'Success!',
+                     text: message,
+                     icon: 'success',
+                     timer: 6000,
+                     timerProgressBar: true,
+                     showConfirmButton: false,
+                     willClose: () => {
+                         window.close();
+                     }
+                 });
+             }
+
 
             function showError(message) {
                 Swal.fire({
@@ -103,13 +109,28 @@
                 });
             }
 
+             function showInfo(message) {
+                 Swal.fire({
+                     title: 'Already Submitted!',
+                     text: message,
+                     icon: 'info',
+                     timer: 6000, 
+                     timerProgressBar: true,
+                     showConfirmButton: false, 
+                     willClose: () => {
+                         window.close(); 
+                     }
+                 });
+             }
+
+
             function resetForm() {
-                // Reset all form fields to their original values
+                // reset all form fields to their original states
                 document.forms[0].reset();
             }
 
 
-        </script>
+     </script>
     <style>
         .category-row {
             display: flex;
@@ -373,6 +394,7 @@
                         <asp:Button ID="btnCancel" runat="server" Style="margin-left: 10px;" Text="Cancel" CssClass="btn btn-danger btn-lg" OnClientClick="resetForm(this)"/>
                     </div>
                 </div>
+            </div>
 
                 <!-- Modal/ Dialog Box -->
                 <div class="modal fade" id="sampleImageModal" tabindex="-1" role="dialog" aria-labelledby="sampleImageModalLabel" aria-hidden="true">

@@ -44,12 +44,73 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
+      <HintPath>..\packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.4, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.13.4\lib\net461\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.IdentityModel.Abstractions, Version=6.34.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Abstractions.6.34.0\lib\net472\Microsoft.IdentityModel.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=6.34.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.6.34.0\lib\net472\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=6.34.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.6.34.0\lib\net472\Microsoft.IdentityModel.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=6.34.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.6.34.0\lib\net472\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="QRCoder, Version=1.6.0.0, Culture=neutral, PublicKeyToken=c4ed5b9ae8358a28, processorArchitecture=MSIL">
+      <HintPath>..\packages\QRCoder.1.6.0\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Specialized, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Specialized.4.3.0\lib\net46\System.Collections.Specialized.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.34.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.6.34.0\lib\net472\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.7.1\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web, Version=4.0.5.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.4.7.2\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.4.7.2\lib\net461\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
@@ -95,6 +156,7 @@
     <Reference Include="Microsoft.AspNet.FriendlyUrls">
       <HintPath>..\packages\Microsoft.AspNet.FriendlyUrls.Core.1.0.2\lib\net45\Microsoft.AspNet.FriendlyUrls.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
@@ -102,6 +164,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AcceptDelivery.aspx" />
     <Content Include="AdminManageApplication.aspx" />
     <Content Include="AdminManageDonationRequest.aspx" />
     <Content Include="AdminManageUser.aspx" />
@@ -111,9 +174,13 @@
     <Content Include="AdminViewDonationRequest.aspx" />
     <Content Include="AllDonations.aspx" />
     <Content Include="ApplicationResubmit.aspx" />
+    <Content Include="Delivery.aspx" />
+    <Content Include="DeliveryVehicle.aspx" />
+    <Content Include="DonationRequest.aspx" />
+    <Content Include="FAQ.aspx" />
     <Content Include="Content\Home.css" />
     <Content Include="Content\Login.css" />
-    <Content Include="Content\Delivery.css" />
+    <Content Include="Content\DonationRequest.css" />
     <Content Include="Content\MyAccount.css" />
     <Content Include="Content\PreviewPublicInfo.css" />
     <Content Include="Content\SignUp.css" />
@@ -141,22 +208,46 @@
     <Content Include="Content\Site.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Image\4x4.png" />
+    <Content Include="Image\4x4_m1.png" />
     <Content Include="Image\business_license.jpg" />
+    <Content Include="Image\contact.jpg" />
+    <Content Include="Image\credit_card.png" />
     <Content Include="Image\default_picture.jpg" />
     <Content Include="Image\driving_license.jpg" />
+    <Content Include="Image\forest.png" />
     <Content Include="Image\invalid_face_photo.jpg" />
     <Content Include="Image\login_pic.jpg" />
     <Content Include="Image\logo.jpg" />
+    <Content Include="Image\logo.png" />
+    <Content Include="Image\lorry10feet.png" />
+    <Content Include="Image\lorry10feet_m1.png" />
+    <Content Include="Image\lorry14feet.png" />
+    <Content Include="Image\lorry14feet_m1.png" />
+    <Content Include="Image\lorry17feet.png" />
+    <Content Include="Image\lorry17feet_m1.png" />
     <Content Include="Image\main.jpg" />
     <Content Include="Image\delivery_home.jpg" />
     <Content Include="Image\items_home.jpg" />
     <Content Include="Image\main_new.jpg" />
+    <Content Include="Image\mountain.jpg" />
+    <Content Include="Image\phone.jpg" />
     <Content Include="Image\phone_home.jpg" />
     <Content Include="Image\signup_pic.jpg" />
+    <Content Include="Image\tree4.png" />
     <Content Include="Image\valid_face_photo.jpg" />
+    <Content Include="Image\van7feet.png" />
+    <Content Include="Image\van7feet_m1.jpg" />
+    <Content Include="Image\van9feet.png" />
+    <Content Include="Image\van9feet_m1.jpg" />
     <Content Include="Login.aspx" />
     <Content Include="MyAccount.aspx" />
+    <Content Include="MyDonations.aspx" />
+    <Content Include="Notifications.aspx" />
     <Content Include="OrgDonations.aspx" />
+    <Content Include="OrgReviewDonationRequest.aspx" />
+    <Content Include="OrgViewDonationRequest.aspx" />
+    <Content Include="OrgManageDonationRequest.aspx" />
     <Content Include="PreviewPublicInfo.aspx" />
     <Content Include="PublishDonations.aspx" />
     <Content Include="ResetPassword.aspx" />
@@ -189,14 +280,13 @@
     <Content Include="Content\bootstrap-grid.rtl.css.map" />
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
-    <Content Include="Delivery.aspx" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />
     <Content Include="Scripts\jquery-3.4.1.slim.js" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
-    <Content Include="Scripts\Delivery.js" />
+    <Content Include="Scripts\DonationRequest.js" />
     <Content Include="Scripts\WebForms\DetailsView.js" />
     <Content Include="Scripts\WebForms\Focus.js" />
     <Content Include="Scripts\WebForms\GridView.js" />
@@ -227,6 +317,13 @@
     <Content Include="Site.Mobile.Master" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcceptDelivery.aspx.cs">
+      <DependentUpon>AcceptDelivery.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AcceptDelivery.aspx.designer.cs">
+      <DependentUpon>AcceptDelivery.aspx</DependentUpon>
+    </Compile>
     <Compile Include="AdminManageApplication.aspx.cs">
       <DependentUpon>AdminManageApplication.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -292,7 +389,36 @@
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="Class\DonationPublish.cs" />
+    <Compile Include="Class\Encryption.cs" />
     <Compile Include="Class\Organization.cs" />
+    <Compile Include="Delivery.aspx.cs">
+      <DependentUpon>Delivery.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Delivery.aspx.designer.cs">
+      <DependentUpon>Delivery.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="DeliveryVehicle.aspx.cs">
+      <DependentUpon>DeliveryVehicle.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DeliveryVehicle.aspx.designer.cs">
+      <DependentUpon>DeliveryVehicle.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="DonationRequest.aspx.cs">
+      <DependentUpon>DonationRequest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DonationRequest.aspx.designer.cs">
+      <DependentUpon>DonationRequest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="FAQ.aspx.cs">
+      <DependentUpon>FAQ.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FAQ.aspx.designer.cs">
+      <DependentUpon>FAQ.aspx</DependentUpon>
+    </Compile>
     <Compile Include="EditOrgDonations.aspx.cs">
       <DependentUpon>EditOrgDonations.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -339,6 +465,41 @@
     </Compile>
     <Compile Include="MyAccount.aspx.designer.cs">
       <DependentUpon>MyAccount.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="MyDonations.aspx.cs">
+      <DependentUpon>MyDonations.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MyDonations.aspx.designer.cs">
+      <DependentUpon>MyDonations.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Notifications.aspx.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Notifications.aspx.designer.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="OrgReviewDonationRequest.aspx.cs">
+      <DependentUpon>OrgReviewDonationRequest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="OrgReviewDonationRequest.aspx.designer.cs">
+      <DependentUpon>OrgReviewDonationRequest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="OrgViewDonationRequest.aspx.cs">
+      <DependentUpon>OrgViewDonationRequest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="OrgViewDonationRequest.aspx.designer.cs">
+      <DependentUpon>OrgViewDonationRequest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="OrgManageDonationRequest.aspx.cs">
+      <DependentUpon>OrgManageDonationRequest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="OrgManageDonationRequest.aspx.designer.cs">
+      <DependentUpon>OrgManageDonationRequest.aspx</DependentUpon>
     </Compile>
     <Compile Include="PreviewPublicInfo.aspx.cs">
       <DependentUpon>PreviewPublicInfo.aspx</DependentUpon>
@@ -411,13 +572,6 @@
     </Compile>
     <Compile Include="ViewSwitcher.ascx.designer.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
-    </Compile>
-    <Compile Include="Delivery.aspx.cs">
-      <DependentUpon>Delivery.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Delivery.aspx.designer.cs">
-      <DependentUpon>Delivery.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

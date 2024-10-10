@@ -317,6 +317,7 @@ namespace DonorConnect
                 string contactNumber = Session["RiderContactNumber"].ToString();
                 string vehiclePlateNo = Session["VehiclePlateNo"].ToString();
                 string vehicleType = Session["VehicleType"].ToString();
+                string riderRegion = Session["RiderRegion"].ToString();
                 string password = Session["RiderPassword"].ToString();
                 string drivingLicense = Session["RiderCarLicense"].ToString();
                 string facePic = Session["RiderFacePhoto"].ToString();
@@ -340,6 +341,7 @@ namespace DonorConnect
                                    "@riderNewHashPassword = NULL, " +
                                    "@drivingLicenseImageBase64 = '" + drivingLicense + "', " +
                                    "@vehicleType = '" + vehicleType + "', " +
+                                   "@riderRegion = '" + riderRegion + "', " +
                                    "@riderFacePicBase64 = '" + facePic + "', " +
                                    "@noOfDeliveryMade = NULL," +
                                    "@walletAmount = NULL," +

@@ -131,6 +131,7 @@
                                         <asp:Label CssClass="form-label" AssociatedControlID="orgRegion" runat="server">Region in Malaysia*</asp:Label>
                                         <asp:label ID="lblOrgRegion" runat="server" CssClass="text-danger"/>
                                     </div>
+
                                 </div>
                                 <div class="section">
                                     <div class="section-label">Person-in-Charge Information</div>
@@ -214,17 +215,43 @@
                                     <div class="form-outline mb-4">
                                         <asp:DropDownList ID="vehicleType" CssClass="form-control form-control-lg" runat="server" Style="font-size: 1rem;">
                                             <asp:ListItem Text="Select Vehicle Type" Value="" Disabled="true" Selected="true"></asp:ListItem>
-                                            <asp:ListItem Text="Car" Value="Car"></asp:ListItem>
-                                            <asp:ListItem Text="Truck" Value="Truck"></asp:ListItem>
-                                            <asp:ListItem Text="Van" Value="Van"></asp:ListItem>
-                                            <asp:ListItem Text="Others" Value="Others"></asp:ListItem>
+                                            <asp:ListItem Text="Car (Any car models)" Value="Car"></asp:ListItem>
+                                            <asp:ListItem Text="4x4 Pickup" Value="4x4 Pickup"></asp:ListItem>
+                                            <asp:ListItem Text="Van 7 Feet" Value="Van 7 Feet"></asp:ListItem>
+                                            <asp:ListItem Text="Van 9 Feet" Value="Van 9 Feet"></asp:ListItem>
+                                            <asp:ListItem Text="Lorry 10 Feet" Value="Lorry 10 Feet"></asp:ListItem>
+                                            <asp:ListItem Text="Lorry 14 Feet" Value="Lorry 14 Feet"></asp:ListItem>
+                                            <asp:ListItem Text="Lorry 17 Feet" Value="Lorry 17 Feet"></asp:ListItem>
                                         </asp:DropDownList>
                                         <asp:Label CssClass="form-label" AssociatedControlID="vehicleType" runat="server">Vehicle Type*</asp:Label>
-                                        <div class="guidelines">
-                                            <p>Motorcycles and bicycles are not allowed for item delivery.</p>
-                                        </div>
+                                       
+                                        <small class="form-text text-muted">
+                                            <em>Motorcycles and bicycles are not allowed for item delivery.</em>
+                                        </small>
                                         <asp:label ID="lblVehicleType" runat="server" CssClass="text-danger"/>
                                     </div>
+                                    <div class="form-outline mb-4">
+                                        <asp:DropDownList ID="riderRegion" CssClass="form-control form-control-lg" runat="server" Style="font-size: 1rem;">
+                                            <asp:ListItem Text="Select Region in Malaysia" Value="" Disabled="true" Selected="true" />
+                                            <asp:ListItem Text="Any" Value="Any" />
+                                            <asp:ListItem Text="Johor" Value="Johor" />
+                                            <asp:ListItem Text="Kedah" Value="Kedah" />
+                                            <asp:ListItem Text="Kelantan" Value="Kelantan" />
+                                            <asp:ListItem Text="Melaka" Value="Melaka" />
+                                            <asp:ListItem Text="Negeri Sembilan" Value="Negeri Sembilan" />
+                                            <asp:ListItem Text="Pahang" Value="Pahang" />
+                                            <asp:ListItem Text="Penang" Value="Penang" />
+                                            <asp:ListItem Text="Perak" Value="Perak" />
+                                            <asp:ListItem Text="Perlis" Value="Perlis" />
+                                            <asp:ListItem Text="Sabah" Value="Sabah" />
+                                            <asp:ListItem Text="Sarawak" Value="Sarawak" />
+                                            <asp:ListItem Text="Selangor" Value="Selangor" />
+                                            <asp:ListItem Text="Terengganu" Value="Terengganu" />
+                                        </asp:DropDownList>
+                                        <asp:Label CssClass="form-label" AssociatedControlID="riderRegion" runat="server">Your Preferred Pick-Up Region in Malaysia*</asp:Label>
+                                        <asp:Label ID="lblRiderRegion" runat="server" CssClass="text-danger" />
+                                    </div>
+
                                     <div class="form-outline mb-4"> 
                                         <asp:TextBox ID="vehiclePlateNo" CssClass="form-control form-control-lg" runat="server" />
                                         <asp:Label CssClass="form-label" AssociatedControlID="vehiclePlateNo" runat="server">Vehicle Plate Number*</asp:Label>

@@ -300,6 +300,14 @@
         <asp:Label ID="lblNoResults" runat="server" style="margin-top: 20px;" CssClass="alert alert-warning" Visible="false" />
     </div>
 
+   <div style="padding-top: 10px;">
+        <asp:Literal ID="ltOrgProfile" runat="server"></asp:Literal>
+    </div>
+
+    <div style="padding-top: 10px;">
+        <asp:Literal ID="ltDonation" runat="server"></asp:Literal>
+    </div>
+
     <asp:GridView ID="gvAllDonations" runat="server" AutoGenerateColumns="False" CssClass="centered-grid" DataKeyNames="donationPublishId" GridLines="None" BorderStyle="None" CellPadding="0">
         <Columns>
             <asp:TemplateField>
@@ -372,7 +380,7 @@
                                             <div class="row mb-3">
                                                 <div class="col-12 text-right position-absolute" style="bottom: 20px; right: 10px;">
                                                     <asp:LinkButton class="fas fa-heart " style='<%# "font-size: 24px; cursor: pointer; padding-right: 20px; color: " + Eval("saveButton") %>' title="Save to Favorites" runat="server" OnClick="btnSaveFav_Click" CommandArgument='<%# Eval("donationPublishId") %>'></asp:LinkButton>
-                                                    <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" OnClick="btnDonate_Click"/>
+                                                    <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" OnClick="btnDonate_Click" CommandArgument='<%# Eval("donationPublishId") %>'/>
                                                 </div>
                                             </div>
                                         </div>
@@ -540,7 +548,7 @@
                     }
 
                     contentString += '</ul>';
-                    var url = 'PreviewPublicInfo.aspx?role=organization&username=' + encodeURIComponent(orgName);
+                    var url = 'PreviewPublicInfo.aspx?role=organization&orgName=' + encodeURIComponent(orgName);
                     console.log('Redirect URL:', url); 
                     contentString += '<button onclick="window.open(\'' + url + '\', \'_blank\')">View Details</button>';
 

@@ -135,6 +135,26 @@ namespace DonorConnect
             }
         }
 
+        public object ExecuteScalar(string query, Dictionary<string, object> parameters)
+        {
+            using (SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    // Add parameters to the command
+                    foreach (var param in parameters)
+                    {
+                        command.Parameters.AddWithValue(param.Key, param.Value);
+                    }
+
+                    connection.Open(); // Open the database connection
+                    object result = command.ExecuteScalar(); // Execute the scalar query
+
+                    return result; // Return the result (could be null if no data found)
+                }
+            }
+        }
+
 
         //public string GetScalarValue(string sql, Dictionary<string, object> parameters = null)
         //{

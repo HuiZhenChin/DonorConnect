@@ -9,7 +9,7 @@ namespace DonorConnect
     public class Organization
     {
 
-        private string _orgName, _orgId, _orgProfilePic, _orgAddress, _orgStatus;
+        public string _orgName, _orgId, _orgProfilePic, _orgAddress, _orgStatus;
 
         public Organization(string orgName, string orgId, string orgProfilePic, string orgAddress, string orgStatus)
         {

@@ -465,6 +465,24 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.Label lblVehicleType;
 
         /// <summary>
+        /// riderRegion control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList riderRegion;
+
+        /// <summary>
+        /// lblRiderRegion control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRiderRegion;
+
+        /// <summary>
         /// vehiclePlateNo control.
         /// </summary>
         /// <remarks>

@@ -77,41 +77,6 @@
 </style>
 
 </asp:Content>
-<%--<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="container mt-3">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Manage Item Donations</h2>
-            <asp:Button ID="btnCreateDonation" runat="server" Text="Create New Donation" CssClass="btn btn-primary" OnClick="btnCreateDonation_Click" />
-        </div>--%>
-
-        <%--<div class="mt-3">
-            <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control" placeholder="Search Donations..." AutoPostBack="true" OnTextChanged="txtSearch_TextChanged"></asp:TextBox>
-        </div>--%>
-
-    <%-- <div class="mt-3">
-            <asp:GridView ID="gvDonations" runat="server" CssClass="table table-striped" AutoGenerateColumns="False" OnRowDataBound="gvDonations_RowDataBound">
-                <Columns>
-                    <asp:BoundField DataField="donationPublishId" HeaderText="ID" SortExpression="DonationID" />
-                    <asp:BoundField DataField="title" HeaderText="Title" SortExpression="Title" />
-                    <asp:BoundField DataField="peopleNeeded" HeaderText="Title" SortExpression="Title" />
-                    <asp:BoundField DataField="description" HeaderText="Description" SortExpression="Description" />
-                    <asp:BoundField DataField="itemCategory" HeaderText="Item Category" SortExpression="ItemCategory" />
-                    <asp:BoundField DataField="address" HeaderText="Address" SortExpression="Address" />
-                    <asp:BoundField DataField="created_on" HeaderText="Date Published" SortExpression="DatePublished" />
-                    <asp:TemplateField>
-                        <ItemTemplate>
-                            <asp:LinkButton ID="btnEdit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Edit"  CssClass="btn btn-info btn-sm" />
-                            <asp:LinkButton ID="btnDelete" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Delete"  CssClass="btn btn-danger btn-sm" />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                </Columns>
-            </asp:GridView>
-        </div>
-    </div>
-</asp:Content>--%>
-
-
-
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container mt-3">
         <div class="d-flex justify-content-between align-items-center">

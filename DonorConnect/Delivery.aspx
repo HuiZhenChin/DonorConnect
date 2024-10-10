@@ -1,118 +1,130 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Delivery.aspx.cs" Inherits="DonorConnect.WebForm1" %>
+﻿<%@ Page Title="Delivery Tracking" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Delivery.aspx.cs" Inherits="DonorConnect.Delivery" %>
 
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Welcome| Sign Up</title>
-    <link rel="stylesheet" href="/Content/Delivery.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <header>Signup Form</header>
-      <div class="progress-bar">
-        <div class="step">
-          <p>Name</p>
-          <div class="bullet">
-            <span>1</span>
-          </div>
-          <div class="check fas fa-check"></div>
-        </div>
-        <div class="step">
-          <p>Contact</p>
-          <div class="bullet">
-            <span>2</span>
-          </div>
-          <div class="check fas fa-check"></div>
-        </div>
-        <div class="step">
-          <p>Birth</p>
-          <div class="bullet">
-            <span>3</span>
-          </div>
-          <div class="check fas fa-check"></div>
-        </div>
-        <div class="step">
-          <p>Submit</p>
-          <div class="bullet">
-            <span>4</span>
-          </div>
-          <div class="check fas fa-check"></div>
-        </div>
-      </div>
-      <div class="form-outer">
-        <form action="#">
-          <div class="page slide-page">
-            <div class="title">Basic Info:</div>
-            <div class="field">
-              <div class="label">First Name</div>
-              <input type="text">
-            </div>
-            <div class="field">
-              <div class="label">Last Name</div>
-              <input type="text">
-            </div>
-            <div class="field">
-              <button class="firstNext next">Next</button>
-            </div>
-          </div>
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Tracking</title>
+    <link href="/Content/PreviewPublicInfo.css" rel="stylesheet" type="text/css" />
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    
+    <style>
 
-          <div class="page">
-            <div class="title">Contact Info:</div>
-            <div class="field">
-              <div class="label">Email Address</div>
-              <input type="text">
-            </div>
-            <div class="field">
-              <div class="label">Phone Number</div>
-              <input type="Number">
-            </div>
-            <div class="field btns">
-              <button class="prev-1 prev">Previous</button>
-              <button class="next-1 next">Next</button>
-            </div>
-          </div>
+  
+    :root {
+        --default-color: black;
+        --grey-color: black;
+        --main-color: pink;
+    }
 
-          <div class="page">
-            <div class="title">Date of Birth:</div>
-            <div class="field">
-              <div class="label">Date</div>
-              <input type="text">
-            </div>
-            <div class="field">
-              <div class="label">Gender</div>
-              <select>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div class="field btns">
-              <button class="prev-2 prev">Previous</button>
-              <button class="next-2 next">Next</button>
-            </div>
-          </div>
+    #progress_bar {
+        display: table;
+        width: 100%;
+        padding: 15px 15px 0;
+        table-layout: fixed;
+        counter-reset: step;
+        margin-top: 20px; 
+        margin-bottom: 20px;
+    }
 
-          <div class="page">
-            <div class="title">Login Details:</div>
-            <div class="field">
-              <div class="label">Username</div>
-              <input type="text">
-            </div>
-            <div class="field">
-              <div class="label">Password</div>
-              <input type="password">
-            </div>
-            <div class="field btns">
-              <button class="prev-3 prev">Previous</button>
-              <button class="submit">Submit</button>
-            </div>
-          </div>
-        </form>
-      </div>
+    #progress_bar li {
+        list-style-type: none;
+        display: table-cell;
+        width: 20%;
+        font-size: 16px;
+        position: relative;
+        text-align: center;
+    }
+
+        #progress_bar li:before {
+            width: 50px;
+            height: 50px;
+            color: lightgrey;
+            content: counter(step);
+            counter-increment: step;
+            line-height: 50px;
+            font-size: 18px;
+            border: 1px solid var(--grey-color);
+            display: block;
+            text-align: center;
+            margin: 0 auto 10px auto;
+            border-radius: 50%;
+            background-color: #fff;
+        }
+
+        #progress_bar li:after {
+            width: 100%;
+            height: 10px;
+            content: '';
+            position: absolute;
+            background-color: #fff;
+            top: 25px;
+            left: -50%;
+            z-index: -1;
+        }
+
+        #progress_bar li:first-child:after {
+            content: none;
+        }
+
+        #progress_bar li.step-done {
+            color: var(--main-color);
+        }
+
+            #progress_bar li.step-done:before {
+                border-color: var(--main-color);
+                background-color: var(--main-color);
+                color: #fff;
+                content: "\f00c"; 
+                font-family: "FontAwesome";
+            }
+
+            #progress_bar li.step-done + li:after {
+                background-color: var(--main-color);
+            }
+
+        #progress_bar li.step-active {
+            color: var(--main-color);
+        }
+
+            #progress_bar li.step-active:before {
+                border-color: var(--main-color);
+                color: var(--main-color);
+                font-weight: 700;
+            }
+
+
+    </style>
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+   
+    <div class="row">
+        <div class="col-12 text-center">
+            <h3>
+                <asp:Label ID="lblStatus" runat="server" Text=""></asp:Label></h3>
+            <p class="tracking-status">
+                <asp:Label ID="lblDate" runat="server" Text=""></asp:Label></p>
+            <button class="btn btn-outline-primary">Track Order Details</button>
+        </div>
     </div>
-    <script src="/Scripts/Delivery.js"></script>
 
-  </body>
-</html>
+    <ol id="progress_bar">
+        <li id="step1" runat="server" class="step-todo">To Accept<br>
+            <span id="date1" runat="server"></span></li>
+        <li id="step2" runat="server" class="step-todo">To Pick Up<br>
+            <span id="date2" runat="server"></span></li>
+        <li id="step3" runat="server" class="step-todo">To Reach<br>
+            <span id="date3" runat="server"></span></li>
+        <li id="step4" runat="server" class="step-todo">Completed<br>
+            <span id="date4" runat="server"></span></li>
+    </ol>
+
+
+
+</asp:Content>
+
