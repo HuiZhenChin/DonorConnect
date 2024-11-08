@@ -515,7 +515,7 @@
         }
 
 
-        // send the encrypted token to the backend for decryption
+      // send the encrypted token to the backend for decryption
         function decryptToken(url) {
             fetch('UpdateDelivery.aspx/DecryptUrl', {
                 method: 'POST',
@@ -560,7 +560,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error("Error during decryption: ", error);
+                    //console.error("Error during decryption: ", error);
                     outputMessage.innerText = "Error during decryption.";
                 });
         }
@@ -859,10 +859,10 @@
                 console.error("Geolocation is not supported by this browser.");
             }
         }
-        startSendingLocation(deliveryId);
+        //startSendingLocation(deliveryId);
     
 
-        function openModal() {
+       function openModal() {
             document.getElementById("liveLocationModal").style.display = "block";
         }
 
@@ -897,7 +897,7 @@
                     }
                 },
                 error: function (xhr, status, error) {
-                    console.error("Error:", error);
+                   // console.error("Error:", error);
                     showError("An error occurred while saving the link.");
                 }
             });
