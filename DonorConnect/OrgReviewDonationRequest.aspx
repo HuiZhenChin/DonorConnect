@@ -1,16 +1,23 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="OrgReviewDonationRequest.aspx.cs" Inherits="DonorConnect.OrgReviewDonationRequest" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Org.Master" AutoEventWireup="true" CodeBehind="OrgReviewDonationRequest.aspx.cs" Inherits="DonorConnect.OrgReviewDonationRequest" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donation</title>
+    <title>Donation Request</title>
     <link href="/Content/PreviewPublicInfo.css" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-     <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHd69lOb31ywFRMu99sos-ysgl-uCtidY&callback=initMap&libraries=places"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHd69lOb31ywFRMu99sos-ysgl-uCtidY&callback=initMap&libraries=places"></script>
  
     <style>
+         body {
+           background: rgb(249,247,247);
+           background: linear-gradient(180deg, rgba(249,247,247,1) 0%, rgba(219,226,239,1) 40%, rgba(233,239,236,1) 68%, rgba(106,156,137,1) 100%);
+         }
+
         #categoryDetailsTable {
             margin-top: 20px; 
             border: 1px solid black; 
@@ -36,7 +43,7 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="card-deck">
-        <div class="card mt-3 shadow-sm">
+        <div class="card mt-3 shadow-sm" style=" background-color: rgba(255, 255, 255, 0.8);">
             <div class="card-body">
                 <div id="donationRequest" runat="server">
                     <asp:Label ID="lblDonation" runat="server" CssClass="d-block text-center mb-4" Text="New Donation Request" Style="font-weight: bold; font-size: 24px;"></asp:Label>
@@ -64,7 +71,7 @@
                             <div class="row">
                                 <div class="col-md-12 text-right">
                                     <asp:LinkButton ID="btnApprove" runat="server" CommandArgument='<%# Eval("donationId") %>' Text="Approve" CssClass="btn btn-info btn-lg" style="background-color: seagreen;" OnClick="btnApprove_Click"/>
-                                    <asp:LinkButton ID="btnReject" runat="server" Style="margin-left: 10px;" CommandArgument='<%# Eval("donationId") %>' Text="Reject" CssClass="btn btn-danger btn-lg" OnClientClick='<%# "showRejectionModal(\"" + Eval("donationId") + "\"); return false;" %>'/>
+                                    <asp:LinkButton ID="btnReject" runat="server" Style="margin-left: 10px;" CommandArgument='<%# Eval("donationId") %>' Text="Reject" CssClass="btn btn-danger btn-lg" OnClientClick='<%# "showRejectionModal(event, \"" + Eval("donationId") + "\"); return false;" %>' />
                                 </div>
                             </div>
                         </FooterTemplate>
@@ -88,7 +95,7 @@
                 <div class="modal-body">
                     <!-- Dropdown for rejection reasons -->
                     <asp:DropDownList ID="ddlRejectionReason" runat="server" CssClass="form-control">
-                        <asp:ListItem Text="Select reason" Value="" />
+                        <asp:ListItem Text="Select reason" Value="" Disabled="True" />
                         <asp:ListItem Text="Item not needed" Value="ItemNotNeeded" />
                         <asp:ListItem Text="Donation exceeds our requirements" Value="ExceedsRequirements" />
                         <asp:ListItem Text="Duplicate donation request" Value="DuplicateRequest" />                       
@@ -150,10 +157,12 @@
             });
         }
 
-        function showRejectionModal(orgId) {
-            $('#<%= hfDonationRequestId.ClientID %>').val(orgId);
+        function showRejectionModal(event, donationId) {
+            event.preventDefault(); 
+            $('#<%= hfDonationRequestId.ClientID %>').val(donationId);
             $('#rejectionModal').modal('show');
         }
+
 
         async function approveDonation(donationPublishId) {
             // show loading spinner or progress bar

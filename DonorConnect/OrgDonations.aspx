@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="OrgDonations.aspx.cs" Inherits="DonorConnect.PublishDonations" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Org.Master" AutoEventWireup="true" CodeBehind="OrgDonations.aspx.cs" Inherits="DonorConnect.PublishDonations" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +8,15 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     
     <style>
+         body{
+             background: rgb(249,247,247);
+             background: linear-gradient(180deg, rgba(249,247,247,1) 0%, rgba(219,226,239,1) 40%, rgba(233,239,236,1) 68%, rgba(106,156,137,1) 100%);
+         }
+
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -72,21 +79,38 @@
             font-size: 1.2em;
         }
 
+        .page-header {
+    
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
 
+        .title{
+            font-size: 1.8em;
+            font-weight: bold;
+            padding-bottom: 10px;
+            color: #333;
+            margin-bottom: 20px;
+        }
 
 </style>
 
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container mt-3">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Manage Item Donations</h2>
-            <asp:Button ID="btnCreateDonation" runat="server" Text="Create New Donation" CssClass="btn btn-primary" OnClick="btnCreateDonation_Click" />
+       
+        <div class="page-header">
+            <h1 class="title">Manage Item Donations</h1>
         </div>
+
+     <div class="mb-3 text-right" style="padding-bottom: 30px; margin-top: -10px;">    
+           <asp:Button ID="btnCreateDonation" runat="server" Text="Create New Donation" CssClass="btn btn-primary" OnClick="btnCreateDonation_Click" style="float: right; background-color: #204051;"/>
+      </div>
 
    <div class="d-flex justify-content-start mt-3">
             <div class="mr-2">
-                <asp:DropDownList ID="ddlStatus" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged">
+                <asp:DropDownList ID="ddlStatus" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged" style="border: solid 1px #63707E;">
                     <asp:ListItem Value="All" Text="All" />
                     <asp:ListItem Value="Pending Approval" Text="Pending Approval" />
                     <asp:ListItem Value="Opened" Text="Opened" />
@@ -96,7 +120,7 @@
             </div>
 
             <div class="mr-2">
-                <asp:DropDownList ID="ddlUrgency" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlUrgency_SelectedIndexChanged">
+                <asp:DropDownList ID="ddlUrgency" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlUrgency_SelectedIndexChanged" style="border: solid 1px #63707E;">
                     <asp:ListItem Value="All" Text="All" />
                     <asp:ListItem Value="yes" Text="Urgent" />
                     <asp:ListItem Value="no" Text="Long Term" />
@@ -150,7 +174,7 @@
         </div>
     </div>
 
-        <div class="mt-3">
+        <div class="mt-3" style=" background-color: rgba(255, 255, 255, 0.8); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
             <asp:GridView ID="gvDonations" runat="server" CssClass="table table-striped" AutoGenerateColumns="False" OnRowDataBound="gvDonations_RowDataBound">
                 <Columns>
                     <asp:TemplateField HeaderText="Donation Details">
@@ -189,7 +213,7 @@
                                     <asp:LinkButton ID="btnResubmit" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Resubmit" CssClass="btn btn-info btn-sm" Visible='<%# Eval("status").ToString() == "Rejected" %>' OnClick="btnResubmit_Click" />
 
                                     <!-- Close Button -->
-                                    <asp:LinkButton ID="btnClose" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Close" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Opened" %>' OnClientClick='<%# "openClosureModal(\"" + Eval("donationPublishId") + "\"); return false;" %>' />
+                                    <asp:LinkButton ID="btnClose" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Close" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Opened" %>' OnClientClick='<%# "showInfo(\"" + Eval("donationPublishId") + "\"); return false;" %>' />
 
                                     <!-- Cancel Application Button -->
                                     <asp:LinkButton ID="btnCancel" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' Text="Cancel" CssClass="btn btn-danger btn-sm" Visible='<%# Eval("status").ToString() == "Pending Approval" %>' OnClick="btnCancel_Click" />
@@ -242,7 +266,56 @@
             icon: 'error',
             confirmButtonText: 'OK'
         });
+        }
+
+    function showError2(message) {
+        Swal.fire({
+            title: 'Error!',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+               
+                window.location.href = 'OrgDonations.aspx'; 
+            }
+        });
     }
+
+    function showInfo(donationPublishId) {
+        $.ajax({
+            type: "POST",
+            url: "OrgDonations.aspx/GetPendingCount",
+            data: JSON.stringify({ donationPublishId: donationPublishId }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                var pendingCount = response.d;
+
+                Swal.fire({
+                    title: 'Pending Requests',
+                    text: `There are ${pendingCount} pending requests. Are you sure you want to close this donation?`,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirm Close',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                       
+                        document.getElementById('<%= hiddenDonationPublishId.ClientID %>').value = donationPublishId;
+                        openClosureModal(donationPublishId); 
+            }
+        });
+    },
+    error: function (error) {
+        console.error("Error fetching pending count:", error);
+        Swal.fire("Error", "Unable to fetch pending request count.", "error");
+        }
+    });
+        }
+
+
+
     </script>
 
 </asp:Content>

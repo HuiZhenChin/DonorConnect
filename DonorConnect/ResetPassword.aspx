@@ -38,7 +38,7 @@
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-body">
+                        <div class="card-body" style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
                             <h3 class="card-title">Reset Password</h3>
                             <p class="card-text">Enter your username to search for your account.</p>
                             <div class="form-group">

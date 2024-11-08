@@ -9,6 +9,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body{
+            background: rgb(231,246,242);
+            background: linear-gradient(180deg, rgba(231,246,242,1) 0%, rgba(165,201,202,1) 59%, rgba(57,91,100,1) 89%, rgba(44,51,51,1) 100%);
+        }
+
+    </style>
     
 </asp:Content>
 
@@ -21,28 +29,30 @@
             </asp:LinkButton>
         </div>
          <!-- Profile Picture Section -->
-        <div class="profile-pic" id="profilePic" runat="server" onclick="triggerFileUpload()" style="background-color: #f5f5f5; padding: 20px;">
+       <div style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
+        <div class="profile-pic" id="profilePic" runat="server" onclick="triggerFileUpload()" style="background-color: #EEEEEE; padding: 20px;">
             <label class="-label" for="fileUpload" style="cursor: pointer;">
                  <i class="fas fa-camera"></i>
                 <span>Change Image</span>
             </label>
             <asp:FileUpload ID="fileUpload" runat="server" CssClass="d-none" OnChange="loadFile(event)"/>
-            <asp:Image ID="output" runat="server" ImageUrl="/Image/default_picture.jpg" Width="165px" Height="165px" />
+            <asp:Image ID="output" runat="server" ImageUrl="/Image/default_picture.jpg" Width="165px" Height="165px" style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);"/>
         </div>
         <!-- Display Username -->
-       <div style="background-color: #f5f5f5; padding: 20px; text-align:center;">
+       <div style="background-color: #EEEEEE; padding: 20px; text-align:center;">
         <asp:Label runat="server" ID="profileUsername" Font-Bold="true" style="font-size: 22px;"/>
-
+    </div>
        </div>
         <!-- Buttons for Profile Picture Updates -->
-        <div id="buttons" runat="server" style="display:none; text-align: right; margin-top: 10px;">
-            <asp:Button ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click" />
-            <asp:Button ID="btnCancel" runat="server" Text="Cancel" OnClick="btnCancel_Click" />
+        <div id="buttons" runat="server" style="display:none; margin-top: 10px; gap: 20px;">
+            
+            <asp:Button ID="btnCancel" runat="server" Text="Cancel" OnClick="btnCancel_Click" CssClass="btn btn-secondary"/>
+            <asp:Button ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" style="background-color: #206A5D; border: none;"/>
         </div>
 
 
         <!-- User Information Section -->
-        <div class="section-header" id="userInfoHeader" style="margin-top: 20px;">
+        <div class="section-header" id="userInfoHeader" style="margin-top: 20px; background-color: #D8D9DA; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
             <h5>User Information</h5>
         </div>
     <!-- Hidden input to store the selected role -->
@@ -70,9 +80,10 @@
                     <asp:Label runat="server" ID="lblAddress" Text="Delivery Address" />
                     <asp:TextBox runat="server" ID="txtAddress" CssClass="form-control"/>
                 </div>
-                <div class="form-row">
-                    <asp:Button runat="server" ID="btnSaveDonorInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveDonorInfo_Click"/>
-                    <asp:Button runat="server" ID="btnCancelDonorInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
+                <div class="form-row" style="justify-content: flex-end; gap:20px;">
+                    
+                    <asp:Button runat="server" ID="btnCancelDonorInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False"/>
+                    <asp:Button runat="server" ID="btnSaveDonorInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveDonorInfo_Click" style="background-color: #206A5D; border: none;"/>
                 </div>
             </asp:Panel>
         </div>
@@ -138,9 +149,10 @@
                 <asp:Label runat="server" ID="lblCategory" Text="Most Needed Item Category" />
                 <asp:TextBox runat="server" ID="txtCategory" CssClass="form-control" />
             </div>
-            <div class="form-row">
-                <asp:Button runat="server" ID="btnSaveOrgInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveOrgInfo_Click"/>
+            <div class="form-row" style="justify-content: flex-end; gap:20px;">
+               
                 <asp:Button runat="server" ID="btnCancelOrgInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
+                <asp:Button runat="server" ID="btnSaveOrgInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveOrgInfo_Click" style="background-color: #206A5D; border: none;"/>
             </div>
         </asp:Panel>
     </div>
@@ -167,18 +179,22 @@
             <asp:DropDownList ID="vehicleType" CssClass="form-control form-control-lg" runat="server" Style="font-size: 1rem;">
                 <asp:ListItem Text="Select Vehicle Type" Value="" Disabled="true" Selected="true"></asp:ListItem>
                 <asp:ListItem Text="Car" Value="Car"></asp:ListItem>
-                <asp:ListItem Text="Truck" Value="Truck"></asp:ListItem>
-                <asp:ListItem Text="Van" Value="Van"></asp:ListItem>
-                <asp:ListItem Text="Others" Value="Others"></asp:ListItem>
+                <asp:ListItem Text="4x4 Pickup" Value="4x4 Pickup"></asp:ListItem>
+                <asp:ListItem Text="Van 7 Feet" Value="Van 7 Feet"></asp:ListItem>
+                <asp:ListItem Text="Van 9 Feet" Value="Van 9 Feet"></asp:ListItem>
+                <asp:ListItem Text="Lorry 10 Feet" Value="Lorry 10 Feet"></asp:ListItem>
+                <asp:ListItem Text="Lorry 14 Feet" Value="Lorry 14 Feet"></asp:ListItem>
+                <asp:ListItem Text="Lorry 17 Feet" Value="Lorry 17 Feet"></asp:ListItem>
             </asp:DropDownList>
         </div>
         <div class="form-row">
             <asp:Label runat="server" ID="lblPlateNo" Text="Vehicle Plate Number" />
             <asp:TextBox runat="server" ID="txtPlateNo" CssClass="form-control" />
         </div>
-        <div class="form-row">
-            <asp:Button runat="server" ID="btnSaveRiderInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveRiderInfo_Click"/>
+        <div class="form-row" style="justify-content: flex-end; gap:20px;">
+            
             <asp:Button runat="server" ID="btnCancelRiderInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
+            <asp:Button runat="server" ID="btnSaveRiderInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveRiderInfo_Click" style="background-color: #206A5D; border: none;"/>
         </div>
     </asp:Panel>
 </div>
@@ -194,36 +210,16 @@
             <asp:TextBox runat="server" ID="txtAdminEmail" CssClass="form-control" TextMode="email" ToolTip="Email will be used to receive any urgent notifications."/> 
         </div>
    
-        <div class="form-row">
-            <asp:Button runat="server" ID="btnSaveAdminInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveAdminInfo_Click"/>
+        <div class="form-row" style="justify-content: flex-end; gap:20px;">
+            
             <asp:Button runat="server" ID="btnCancelAdminInfo" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
+            <asp:Button runat="server" ID="btnSaveAdminInfo" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveAdminInfo_Click" style="background-color: #206A5D; border: none;"/>
         </div>
     </asp:Panel>
 </div>
 
-        <!-- Notifications Section -->
-        <div class="section-header" id="notificationsHeader">
-            <h5>Notifications</h5>
-        </div>
-        <div class="section-content" id="notificationsContent" runat="server">
-            <asp:Panel runat="server">
-                <div class="form-row">
-                    <asp:CheckBox runat="server" ID="chkEmailNotifications" CssClass="form-check-input" />
-                    <asp:Label runat="server" AssociatedControlID="chkEmailNotifications" Text="Email Notifications" CssClass="form-check-label" />
-                </div>
-                <div class="form-row">
-                    <asp:CheckBox runat="server" ID="chkSmsNotifications" CssClass="form-check-input" />
-                    <asp:Label runat="server" AssociatedControlID="chkSmsNotifications" Text="SMS Notifications" CssClass="form-check-label" />
-                </div>
-
-                <div class="form-row">
-                    <asp:Button runat="server" ID="btnSaveNotifications" CssClass="btn btn-primary" Text="Save"/>
-                    <asp:Button runat="server" ID="btnCancelNotifications" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
-                </div>
-                
-            </asp:Panel>
-        </div>
-       <div class="section-header" id="passwordHeader">
+     
+       <div class="section-header" id="passwordHeader" style="background-color: #D8D9DA; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
         <h5>Reset Password</h5>
     </div>
     <div class="section-content" id="passwordContent" runat="server">
@@ -236,10 +232,14 @@
              <asp:Label runat="server" ID="lblConfirmPassword" Text="Confirm Password" />
              <asp:TextBox runat="server" ID="txtConfirmPassword" CssClass="form-control" TextMode="password" Placeholder="Enter your password again"/> 
          </div>
+            <small class="form-text text-muted" style="padding-bottom: 10px;">
+                <em>Password Requirements: At least 8 characters with combinations of upper and lower case alphabets, special characters and digits.</em>
+            </small>
    
-         <div class="form-row">
-             <asp:Button runat="server" ID="btnSavePwd" CssClass="btn btn-primary" Text="Reset" OnClick="btnResetPassword_Click"/>
+         <div class="form-row" style="justify-content: flex-end; gap: 20px;">
+             
              <asp:Button runat="server" ID="btnCancelPwd" CssClass="btn btn-secondary" Text="Cancel" CausesValidation="False" style="margin-left: 10px;"/>
+             <asp:Button runat="server" ID="btnSavePwd" CssClass="btn btn-primary" Text="Reset" OnClick="btnResetPassword_Click" style="background-color: #206A5D; border: none;"/>
          </div>
         
     </asp:Panel>
@@ -288,9 +288,7 @@
                 $('#<%= passwordContent.ClientID %>').toggle();
             });
 
-            $('#notificationsHeader').click(function () {
-                $('#<%= notificationsContent.ClientID %>').toggle();
-            });
+           
 
         });
 
@@ -327,7 +325,9 @@
             var reader = new FileReader();
             reader.onload = function () {
                 output.src = reader.result;
-                document.getElementById('<%= buttons.ClientID %>').style.display = 'block';
+                const buttons = document.getElementById('<%= buttons.ClientID %>');
+                buttons.style.display = 'flex';
+                buttons.style.justifyContent = 'flex-end';
             };
             reader.readAsDataURL(event.target.files[0]);
         }

@@ -37,6 +37,7 @@ namespace DonorConnect
 
                 else if (role == "rider")
                 {
+                   // string fullName = GetRiderName(username);
                     ShowRiderInfo(username);
                 }
 
@@ -61,7 +62,6 @@ namespace DonorConnect
             if (_dt.Rows.Count > 0)
             {
                 DataRow row = _dt.Rows[0];
-                lblUsername.Text = row["orgName"].ToString();
                 profileUsername.Text = row["orgName"].ToString();
                 lblEmail.Text = row["orgEmail"].ToString();
                 lblPhoneNo.Text= row["orgContactNumber"].ToString();
@@ -71,6 +71,15 @@ namespace DonorConnect
                 lblAddress.Text = row["orgAddress"].ToString();
                 lblDescription.Text = row["orgDescription"].ToString();
                 lblRegion.Text = row["orgRegion"].ToString();
+                lblStatus.Text = row["orgStatus"].ToString();
+                if (lblStatus.Text == "Active")
+                {
+                    lblStatus.CssClass = "badgeNew badge-active";
+                }
+                else if (lblStatus.Text == "Terminated")
+                {
+                    lblStatus.CssClass = "badgeNew badge-terminated";
+                }
 
                 picName.Style["display"] = "block";
                 picEmail.Style["display"]="block";
@@ -78,6 +87,8 @@ namespace DonorConnect
                 address.Style["display"]= "block";
                 desc.Style["display"] = "block";
                 region.Style["display"] = "block";
+                pic.Style["display"] = "block";
+                other.Style["display"] = "block";
 
 
             }
@@ -113,43 +124,60 @@ namespace DonorConnect
             if (_dt.Rows.Count > 0)
             {
                 DataRow row = _dt.Rows[0];
-                lblUsername.Text = row["donorUsername"].ToString();
                 profileUsername.Text = row["donorUsername"].ToString();
-                lblFullName.Text = row["donorName"].ToString();
                 lblEmail.Text = row["donorEmail"].ToString();
                 lblPhoneNo.Text = row["donorContactNumber"].ToString();
+                lblStatus.Text = row["status"].ToString();
+                if (lblStatus.Text == "Active")
+                {
+                    lblStatus.CssClass = "badgeNew badge-active";
+                }
+                else if (lblStatus.Text == "Terminated")
+                {
+                    lblStatus.CssClass = "badgeNew badge-terminated";
+                }
 
-                fullName.Style["display"] = "block";
 
+                fullName.Style["display"] = "none";
+                
 
             }
 
            
         }
 
-        private void ShowRiderInfo(string username)
+        private void ShowRiderInfo(string fullname)
         {
             string sql;
             QRY _Qry = new QRY();
            
             DataTable _dt;
-            sql = "SELECT * FROM [delivery_rider] WHERE riderUsername = '" + username + "' ";
+            sql = "SELECT * FROM [delivery_rider] WHERE riderFullName = '" + fullname + "' ";
             _dt = _Qry.GetData(sql);
 
             if (_dt.Rows.Count > 0)
             {
                 DataRow row = _dt.Rows[0];
-                lblUsername.Text = row["riderUsername"].ToString();
                 profileUsername.Text = row["riderUsername"].ToString();
                 lblFullName.Text = row["riderFullName"].ToString();
                 lblEmail.Text = row["riderEmail"].ToString();
                 lblPhoneNo.Text = row["riderContactNumber"].ToString();
-                lblVehicleType.Text = row["vehicleType"].ToString();
-                lblPlateNo.Text = row["vehiclePlateNumber"].ToString();
+                string vehicleTypeLbl = row["vehicleType"].ToString();
+                string plateNo = row["vehiclePlateNumber"].ToString();
+                lblVehicleType.Text = $"{vehicleTypeLbl} ({plateNo})";
+                lblStatus.Text = row["riderStatus"].ToString();
+                if (lblStatus.Text == "Active")
+                {
+                    lblStatus.CssClass = "badgeNew badge-active";
+                }
+                else if (lblStatus.Text == "Terminated")
+                {
+                    lblStatus.CssClass = "badgeNew badge-terminated";
+                }
 
                 fullName.Style["display"] = "block";
                 vehicleType.Style["display"] = "block";
-                plateNo.Style["display"] = "block";
+
             }
 
         
@@ -161,11 +189,21 @@ namespace DonorConnect
 
             if (!string.IsNullOrEmpty(base64String))
             {
-                output.ImageUrl = "data:image/jpeg;base64," + base64String;
+                string imageFormat = "jpeg";
+                if (base64String.StartsWith("/9j/"))
+                {
+                    imageFormat = "jpeg";
+                }
+                else if (base64String.StartsWith("iVBORw0KGgo"))
+                {
+                    imageFormat = "png";
+                }
+
+                output.ImageUrl = $"data:image/{imageFormat};base64," + base64String;
             }
             else
             {
-                // default image if no profile picture is found
+
                 output.ImageUrl = "/Image/default_picture.jpg";
             }
         }
@@ -175,7 +213,7 @@ namespace DonorConnect
         {
             string username = Request.QueryString["username"];
 
-            string role = GetUserRoleFromDatabase(username);
+            string role = Request.QueryString["role"];
 
             string sql, sql2, sql3;
             QRY _Qry = new QRY();
@@ -205,21 +243,27 @@ namespace DonorConnect
             }
             else if (role == "rider")
             {
-                sql3 = "SELECT riderFacePicBase64 FROM [delivery_rider] WHERE riderUsername = '" + username + "' ";
+                sql3 = "SELECT riderFacePicBase64 FROM [delivery_rider] WHERE riderFullName = '" + username + "' ";
                 _dt3 = _Qry.GetData(sql3);
 
                 if (_dt3.Rows.Count > 0)
                 {
-                    return _dt3.Rows[0]["riderFacePicBase64"].ToString();
+                    string encryptedImage = _dt3.Rows[0]["riderFacePicBase64"].ToString();
+
+                    string[] parts = encryptedImage.Split(new char[] { ':' }, 2);
+                    string filename = parts[0];
+
+                    string decryptedImage = ImageFileProcessing.DecryptImages(parts[1]);
+
+                    return decryptedImage;
                 }
-
             }
 
-            else if (role == "admin")
-            {
+            //else if (role == "admin")
+            //{
 
-                return ConvertProfilePicToBase64("/Image/logo.jpg");
-            }
+            //    return ConvertProfilePicToBase64("/Image/logo.jpg");
+            //}
 
             return null;
         }
@@ -251,5 +295,29 @@ namespace DonorConnect
             return role;
         }
 
+        public static string GetRiderName(string username)
+        {
+
+            string sql = "SELECT riderFullName FROM delivery_rider WHERE riderUsername = @username";
+
+
+            QRY _Qry = new QRY();
+            var parameters = new Dictionary<string, object>
+            {
+                { "@username", username }
+            };
+
+            DataTable dt = _Qry.GetData(sql, parameters);
+
+            if (dt.Rows.Count > 0)
+            {
+                return dt.Rows[0]["riderFullName"].ToString();
+            }
+            else
+            {
+                throw new Exception($"No record found");
+            }
+
+        }
     }
 }

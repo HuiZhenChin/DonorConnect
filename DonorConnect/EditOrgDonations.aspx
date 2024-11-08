@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="EditOrgDonations.aspx.cs" Inherits="DonorConnect.EditOrgDonations" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Org.Master" AutoEventWireup="true" CodeBehind="EditOrgDonations.aspx.cs" Inherits="DonorConnect.EditOrgDonations" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,12 @@
      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<style>
+     <style>
+         body{
+             background: rgb(249,247,247);
+             background: linear-gradient(180deg, rgba(249,247,247,1) 0%, rgba(219,226,239,1) 40%, rgba(233,239,236,1) 68%, rgba(106,156,137,1) 100%);
+         }
+
         .category-row {
             display: flex;
             flex-wrap: wrap;
@@ -32,8 +37,8 @@
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container mt-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
+        <div class="card" style=" background-color: rgba(255, 255, 255, 0.8);">
+            <div class="card-header bg-primary text-white" style="background-color: #1F4E5F!important;">
                 <h4 class="mb-0">Publish New Item Donations</h4>
             </div>
             <div class="card-body">
@@ -71,7 +76,16 @@
                     <asp:TextBox ID="txtQuantity" runat="server" CssClass="form-control" placeholder="Enter number of people in need (e.g. a range of 30)" />
                     <asp:RequiredFieldValidator ID="rfvQuantity" runat="server" ControlToValidate="txtQuantity" ErrorMessage="Number of people in need is required." CssClass="text-danger" />
                 </div>
-                
+                <div class="form-group">
+                    <label for="txtName">Recipient Name</label>
+                    <asp:TextBox ID="txtName" runat="server" CssClass="form-control" placeholder="Enter recipient name (enter your username if it is donated to your organization)" />
+                    <asp:RequiredFieldValidator ID="rfvName" runat="server" ControlToValidate="txtName" ErrorMessage="Address is required." CssClass="text-danger" />
+                </div>
+                <div class="form-group">
+                    <label for="txtPhone">Recipient Phone Number</label>
+                    <asp:TextBox ID="txtPhone" runat="server" CssClass="form-control" placeholder="Enter recipient phone number" />
+                    <asp:RequiredFieldValidator ID="rfvPhone" runat="server" ControlToValidate="txtPhone" ErrorMessage="Phone number is required." CssClass="text-danger" />
+                </div>
                 <div class="form-group">
                     <label for="txtAddress">Recipient Address</label>
                     <asp:TextBox ID="txtAddress" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="5" placeholder="Enter recipient address (enter your username if it is donated to your organization, else enter the new address)" />
@@ -107,62 +121,30 @@
                 <div class="form-group">
                     <label>Item Categories</label>
                     <div class="category-row">
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkFood" runat="server" Text="Food"/>
-                            <asp:TextBox ID="txtSpecificFood" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyFood" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkClothing" runat="server" Text="Clothing" />
-                            <asp:TextBox ID="txtSpecificClothing" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyClothing" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkToys" runat="server" Text="Toys"  />
-                            <asp:TextBox ID="txtSpecificToys" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyToys" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkBooks" runat="server" Text="Books"  />
-                            <asp:TextBox ID="txtSpecificBooks" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyBooks" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkElectronics" runat="server" Text="Electronics"  />
-                            <asp:TextBox ID="txtSpecificElectronics" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyElectronics" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkFurniture" runat="server" Text="Furniture"  />
-                            <asp:TextBox ID="txtSpecificFurniture" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyFurniture" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkHygiene" runat="server" Text="Hygiene Products"  />
-                            <asp:TextBox ID="txtSpecificHygiene" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyHygiene" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkMedical" runat="server" Text="Medical Supplies"  />
-                            <asp:TextBox ID="txtSpecificMedical" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyMedical" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkOther" runat="server" Text="Other"  />
-                            <asp:TextBox ID="newCategory" runat="server" CssClass="form-control specific-items-input" Placeholder="Enter new category" style="display:none;" />
-                            <asp:TextBox ID="txtSpecificOther" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyOther" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                            <asp:PlaceHolder ID="PlaceholderNewCategory" runat="server"></asp:PlaceHolder>
-                        </div>
+                        <asp:Repeater ID="rptCategories" runat="server">
+                            <ItemTemplate>
+                                <div class="category-checkbox">
+                                    <asp:CheckBox ID="chkCategory" runat="server" Text='<%# Eval("categoryName") %>' />
+                                    <asp:TextBox ID="txtSpecificItem" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" Style="display: none;" />
+                                    <asp:TextBox ID="txtQuantity" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" Style="display: none;" />
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+
                     </div>
                     
                      <label id="lblCategory" style="display:none; color: darkred;" runat="server">Please select at least one category needed by your organization, helping donors to understand your needs.</label>
 
                 </div>
                 
-                <div class="form-group" id="timeRange" style="display:none;">
+                <div class="form-group" id="timeRange" style="display: none;">
                     <label for="txtTimeRange">Time Range</label>
-                    <asp:TextBox ID="txtTimeRange" runat="server" CssClass="form-control" placeholder="Enter time range (e.g., 2 weeks or NONE for no time limitations)" />
+                    <div class="input-group">
+                        <asp:TextBox ID="txtTimeRange" runat="server" CssClass="form-control" TextMode="Number" placeholder="Enter time range (e.g., 7/ 14/ 21 days)" />
+                        <div class="input-group-append">
+                            <span class="input-group-text">Days</span>
+                        </div>
+                    </div>
                     <asp:RequiredFieldValidator ID="rfvTimeRange" runat="server" ControlToValidate="txtTimeRange" ErrorMessage="Time range of item donations is required." CssClass="text-danger" Enabled="false" />
                 </div>
 
@@ -177,6 +159,9 @@
                     <small class="form-text text-muted">
                         <em>Accepted Formats: .jpg, .jpeg, .png. Maximum 5 images.</em>
                     </small>
+                    <small class="form-text text-muted">
+                        <em>Please upload the images again if you need them to display later. Or else, the system will not display any images.</em>
+                    </small>
                     <span id="imageUploadError" class="text-danger" style="display: none;">You can upload a maximum of 5 images in .jpg, .jpeg, .png formats.</span>
                 </div>
                 <asp:Literal ID="imagesContainer" runat="server"></asp:Literal>
@@ -187,14 +172,19 @@
                     <small class="form-text text-muted">
                         <em>Accepted Formats: .pdf, .docx</em>
                     </small>
+                    <small class="form-text text-muted">
+                        <em>Please upload the files again if you need them to display later. Or else, the system will not display any files.</em>
+                    </small>
                     <span id="fileUploadError" class="text-danger" style="display: none;">Only .pdf and .docx files are allowed.</span>
                 </div>
                 <asp:Literal ID="filesContainer" runat="server"></asp:Literal>
 
                 <div class="text-right">
                     <asp:Button ID="btnUpdate" runat="server" type="submit" CssClass="btn btn-success" Text="Update Donation"  onClick="btnUpdateDonation_Click" Visible="false"/>
+                     <asp:Button ID="btnCancel" runat="server" type="submit" CssClass="btn btn-danger" Text="Cancel Application"  onClick="btnCancelDonation_Click" Visible="false" style=" float: left;"/>
                      <asp:Button ID="btnResubmit" runat="server" type="submit" CssClass="btn btn-success" Text="Resubmit Application"  onClick="btnResubmitDonation_Click" Visible="false"/>
-                    <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" Text="Cancel" onClick="btnCancelDonation_Click"/>
+                    <asp:Button ID="btnDiscard" runat="server" CssClass="btn btn-secondary" Text="Discard" onClick="btnDiscardDonation_Click" style=" float: left;"/>
+                     <asp:Button ID="btnRepublish" runat="server" type="submit" CssClass="btn btn-success" Text="Publish" Visible="false" onClick="btnRepublish_Click" style=" float: right;"/>
                 </div>
             </div>
         </div>
@@ -203,7 +193,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             var urgentYes = document.getElementById('<%= rbUrgentYes.ClientID %>');
            var urgentNo = document.getElementById('<%= rbUrgentNo.ClientID %>');
-    var timeRange = document.getElementById('timeRange');
+           var timeRange = document.getElementById('timeRange');
            var rfvTimeRange = document.getElementById('<%= rfvTimeRange.ClientID %>');
            var categories = document.querySelectorAll('.category-checkbox');
            var lblCategory = document.getElementById('lblCategory');
@@ -278,6 +268,19 @@
                 text: message,
                 icon: 'success',
                 confirmButtonText: 'OK'
+            });
+        }
+
+        function showSuccess2(message) {
+            Swal.fire({
+                title: 'Success!',
+                text: message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {              
+                    window.location.href = 'OrgDonations.aspx'; 
+                }
             });
         }
 
@@ -388,6 +391,23 @@
                     }
                 });
             }
+        }
+
+        function confirmCancelDonation(donationId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to cancel the donation? By cancelling it, the record will be removed from the system.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, cancel it!',
+                cancelButtonText: 'No, keep it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    __doPostBack('CancelDonationConfirmed', donationId);
+                }
+            });
         }
 
     </script>

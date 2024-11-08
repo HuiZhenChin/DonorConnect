@@ -22,7 +22,7 @@ namespace DonorConnect
 
             if (!IsPostBack)
             {
-                LoadDonations("All"); // Load Pending donations by default
+                LoadDonations("All"); 
                 LoadDonationCount();
             }
         }
@@ -30,9 +30,8 @@ namespace DonorConnect
         protected void LoadDonations_Click(object sender, EventArgs e)
         {
             LinkButton btn = (LinkButton)sender;
-            string status = btn.CommandArgument;  // Get the status from the CommandArgument
+            string status = btn.CommandArgument;  
 
-            // Call LoadDonations function with the selected status
             LoadDonations(status);
 
             lnkAll.CssClass = "nav-link";
@@ -52,29 +51,28 @@ namespace DonorConnect
             string username = Session["username"].ToString();
             string donorId = GetDonorId(username);
 
-
             QRY _Qry = new QRY();
             DataTable dtDonations = new DataTable();
             string sqlQuery = "";
 
             if (status == "All")
             {
-                // Query to fetch all donations from any status, ordered by created_on
                 sqlQuery = @"
                 SELECT 
                     dir.donationId, 
                     dir.pickUpAddress, 
                     dp.address AS destinationAddress, 
-                    CASE 
+                    MAX(CASE 
                         WHEN dir.requestStatus IN ('Pending', 'To Pay') THEN NULL 
                         ELSE d.pickupDate 
-                    END AS pickupDate, 
-                    CASE 
+                    END) AS pickupDate, 
+                    MAX(CASE 
                         WHEN dir.requestStatus IN ('Pending', 'To Pay') THEN NULL 
                         ELSE d.pickupTime 
-                    END AS pickupTime, 
+                    END) AS pickupTime, 
                     org.orgName, 
                     dir.requestStatus AS status,
+                    STRING_AGG(dir.itemCategory, ', ') AS itemCategories,  
                     dir.created_on
                 FROM 
                     donation_item_request dir
@@ -86,97 +84,180 @@ namespace DonorConnect
                     delivery d ON dir.donationId = d.donationId 
                 WHERE 
                     dir.donorId = @donorId
+                GROUP BY 
+                    dir.donationId, dir.pickUpAddress, dp.address, org.orgName, dir.requestStatus, dir.created_on
                 ORDER BY 
                     dir.created_on DESC;
-
                 ";
             }
-
 
             else if (status == "Pending")
             {
-                // Pending donations, excluding pickupDate and pickupTime
                 sqlQuery = @"
-                SELECT dir.donationId, dir.pickUpAddress, dp.address AS destinationAddress, NULL AS pickupDate, NULL AS pickupTime, 
-                org.orgName, 'Pending' AS status
-                FROM donation_item_request dir
-                INNER JOIN organization org ON dir.orgId = org.orgId
-                INNER JOIN donation_publish dp ON dir.donationPublishId = dp.donationPublishId
-                WHERE dir.requestStatus = 'Pending' AND dir.donorId = @donorId
-
+                SELECT 
+                    dir.donationId, 
+                    dir.pickUpAddress, 
+                    dp.address AS destinationAddress, 
+                    NULL AS pickupDate, 
+                    NULL AS pickupTime, 
+                    org.orgName, 
+                    'Pending' AS status
+                FROM 
+                    donation_item_request dir
+                INNER JOIN 
+                    organization org ON dir.orgId = org.orgId
+                INNER JOIN 
+                    donation_publish dp ON dir.donationPublishId = dp.donationPublishId
+                WHERE 
+                    dir.requestStatus = 'Pending' 
+                    AND dir.donorId = @donorId
+                GROUP BY 
+                    dir.donationId, dir.pickUpAddress, dp.address, org.orgName;
                 ";
             }
-
             else if (status == "To Pay")
             {
-                // To Pay donations, with pickupDate and pickupTime included
                 sqlQuery = @"
-                SELECT dir.donationId, dir.pickUpAddress, dp.address AS destinationAddress, NULL AS pickupDate, NULL AS pickupTime, 
-                org.orgName, 'To Pay' AS status
-                FROM donation_item_request dir
-                INNER JOIN organization org ON dir.orgId = org.orgId
-                INNER JOIN donation_publish dp ON dir.donationPublishId = dp.donationPublishId
-                WHERE dir.requestStatus = 'Approved' AND dir.paymentStatus IS NULL AND dir.donorId = @donorId
-
+                SELECT 
+                    dir.donationId, 
+                    dir.pickUpAddress, 
+                    dp.address AS destinationAddress, 
+                    NULL AS pickupDate, 
+                    NULL AS pickupTime, 
+                    org.orgName, 
+                    'To Pay' AS status
+                FROM 
+                    donation_item_request dir
+                INNER JOIN 
+                    organization org ON dir.orgId = org.orgId
+                INNER JOIN 
+                    donation_publish dp ON dir.donationPublishId = dp.donationPublishId
+                WHERE 
+                    dir.requestStatus = 'Approved' 
+                    AND dir.paymentStatus IS NULL 
+                    AND dir.donorId = @donorId
+                GROUP BY 
+                    dir.donationId, dir.pickUpAddress, dp.address, org.orgName;
                 ";
             }
-
             else if (status == "To Accept")
             {
-                // To Accept donations from the delivery table
                 sqlQuery = @"
-                SELECT d.donationId, d.pickUpAddress, d.destinationAddress, d.pickupDate, d.pickupTime, org.orgName, 
-                'To Accept' AS status FROM delivery d 
-                INNER JOIN donation_item_request dir ON d.donationId = dir.donationId 
-                INNER JOIN organization org ON dir.orgId = org.orgId 
-                WHERE d.deliveryStatus = 'Waiting for delivery rider' AND d.donorId = @donorId";
+                SELECT 
+                    d.donationId, 
+                    d.pickUpAddress, 
+                    d.destinationAddress, 
+                    MAX(d.pickupDate) AS pickupDate, 
+                    MAX(d.pickupTime) AS pickupTime, 
+                    org.orgName, 
+                    'To Accept' AS status
+                FROM 
+                    delivery d
+                INNER JOIN 
+                    donation_item_request dir ON d.donationId = dir.donationId 
+                INNER JOIN 
+                    organization org ON dir.orgId = org.orgId 
+                WHERE 
+                    d.deliveryStatus = 'Waiting for delivery rider' 
+                    AND d.donorId = @donorId
+                GROUP BY 
+                    d.donationId, d.pickUpAddress, d.destinationAddress, org.orgName;
+                ";
             }
             else if (status == "To PickUp")
             {
-                // To PickUp donations
                 sqlQuery = @"
-                SELECT d.donationId, d.pickUpAddress, d.destinationAddress, d.pickupDate, d.pickupTime, org.orgName, 
-                'To PickUp' AS status FROM delivery d 
-                INNER JOIN donation_item_request dir ON d.donationId = dir.donationId 
-                INNER JOIN organization org ON dir.orgId = org.orgId    
-                WHERE d.deliveryStatus = 'Accepted' AND d.donorId = @donorId";
+                SELECT 
+                    d.donationId, 
+                    d.pickUpAddress, 
+                    d.destinationAddress, 
+                    MAX(d.pickupDate) AS pickupDate, 
+                    MAX(d.pickupTime) AS pickupTime, 
+                    org.orgName, 
+                    'To PickUp' AS status
+                FROM 
+                    delivery d
+                INNER JOIN 
+                    donation_item_request dir ON d.donationId = dir.donationId 
+                INNER JOIN 
+                    organization org ON dir.orgId = org.orgId    
+                WHERE 
+                    d.deliveryStatus = 'Accepted' 
+                    AND d.donorId = @donorId
+                GROUP BY 
+                    d.donationId, d.pickUpAddress, d.destinationAddress, org.orgName;
+                ";
             }
             else if (status == "To Reach")
             {
-                // To Reach donations
                 sqlQuery = @"
-                SELECT d.donationId, d.pickUpAddress, d.destinationAddress, d.pickupDate, d.pickupTime, org.orgName, 
-                'To Reach' AS status FROM delivery d
-                INNER JOIN donation_item_request dir ON d.donationId = dir.donationId
-                INNER JOIN organization org ON dir.orgId = org.orgId
-                WHERE d.deliveryStatus = 'Delivering in Progress' AND d.donorId = @donorId";
+                SELECT 
+                    d.donationId, 
+                    d.pickUpAddress, 
+                    d.destinationAddress, 
+                    MAX(d.pickupDate) AS pickupDate, 
+                    MAX(d.pickupTime) AS pickupTime, 
+                    org.orgName, 
+                    'To Reach' AS status
+                FROM 
+                    delivery d
+                INNER JOIN 
+                    donation_item_request dir ON d.donationId = dir.donationId
+                INNER JOIN 
+                    organization org ON dir.orgId = org.orgId
+                WHERE 
+                    d.deliveryStatus = 'Delivering in Progress' 
+                    AND d.donorId = @donorId
+                GROUP BY 
+                    d.donationId, d.pickUpAddress, d.destinationAddress, org.orgName;
+                ";
             }
             else if (status == "Completed")
             {
-                // Completed donations
                 sqlQuery = @"
-                SELECT d.donationId, d.pickUpAddress, d.destinationAddress, d.pickupDate, d.pickupTime, org.orgName, 
-                'Completed' AS status FROM delivery d 
-                INNER JOIN donation_item_request dir ON d.donationId = dir.donationId
-                INNER JOIN organization org ON dir.orgId = org.orgId
-                WHERE d.deliveryStatus = 'Reached Destination' AND d.donorId = @donorId";
+                SELECT 
+                    d.donationId, 
+                    d.pickUpAddress, 
+                    d.destinationAddress, 
+                    MAX(d.pickupDate) AS pickupDate, 
+                    MAX(d.pickupTime) AS pickupTime, 
+                    org.orgName, 
+                    'Completed' AS status
+                FROM 
+                    delivery d 
+                INNER JOIN 
+                    donation_item_request dir ON d.donationId = dir.donationId
+                INNER JOIN 
+                    organization org ON dir.orgId = org.orgId
+                WHERE 
+                    d.deliveryStatus = 'Reached Destination' 
+                    AND d.donorId = @donorId
+                GROUP BY 
+                    d.donationId, d.pickUpAddress, d.destinationAddress, org.orgName;
+                ";
             }
 
-            
-
-            // Replace with your data access method (e.g., ADO.NET, EF, etc.)
             var parameters = new Dictionary<string, object>
             {
                 { "@donorId", donorId }
             };
 
-            // Assuming you have a method to fetch data based on the query and parameters
             dtDonations = _Qry.GetData(sqlQuery, parameters);
 
-            // Bind the fetched data to the GridView
-            gvDonations.DataSource = dtDonations;
-            gvDonations.DataBind();
+            if (dtDonations.Rows.Count == 0)
+            {
+                noDataLabel.Visible = true;
+                gvDonations.Visible = false;
+            }
+            else
+            {
+                noDataLabel.Visible = false;
+                gvDonations.Visible = true;
+                gvDonations.DataSource = dtDonations;
+                gvDonations.DataBind();
+            }
         }
+
 
         public static string GetDonorId(string username)
         {
@@ -195,8 +276,7 @@ namespace DonorConnect
             {
                 { "@username", username }
             };
-
-            // Execute the SQL query to fetch the ID
+       
             DataTable dt = _Qry.GetData(sql, parameters);
 
             if (dt.Rows.Count > 0)
@@ -212,56 +292,25 @@ namespace DonorConnect
 
         protected void gvDonations_RowDataBound(object sender, GridViewRowEventArgs e)
         {
-            // Check if the current row is a data row (not a header or footer)
+     
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                // Get the donationId for the current row
+                // get the donationId for the current row
                 string donationId = DataBinder.Eval(e.Row.DataItem, "donationId").ToString();
 
-                // Find the PlaceHolder control inside the current row
+                // find the PlaceHolder control inside the current row
                 PlaceHolder phDonationItems = (PlaceHolder)e.Row.FindControl("phDonationItems");
 
-                // Call the method to load the donation items for this donationId
+                // call the method to load the donation items for this donationId
                 LoadDonationItems(donationId, phDonationItems);
 
-                //QRY _Qry = new QRY();
-                //string qrSql = "SELECT qrCode FROM delivery WHERE donationId = @donationId";
-                //var qrParams = new Dictionary<string, object>
-                //{
-                //    { "@donationId", donationId }
-                //};
-
-                //DataTable qrData = _Qry.GetData(qrSql, qrParams);
-
-                //if (qrData.Rows.Count > 0)
-                //{
-                //    string qrBase64 = qrData.Rows[0]["qrCode"].ToString();
-
-                //    // Find the QR code Panel (if required) and image control (or bind it directly in the template)
-                //    Panel pnlQRCode = (Panel)e.Row.FindControl("pnlQRCode");
-                //    if (pnlQRCode != null)
-                //    {
-                //        // Ensure the panel is visible if not already set by the Visible property
-                //        pnlQRCode.Visible = true;
-
-                //        // Add QR code as image base64
-                //        System.Web.UI.WebControls.Image imgQRCode = new System.Web.UI.WebControls.Image();
-                //        imgQRCode.ImageUrl = "data:image/png;base64," + qrBase64;
-                //        imgQRCode.AlternateText = "QR Code";
-                //        imgQRCode.Width = Unit.Pixel(150);
-                //        imgQRCode.Height = Unit.Pixel(150);
-
-                //        // Add the image to the QR code panel
-                //        pnlQRCode.Controls.Add(imgQRCode);
-                //    }
-                //}
             }
         }
 
 
         private void LoadDonationItems(string donationId, PlaceHolder phDonationItems)
         {
-            // Updated query to fetch the donation items based on the donationId
+            // fetch the donation items based on the donationId
             string query = @"
             WITH SplitItems AS (
                 SELECT 
@@ -308,7 +357,6 @@ namespace DonorConnect
             ORDER BY 
                 si.itemCategory, si.item, die.expiryDate";
 
-            // Assuming QRY is a database utility class that executes the query
             QRY qry = new QRY();
             var parameters = new Dictionary<string, object>
             {
@@ -318,7 +366,7 @@ namespace DonorConnect
 
             if (dt.Rows.Count > 0)
             {
-                // Start creating a table
+             
                 StringBuilder sb = new StringBuilder();
                 sb.Append("<table id='categoryDetailsTable' style='margin: auto;'>");
                 sb.Append("<thead><tr><th>Category</th><th>Item</th><th>Quantity</th><th>Expiry Date (Quantity)</th></tr></thead>");
@@ -333,10 +381,10 @@ namespace DonorConnect
                     string expiryDate = row["expiryDate"] == DBNull.Value ? "N/A" : Convert.ToDateTime(row["expiryDate"]).ToString("yyyy-MM-dd");
                     string expiryQuantity = row["quantityWithSameExpiryDate"] == DBNull.Value ? "N/A" : row["quantityWithSameExpiryDate"].ToString();
 
-                    // If there is no expiry date, show the donated quantity from the original request
+                    // if there is no expiry date, show the donated quantity from the original request
                     string quantityToDisplay = expiryDate == "N/A" ? row["quantityDonated"].ToString() : expiryQuantity;
 
-                    // Display category header once per category
+                    // display category header once per category
                     if (currentCategory != category)
                     {
                         sb.AppendFormat("<tr><td colspan='5'><strong>{0}</strong></td></tr>", category);
@@ -344,10 +392,10 @@ namespace DonorConnect
                     }
 
                     sb.Append("<tr>");
-                    sb.AppendFormat("<td></td>");  // Empty for category
-                    sb.AppendFormat("<td>{0}</td>", item);  // Display item
-                    sb.AppendFormat("<td>{0}</td>", quantityToDisplay);  // Display the appropriate quantity
-                    sb.AppendFormat("<td>{0}</td>", expiryDate);  // Display expiry date with quantity
+                    sb.AppendFormat("<td></td>");  
+                    sb.AppendFormat("<td>{0}</td>", item);  
+                    sb.AppendFormat("<td>{0}</td>", quantityToDisplay); 
+                    sb.AppendFormat("<td>{0}</td>", expiryDate); 
 
 
                     sb.Append("</tr>");
@@ -355,12 +403,12 @@ namespace DonorConnect
 
                 sb.Append("</tbody></table>");
 
-                // Add the table HTML to the PlaceHolder control
+              
                 phDonationItems.Controls.Add(new Literal { Text = sb.ToString() });
             }
             else
             {
-                // Optionally display a message if no items are found
+               
                 phDonationItems.Controls.Add(new Literal { Text = "<p>No items found for this donation.</p>" });
             }
         }
@@ -376,19 +424,19 @@ namespace DonorConnect
                 { "@donationId", donationId }
             };
 
-            // Fetch the QR code from the database
+            // fetch the QR code from the database
             DataTable qrData = _Qry.GetData(qrSql, qrParams);
 
             if (qrData.Rows.Count > 0)
             {
-                // Assuming the QR code is stored in base64 format
+            
                 string qrBase64 = qrData.Rows[0]["qrCode"].ToString();
                 string qrCodeUrl = "data:image/png;base64," + qrBase64;
-                return qrCodeUrl;  // Return the base64 image URL
+                return qrCodeUrl; 
             }
             else
             {
-                return "";  // No QR code found
+                return "";  // no QR code found
             }
         }
 
@@ -398,7 +446,7 @@ namespace DonorConnect
 
             QRY _Qry = new QRY();
 
-            // Fetch the link from the database
+            // fetch the link from the database
             string paySql = "SELECT link FROM notifications WHERE supportingId = @donationId";
             var payParams = new Dictionary<string, object>
             {
@@ -411,24 +459,27 @@ namespace DonorConnect
             {
                 string link = dt.Rows[0]["link"].ToString();
 
-                // Dynamically set the OnClientClick attribute to redirect to the link
+                // redirect to the link
                 Button btnPay = (Button)sender;
                 link = Encryption.Decrypt(link);
                 btnPay.OnClientClick = "window.open('" + link + "', '_blank'); return false;";
             }
             else
             {
-                // Handle case if the link is not found
+                // if the link is not found
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Error: Link not found!');", true);
             }
         }
 
         protected string GetStatus(string status)
         {
+          
             switch (status.ToLower())
             {
                 case "pending":
                     return "status-pending";
+                case "approved":
+                    return "status-to-pay";
                 case "to pay":
                     return "status-to-pay";
                 case "to accept":
@@ -437,10 +488,14 @@ namespace DonorConnect
                     return "status-to-pickup";
                 case "to reach":
                     return "status-to-reach";
+                case "delivering in progress":
+                    return "status-to-reach";
                 case "completed":
                     return "status-completed";
                 case "rejected":
                     return "status-rejected";
+                case "refund":
+                    return "status-refund";
                 default:
                     return "";
             }
@@ -448,14 +503,14 @@ namespace DonorConnect
 
         protected void LoadDonationCount()
         {
-            // Example counts (replace with actual count logic from the database)
+            // counts 
             int toPayCount = GetDonationCountByStatus("To Pay");
             int toAcceptCount = GetDonationCountByStatus("To Accept");
             int toPickUpCount = GetDonationCountByStatus("To PickUp");
             int toReachCount = GetDonationCountByStatus("To Reach");
             int completedCount = GetDonationCountByStatus("Completed");
 
-            // Dynamically update the text of the LinkButtons to include the count in bold
+            // update the text of the LinkButtons to include the count in bold
             lnkToPay.Text = "To Pay" + (toPayCount > 0 ? $" (<strong>{toPayCount}</strong>)" : "");
             lnkToAccept.Text = "To Accept" + (toAcceptCount > 0 ? $" (<strong>{toAcceptCount}</strong>)" : "");
             lnkToPickUp.Text = "To PickUp" + (toPickUpCount > 0 ? $" (<strong>{toPickUpCount}</strong>)" : "");
@@ -499,7 +554,7 @@ namespace DonorConnect
 
             if (status == "To Pay")
             {
-                // SQL query to count 'To Pay' donations
+                // count 'To Pay' donations
                 sqlQuery = @"
                 SELECT COUNT(*) 
                 FROM donation_item_request dir
@@ -509,11 +564,11 @@ namespace DonorConnect
                 AND dir.paymentStatus IS NULL 
                 AND dir.donorId = @donorId";
 
-                parameter.Add("@donorId", id);  // Assuming you have donorId stored in the session
+                parameter.Add("@donorId", id);  
             }
             else if (status == "To Accept")
             {
-                // SQL query to count 'To Accept' donations
+                // count 'To Accept' donations
                 sqlQuery = @"
                 SELECT COUNT(*) 
                 FROM delivery d
@@ -526,7 +581,7 @@ namespace DonorConnect
             }
             else if (status == "To PickUp")
             {
-                // SQL query to count 'To PickUp' donations
+                // count 'To PickUp' donations
                 sqlQuery = @"
                 SELECT COUNT(*) 
                 FROM delivery d
@@ -539,7 +594,7 @@ namespace DonorConnect
             }
             else if (status == "To Reach")
             {
-                // SQL query to count 'To Reach' donations
+                // count 'To Reach' donations
                 sqlQuery = @"
                 SELECT COUNT(*) 
                 FROM delivery d
@@ -552,7 +607,7 @@ namespace DonorConnect
             }
             else if (status == "Completed")
             {
-                // SQL query to count 'Completed' donations
+                // count 'Completed' donations
                 sqlQuery = @"
                 SELECT COUNT(*) 
                 FROM delivery d
@@ -570,11 +625,11 @@ namespace DonorConnect
 
             if (dt2.Rows.Count > 0)
             {
-                return Convert.ToInt32(dt2.Rows[0][0]);  // Return the count
+                return Convert.ToInt32(dt2.Rows[0][0]); 
             }
             else
             {
-                return 0;  // If no rows found, return 0
+                return 0;  
             }
         }
 
@@ -585,6 +640,77 @@ namespace DonorConnect
             Response.Redirect($"Delivery.aspx?donationId={donationId}");
 
         }
+
+        protected void btnRefund_Click(object sender, EventArgs e)
+        {
+            string donationId = hfDonationId.Value;
+
+            string username= Session["username"].ToString();
+
+            string reason = "";
+
+            if (string.IsNullOrEmpty(ddlRefundReason.SelectedValue) || ddlRefundReason.SelectedValue == "")
+            {
+                lblError.Text = "Please select your reason for requesting a refund.";
+                return;
+            }
+
+            else
+            {
+                reason= ddlRefundReason.Text;
+            }
+           
+
+            QRY _Qry = new QRY();
+
+            string sql = "UPDATE donation_item_request SET requestStatus = @status WHERE donationId = @donationId";
+            var parametersDonation = new Dictionary<string, object>
+            {
+                { "@donationId", donationId },
+                { "@status", "Refund" }
+            };
+
+            bool successDonation = _Qry.ExecuteNonQuery(sql, parametersDonation);
+
+            // update the delivery table
+            string sql2 = "UPDATE delivery SET deliveryStatus = @deliveryStatus, refundReason= @reason WHERE donationId = @donationId";
+            var parametersDelivery = new Dictionary<string, object>
+            {
+                { "@donationId", donationId },
+                { "@deliveryStatus", "Cancelled" },
+                { "@reason", reason }
+            };
+
+            bool successDelivery = _Qry.ExecuteNonQuery(sql2, parametersDelivery);
+
+            if (successDonation && successDelivery)
+            {
+                string sql3 = "EXEC [admin_reminder_email] " +
+                 "@username = '" + username + "', " +
+                 "@reason= '" + reason + "'," +
+                 "@action = '" + "REFUND" + "' ";
+
+                bool successEmail = _Qry.ExecuteNonQuery(sql3);
+
+                if (successEmail)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Refund requested successfully! Please be patient while our team handles your request.');", true);
+                    LoadDonations("To Accept");
+                }
+                else
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('TheError in requesting refund. Please try again.');", true);
+                }
+
+                
+            }
+            else
+            {
+             
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('Error in requesting refund. Please try again.');", true);
+            }
+        }
+
 
     }
 

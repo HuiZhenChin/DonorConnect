@@ -6,8 +6,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
+using System.Web.Services;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace DonorConnect
 {
@@ -21,17 +23,19 @@ namespace DonorConnect
                 {
                     if (Session["role"].ToString() == "rider")
                     {
-                        LoadDonationOrder("Recommended", "", "", "DESC", "Car");
+                       LoadDonationOrder("Recommended", "", "", "DESC", "");
 
                     }
                 }
             }
         }
+
+
         private void LoadDonationOrder(string recommendedFilter = "", string pickupStateFilter = "", string destinationStateFilter = "", string earningsFilter = "", string vehicleTypeFilter = "")
         {
             QRY _Qry = new QRY();
             DataTable _dt = new DataTable();
-         
+
             string strSQL = @"
             SELECT d.deliveryId, d.pickupDate, d.pickupTime, d.pickupAddress, d.destinationAddress, d.paymentAmount, d.vehicleType, 
                    dir.donationPublishId, dir.totalDistance,  
@@ -64,7 +68,7 @@ namespace DonorConnect
                         strSQL += " AND dir.[state] = @riderRegion AND dp.donationState = @riderRegion";
                         strSQL += " AND d.vehicleType = @riderVehicleType";
 
-                       
+
                         parameters.Add("@riderRegion", riderRegion);
                         parameters.Add("@riderVehicleType", riderVehicleType);
                     }
@@ -167,7 +171,7 @@ namespace DonorConnect
             string earningsFilter = ddlEarnings.SelectedValue;
             string vehicleTypeFilter = ddlVehicleType.SelectedValue;
 
-            // LoadDonationOrder method with the selected filters
+            // selected filters
             LoadDonationOrder(recommendedFilter, pickupStateFilter, destinationStateFilter, earningsFilter, vehicleTypeFilter);
         }
 
@@ -175,101 +179,436 @@ namespace DonorConnect
         {
             if (e.CommandName == "ViewOrder")
             {
-                // get the deliveryId from the CommandArgument
+                // get the deliveryId from frontend
                 string deliveryId = e.CommandArgument.ToString();
-
                 GridViewRow row = (GridViewRow)(((Button)e.CommandSource).NamingContainer);
-
-                // find the panel in the current row and set it to be visible
                 Panel pnlOrderInfo = (Panel)row.FindControl("pnlOrderInfo");
-                pnlOrderInfo.Attributes.CssStyle.Add("display", "block");
+                Button btnViewOrder = (Button)row.FindControl("btnViewOrder");
+                GridView gvDonationItems = (GridView)row.FindControl("gvDonationItems");
 
-                QRY _Qry = new QRY();
-                string donationQuery = "SELECT donationId, orgId FROM delivery WHERE deliveryId = @deliveryId";
-                var donationParams = new Dictionary<string, object> { { "@deliveryId", deliveryId } };
-                DataTable deliveryData = _Qry.GetData(donationQuery, donationParams);
+                string currentlyOpenPanelId = ViewState["OpenPanel"] != null ? ViewState["OpenPanel"].ToString() : null;
 
-                if (deliveryData.Rows.Count > 0)
+                if (currentlyOpenPanelId == pnlOrderInfo.ClientID)
                 {
-                    string donationId = deliveryData.Rows[0]["donationId"].ToString();
-                    string orgId = deliveryData.Rows[0]["orgId"].ToString();
+                    pnlOrderInfo.Attributes.CssStyle.Add("display", "none");
+                    ViewState["OpenPanel"] = null;
 
-                    // fetch donor information from donation_item_request table
-                    string donorQuery = "SELECT donorFullName, donorPhone FROM donation_item_request WHERE donationId = @donationId";
-                    var donorParams = new Dictionary<string, object> { { "@donationId", donationId } };
-                    DataTable donorData = _Qry.GetData(donorQuery, donorParams);
+                    btnViewOrder.Text = "View Order ->";
+                    btnViewOrder.CssClass = "btn btn-success";
+                }
+                else
+                {
+                    // show the clicked panel
+                    pnlOrderInfo.Attributes.CssStyle.Add("display", "block");
 
-                    if (donorData.Rows.Count > 0)
+                    ViewState["OpenPanel"] = pnlOrderInfo.ClientID;
+
+                    btnViewOrder.Text = "<- Close Order";
+                    btnViewOrder.CssClass = "btn btn-danger";
+                    string donationPublishId = "";
+
+                    // populate order details
+                    QRY _Qry = new QRY();
+                    string donationQuery = "SELECT donationId, orgId, noteRider FROM delivery WHERE deliveryId = @deliveryId";
+                    var donationParams = new Dictionary<string, object> { { "@deliveryId", deliveryId } };
+                    DataTable deliveryData = _Qry.GetData(donationQuery, donationParams);
+
+                    if (deliveryData.Rows.Count > 0)
                     {
-                        Label lblDonorName = (Label)row.FindControl("lblDonorName");
-                        Label lblDonorPhone = (Label)row.FindControl("lblDonorPhone");
-                        lblDonorName.Text = donorData.Rows[0]["donorFullName"].ToString();
-                        lblDonorPhone.Text = donorData.Rows[0]["donorPhone"].ToString();
-                    }
+                        string donationId = deliveryData.Rows[0]["donationId"].ToString();
+                        string orgId = deliveryData.Rows[0]["orgId"].ToString();
+                        Label lblNote = (Label)row.FindControl("lblNote");
+                        lblNote.Text = string.IsNullOrEmpty(deliveryData.Rows[0]["noteRider"].ToString()) ? "-" : deliveryData.Rows[0]["noteRider"].ToString();
 
-                    // fetch organization information from the organization table using orgId
-                    string orgQuery = "SELECT orgName, orgContactNumber, picContactNumber FROM organization WHERE orgId = @orgId";
-                    var orgParams = new Dictionary<string, object> { { "@orgId", orgId } };
-                    DataTable orgData = _Qry.GetData(orgQuery, orgParams);
+                        // fetch donor information
+                        string donorQuery = "SELECT distinct donorFullName, donorPhone, donationPublishId FROM donation_item_request WHERE donationId = @donationId";
+                        var donorParams = new Dictionary<string, object> { { "@donationId", donationId } };
+                        DataTable donorData = _Qry.GetData(donorQuery, donorParams);
 
-                    if (orgData.Rows.Count > 0)
-                    {
-                        Label lblOrgName = (Label)row.FindControl("lblOrgName");
-                        Label lblOrgPhone = (Label)row.FindControl("lblOrgPhone");
-                        lblOrgName.Text = orgData.Rows[0]["orgName"].ToString();
-                        lblOrgPhone.Text = orgData.Rows[0]["orgContactNumber"].ToString() + " / " + orgData.Rows[0]["picContactNumber"].ToString();
-                    }
-
-                    // fetch the donation items based on the donationId
-                    string query2 = "SELECT itemCategory, item, quantityDonated FROM donation_item_request WHERE donationId = @donationId";
-                    var parameters = new Dictionary<string, object>
-                    {
-                        { "@donationId", donationId }
-                    };
-                    DataTable dt2 = _Qry.GetData(query2, parameters);
-                  
-                    if (dt2.Rows.Count > 0)
-                    {
-                        // creating a table
-                        StringBuilder sb = new StringBuilder();
-                        sb.Append("<table id='categoryDetailsTable' style='margin: auto;'>");
-                        sb.Append("<thead><tr><th>Category</th><th>Item</th><th>Quantity</th></tr></thead>");
-                        sb.Append("<tbody>");
-
-                        foreach (DataRow row2 in dt2.Rows)
+                        if (donorData.Rows.Count > 0)
                         {
-                            string category = row2["itemCategory"].ToString();
-                            string items = row2["item"].ToString();
-                            string quantities = row2["quantityDonated"].ToString();
-
+                            Label lblDonorName = (Label)row.FindControl("lblDonorName");
+                            Label lblDonorPhone = (Label)row.FindControl("lblDonorPhone");
                            
-                            // split items and quantities by commas if needed
-                            quantities = quantities.Replace("(", "").Replace(")", "");
-                            string[] itemArray = items.Split(',');
-                            string[] qtyArray = quantities.Split(',');
+                            lblDonorName.Text = donorData.Rows[0]["donorFullName"].ToString();
+                            lblDonorPhone.Text = donorData.Rows[0]["donorPhone"].ToString();
+                            donationPublishId = donorData.Rows[0]["donationPublishId"].ToString();
+                          
 
-                            for (int i = 0; i < itemArray.Length; i++)
-                            {
-                                sb.Append("<tr>");
-                                sb.AppendFormat("<td>{0}</td>", category);  // display category in each row
-                                sb.AppendFormat("<td>{0}</td>", itemArray[i].Trim());  // display each item
-                                sb.AppendFormat("<td>{0}</td>", i < qtyArray.Length ? qtyArray[i].Trim() : "N/A");  // display each quantity or "N/A" if missing
-                                sb.Append("</tr>");
-                            }
                         }
 
-                        sb.Append("</tbody></table>");
+                        // fetch organization information
+                        string orgQuery = "SELECT recipientName, recipientPhoneNumber FROM donation_publish WHERE donationPublishId = @donationPublishId";
+                        var orgParams = new Dictionary<string, object> { { "@donationPublishId", donationPublishId } };
+                        DataTable orgData = _Qry.GetData(orgQuery, orgParams);
 
-                  
-                        PlaceHolder phDonationItems = (PlaceHolder)row.FindControl("phDonationItems");
-                        phDonationItems.Controls.Add(new Literal { Text = sb.ToString() });
+                        if (orgData.Rows.Count > 0)
+                        {
+                            Label lblOrgName = (Label)row.FindControl("lblOrgName");
+                            Label lblOrgPhone = (Label)row.FindControl("lblOrgPhone");
+                            lblOrgName.Text = orgData.Rows[0]["recipientName"].ToString();
+                            lblOrgPhone.Text = orgData.Rows[0]["recipientPhoneNumber"].ToString();
+                        }
+
+                        // fetch the donation items based on donationId 
+                        string query2 = "SELECT itemCategory, item, quantityDonated FROM donation_item_request WHERE donationId = @donationId";
+                        var parameters = new Dictionary<string, object> { { "@donationId", donationId } };
+                        DataTable dt2 = _Qry.GetData(query2, parameters);
+
+                        if (dt2.Rows.Count > 0)
+                        {
+                            gvDonationItems.DataSource = dt2;
+                            gvDonationItems.DataBind();
+                        }
                     }
                 }
             }
         }
 
+       
+        protected void btnAcceptOrder_Click(object sender, EventArgs e)
+        {
+            Button btnAcceptOrder = (Button)sender;
+
+            string deliveryId = btnAcceptOrder.CommandArgument;
+
+            QRY _Qry = new QRY();
+
+            string username = Session["username"].ToString();
+            string riderId = GetRiderId(username);
+
+            // fetch rider's vehicle type from the delivery_rider table
+            string riderVehicleTypeQuery = "SELECT vehicleType FROM delivery_rider WHERE riderId = @riderId";
+            var riderParams = new Dictionary<string, object> { { "@riderId", riderId } };
+            DataTable riderData = _Qry.GetData(riderVehicleTypeQuery, riderParams);
+            string riderVehicleType = null;
+
+            if (riderData.Rows.Count > 0)
+            {
+                riderVehicleType = riderData.Rows[0]["vehicleType"].ToString();
+            }
+            else
+            {
+
+                riderVehicleType = null;
+            }
+
+            // fetch delivery's vehicle type from the delivery table
+            string deliveryVehicleTypeQuery = "SELECT vehicleType FROM delivery WHERE deliveryId = @deliveryId";
+            var deliveryParams = new Dictionary<string, object> { { "@deliveryId", deliveryId } };
+            DataTable deliveryData = _Qry.GetData(deliveryVehicleTypeQuery, deliveryParams);
+            string deliveryVehicleType = null;
+
+            if (deliveryData.Rows.Count > 0)
+            {
+                deliveryVehicleType = deliveryData.Rows[0]["vehicleType"].ToString();
+            }
+            else
+            {
+
+                deliveryVehicleType = null;
+            }
+
+            // compare vehicle type
+            if (riderVehicleType != null && deliveryVehicleType != null)
+            {
+                if (riderVehicleType == deliveryVehicleType)
+                {
+                    // if vehicle types are the same, proceed to accept the order
+                    updateDb(deliveryId);
+                }
+                else
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "confirmAccept",
+                    $"confirmAccept('{deliveryId}');", true);
+                }
+            }
+        }
+
+        [WebMethod]
+        public static string AcceptOrder(string deliveryId)
+        {
+            return updateDb(deliveryId);
+        }
+
+        protected static string updateDb(string deliveryId)
+        {
+            try
+            {
+                QRY _Qry = new QRY();
+
+                string username = HttpContext.Current.Session["username"].ToString();
+                string riderId = GetRiderId(username);
+
+                DateTime acceptTime = DateTime.Now;
+
+                // update the delivery table to accept the order
+                string updateQuery = "UPDATE delivery " +
+                                     "SET riderId = @riderId, " +
+                                     "acceptTimeByRider = @acceptTimeByRider, " +
+                                     "deliveryStatus = @deliveryStatus " +
+                                     "WHERE deliveryId = @deliveryId";
+
+                var updateParams = new Dictionary<string, object>
+                {
+                    { "@riderId", riderId },
+                    { "@acceptTimeByRider", acceptTime },
+                    { "@deliveryStatus", "Accepted" },
+                    { "@deliveryId", deliveryId }
+                };
+
+                bool updateSuccess = _Qry.ExecuteNonQuery(updateQuery, updateParams);
+
+                // if successful
+                if (updateSuccess)
+                {
+                    QRY _Qry2 = new QRY();
+                    string message = "Your donation delivery status has been updated to " + "Accepted" + ".";
+                    string donationId = GetDonationId(deliveryId);
+                    string donorId = GetDonorId(deliveryId);
+                    string link = $"Delivery.aspx?donationId={donationId}";
+
+                    string encryptedLink = Encryption.Encrypt(link);
+
+                    string sqlNtf = "EXEC [create_notifications] " +
+                                    "@method = 'INSERT', " +
+                                    "@id = NULL, " +
+                                    "@userId = @userId, " +
+                                    "@link = @link, " +
+                                    "@content = @content";
+
+                    var notificationParameter = new Dictionary<string, object>
+                    {
+                        { "@userId", donorId },
+                        { "@link", encryptedLink },
+                        { "@content", message }
+                    };
+
+                    _Qry2.ExecuteNonQuery(sqlNtf, notificationParameter);
+
+                    string fullLink = "https://localhost:44390/Delivery.aspx?donationId=" + donationId;
+
+                    // send email to notify organization
+                    string sqlemail = "EXEC [application_email] " +
+                                      "@action = 'DONATION DELIVERY UPDATE ACCEPTED', " +
+                                      "@role = 'donor', " +
+                                      "@resubmitlink = @link, " +
+                                      "@donorId = @donorId, " +
+                                      "@donationpublishid = @donationPublishId";
+
+                    var emailParameter = new Dictionary<string, object>
+                    {
+                        { "@link", fullLink },
+                        { "@donorId", donorId },
+                        { "@donationPublishId", donationId }
+                    };
+
+                    _Qry.ExecuteNonQuery(sqlemail, emailParameter);
+
+                    ScriptManager.RegisterStartupScript(HttpContext.Current.Handler as Page, HttpContext.Current.GetType(), "alert",
+                    "Swal.fire({ " +
+                    "title: 'Accepted!', " +
+                    "text: 'Successful! Please visit your Dashboard to view the location navigation and status update of the order. Note that you will only receive the money earned in the DonorConnect wallet when you have delivered the item to the destination (status is Completed).', " +
+                    "icon: 'success', " +
+                    "confirmButtonText: 'OK' " +
+                    "}).then(function() { " +
+                    "window.location.href = 'Home.aspx'; " +
+                    "});", true);
 
 
+                    return "success";
+                }
+                else
+                {
+                    ScriptManager.RegisterStartupScript(HttpContext.Current.Handler as Page, HttpContext.Current.GetType(), "alert",
+                    "Swal.fire('Error!', 'There was an error accepting the order. Please try again!', 'error');", true);
+
+                    return "error";
+                }
+            }
+            catch (Exception ex)
+            {
+                ScriptManager.RegisterStartupScript(HttpContext.Current.Handler as Page, HttpContext.Current.GetType(), "alert",
+                    $"Swal.fire('Error!', 'Error: {ex.Message}', 'error');", true);
+
+                return "error: " + ex.Message;
+            }
+        }
+
+
+
+        public static string GetRiderId(string username)
+        {
+
+
+            if (string.IsNullOrEmpty(username))
+            {
+                throw new Exception("Username is missing.");
+            }
+
+            string sql = "SELECT riderId FROM delivery_rider WHERE riderUsername = @username";
+
+
+            QRY _Qry = new QRY();
+            var parameters = new Dictionary<string, object>
+            {
+                { "@username", username }
+            };
+
+            DataTable dt = _Qry.GetData(sql, parameters);
+
+            if (dt.Rows.Count > 0)
+            {
+                return dt.Rows[0]["riderId"].ToString();
+            }
+            else
+            {
+                throw new Exception($"No record found for username: {username}");
+            }
+
+        }
+
+        public static string GetDonationId(string deliveryId)
+        {
+            string donationId = string.Empty;
+
+            QRY _Qry = new QRY();
+
+            string sql = "SELECT donationId FROM delivery WHERE deliveryId = @deliveryId";
+            var parameter = new Dictionary<string, object>
+            {
+                { "@deliveryId", deliveryId }
+            };
+
+            DataTable dt = _Qry.GetData(sql, parameter);
+
+            if (dt.Rows.Count > 0)
+            {
+                donationId = dt.Rows[0]["donationId"].ToString();
+            }
+
+            return donationId;
+        }
+        public static string GetDonorId(string deliveryId)
+        {
+            string donorId = string.Empty;
+
+            QRY _Qry = new QRY();
+
+            string sql = "SELECT donorId FROM delivery WHERE deliveryId = @deliveryId";
+            var parameter = new Dictionary<string, object>
+            {
+                { "@deliveryId", deliveryId }
+            };
+
+            DataTable dt = _Qry.GetData(sql, parameter);
+
+            if (dt.Rows.Count > 0)
+            {
+                donorId = dt.Rows[0]["donorId"].ToString();
+            }
+
+            return donorId;
+        }
+
+        protected void btnMap_Click(object sender, EventArgs e)
+        {
+            //LoadDonationOrder("All", "", "", "", "");
+            // set dropdown list to "All"
+            ddlRecommendedAll.SelectedIndex = 1;
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showInfo('By opening the map, the search results will be refreshed from \"Recommended\" to \"All\".', 'error');", true);
+
+        }
+
+        [WebMethod]
+        public static string GetDestinationAddress(string deliveryId)
+        {
+            QRY _Qry = new QRY();
+            DataTable _dt;
+
+            string sql = "SELECT destinationAddress FROM delivery WHERE deliveryId = @deliveryId";
+            Dictionary<string, object> parameter = new Dictionary<string, object>
+            {
+                { "@deliveryId", deliveryId }
+            };
+            _dt = _Qry.GetData(sql, parameter);
+
+
+            if (_dt.Rows.Count > 0)
+            {
+               
+                string address = _dt.Rows[0]["destinationAddress"].ToString();
+
+                return address;
+
+            }
+
+            // if no records found or any issues
+            return null;
+        }
+
+        [WebMethod]
+        public static string GetPickupAddress2(string deliveryId)
+        {
+            if (string.IsNullOrEmpty(deliveryId))
+            {
+                throw new Exception("Delivery Id is missing.");
+            }
+
+            string sql = "SELECT pickupAddress FROM delivery WHERE deliveryId = @deliveryId";
+
+            QRY _Qry = new QRY();
+            var parameters = new Dictionary<string, object>
+            {
+                { "@deliveryId", deliveryId }
+            };
+
+            DataTable dt = _Qry.GetData(sql, parameters);
+
+            if (dt.Rows.Count > 0)
+            {
+                string pickupAddress = dt.Rows[0]["pickupAddress"].ToString();
+
+
+                return pickupAddress;
+            }
+            else
+            {
+                throw new Exception($"No record found for deliveryId: {deliveryId}");
+            }
+        }
+
+        [WebMethod]
+        public static List<Dictionary<string, string>> GetPickupAddress()
+        {
+            List<Dictionary<string, string>> address = new List<Dictionary<string, string>>();
+
+            QRY _Qry = new QRY();
+
+            string sql = @"
+           SELECT d.deliveryID, d.pickupAddress, d.destinationAddress, dir.donorFullName, dir.donorPhone, d.donationId 
+           FROM delivery d
+           INNER JOIN donation_item_request dir ON d.donationId = dir.donationId
+           WHERE d.deliveryStatus = 'Waiting for delivery rider'";
+
+            DataTable _dt = _Qry.GetData(sql);
+
+            foreach (DataRow row in _dt.Rows)
+            {
+                var donor = new Dictionary<string, string>
+            {
+                { "deliveryId", row["deliveryId"].ToString() },
+                { "donorName", row["donorFullName"].ToString() },
+                { "pickupAddress", row["pickupAddress"].ToString() },
+                { "destinationAddress", row["destinationAddress"].ToString() },
+                { "donorPhone", row["donorPhone"].ToString() },
+            };
+                address.Add(donor);
+            }
+
+            return address;
+        }
 
     }
 }

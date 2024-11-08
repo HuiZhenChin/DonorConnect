@@ -653,15 +653,22 @@ namespace DonorConnect
                 }
                 else
                 {
-                    // insert new row for deleted item
-                    string insertDeletedQuery = "INSERT INTO deleted_item_donations (donationId, content) VALUES (@donationId, @content)";
-                    var insertDeletedParams = new Dictionary<string, object>
+                    if (categoryCount == 1 && itemList.Count == 1)
+                    {
+                        //pass
+                    }
+                    else
+                    {
+                        // insert new row for deleted item
+                        string insertDeletedQuery = "INSERT INTO deleted_item_donations (donationId, content) VALUES (@donationId, @content)";
+                        var insertDeletedParams = new Dictionary<string, object>
                     {
                         { "@donationId", donationId },
                         { "@content", deletedContent }
                     };
 
-                    _Qry.ExecuteNonQuery(insertDeletedQuery, insertDeletedParams);
+                        _Qry.ExecuteNonQuery(insertDeletedQuery, insertDeletedParams);
+                    }
                 }
 
                 // if there is more than one category, allow deletion when fetchQuery returns 1 item
@@ -1077,6 +1084,32 @@ namespace DonorConnect
                                 return _Qry.ExecuteNonQuery(updateQuery, updateParams);
                             }
 
+                        }
+                        else
+                        {
+                           
+                                quantityList.RemoveAt(index);  // remove the corresponding quantity
+                                itemList.RemoveAt(index);      // remove the corresponding item
+
+                                // join the remaining items and quantities into comma-separated strings
+                                string newItems = string.Join(", ", itemList);
+                                string newQuantities = "(" + string.Join(", ", quantityList) + ")";
+
+                                // update the donation_item_request table with the new items and quantities
+                                string updateQuery = "UPDATE donation_item_request SET item = @newItems, quantityDonated = @newQuantities WHERE donationId = @donationId AND itemCategory = @category";
+                                var updateParams = new Dictionary<string, object>
+                                {
+                                    { "@newItems", newItems },
+                                    { "@newQuantities", newQuantities },
+                                    { "@donationId", donationId },
+                                    { "@category", category }
+                                };
+
+                                bool updateSuccess = _Qry.ExecuteNonQuery(updateQuery, updateParams);
+                                if (!updateSuccess) return false;
+
+                                return true;                           
+                            
                         }
                     }
                 }

@@ -19,7 +19,7 @@
             timer: 5000,
             timerProgressBar: true,
             willOpen: () => {
-                // Set up the countdown timer display
+          
                 const content = Swal.getHtmlContainer();
                 const b = content.querySelector('b');
                 timerInterval = setInterval(() => {
@@ -27,7 +27,7 @@
                 }, 100);
             },
             willClose: () => {
-                // Clean up and redirect when the popup closes
+          
                 clearInterval(timerInterval);
                 window.location.href = 'Login.aspx';
             }
@@ -38,7 +38,7 @@
     function ErrorMsg(message) {
         Swal.fire({
             icon: 'error',
-            title: "The new password and confirm password fields do not match.",
+            title: message,
             showCloseButton: true
 
         });
@@ -52,7 +52,7 @@
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-body">
+                        <div class="card-body" style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
                             <h3 class="card-title">Reset Password</h3>
                             <p class="card-text">Enter your new password below</p>
                             <div class="form-group">

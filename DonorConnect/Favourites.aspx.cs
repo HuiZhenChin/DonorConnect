@@ -49,6 +49,7 @@ namespace DonorConnect
                     favoriteDonations.Columns.Add("orgName");
                     favoriteDonations.Columns.Add("urgentLabel");
                     favoriteDonations.Columns.Add("cardBody");
+                    
 
                     foreach (DataRow row in favoriteDonations.Rows)
                     {
@@ -137,14 +138,20 @@ namespace DonorConnect
         private DataTable GetFavoriteDonations(string username)
         {
             QRY _Qry = new QRY();
-            string strSQL = @"SELECT dp.*
-                      FROM donation_publish dp
-                      INNER JOIN saved_favourite_donation fd ON dp.donationPublishId = fd.donationPublishId
-                      WHERE fd.username = @Username";
+            string strSQL = @"
+            SELECT dp.*, 
+                   CASE 
+                       WHEN dp.status = 'Closed' THEN 'Closed'
+                       WHEN dp.status = 'Ended' THEN 'Expired'
+                       ELSE ''
+                   END AS statusLabel
+            FROM donation_publish dp
+            INNER JOIN saved_favourite_donation fd ON dp.donationPublishId = fd.donationPublishId
+            WHERE fd.username = @username";
 
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {  
-                { "@Username", username }
+                { "@username", username }
                
             };
             return _Qry.GetData(strSQL, parameters);
@@ -160,7 +167,7 @@ namespace DonorConnect
 
             foreach (string category in categories)
             {
-                string icon = GetIconForCategory(category);
+                string icon = "fas " + GetIconForCategory(category);
                 string colorClass = GetBorderColorForCategory(category); 
 
                 sb.AppendFormat("<div class='category-box {0}'><i class='{1}'></i> {2}</div>", colorClass, icon, category);
@@ -173,27 +180,22 @@ namespace DonorConnect
 
         private string GetIconForCategory(string category)
         {
-
-            switch (category.ToLower())
+            string sql = "SELECT categoryIcon FROM itemCategory WHERE categoryName = @categoryName";
+            QRY _Qry = new QRY();
+            Dictionary<string, object> parameters = new Dictionary<string, object>
             {
-                case "clothing":
-                    return "fas fa-tshirt";
-                case "food":
-                    return "fas fa-seedling";
-                case "furniture":
-                    return "fas fa-couch";
-                case "toys":
-                    return "fas fa-football-ball";
-                case "books":
-                    return "fas fa-book";
-                case "electronics":
-                    return "fas fa-plug";
-                case "hygiene products":
-                    return "fas fa-pump-soap";
-                case "medical supplies":
-                    return "fas fa-briefcase-medical";
-                default:
-                    return "fas fa-box-open";
+                { "@categoryName", category }
+            };
+
+            DataTable dt = _Qry.GetData(sql, parameters);
+
+            if (dt.Rows.Count > 0)
+            {
+                return dt.Rows[0]["categoryIcon"].ToString();
+            }
+            else
+            {
+                return "fas fa-box-open"; 
             }
         }
 
@@ -317,6 +319,47 @@ namespace DonorConnect
               
                 return "Error" + ex.Message;
             }
+        }
+
+        protected void btnDonate_Click(object sender, EventArgs e)
+        {
+            Button btn = (Button)sender;
+            string donationPublishId = btn.CommandArgument;
+
+            QRY _Qry = new QRY();
+            string strSQL = "SELECT status FROM donation_publish WHERE donationPublishId = @donationPublishId";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@donationPublishId", donationPublishId }
+            };
+
+            DataTable result = _Qry.GetData(strSQL, parameters);
+
+            if (result.Rows.Count > 0)
+            {
+                string status = result.Rows[0]["status"].ToString();
+
+                // show message if the donation is "Closed" or "Expired"
+                if (status == "Closed" || status == "Ended")
+                {
+                    string script = $@"
+                    <script type='text/javascript'>
+                        Swal.fire({{
+                            icon: 'info',
+                            title: 'Donation Not Available',
+                            text: 'This donation is already {status.ToLower()}. You cannot donate anymore. Thank you for saving it to your favourites. You may remove it from your favourite list.',
+                            confirmButtonText: 'OK'
+                        }});
+                    </script>";
+
+                    ClientScript.RegisterStartupScript(this.GetType(), "SweetAlert", script);
+                    return;
+                }
+            }
+
+            // proceed with the donation process if the status is not "Closed" or "Ended"
+            string username = Session["username"].ToString();
+            Response.Redirect($"DonationRequest.aspx?donationPublishId={donationPublishId}");
         }
 
 

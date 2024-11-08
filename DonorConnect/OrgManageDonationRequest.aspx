@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="OrgManageDonationRequest.aspx.cs" Inherits="DonorConnect.OrgManageDonationRequest2" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Org.Master" AutoEventWireup="true" CodeBehind="OrgManageDonationRequest.aspx.cs" Inherits="DonorConnect.OrgManageDonationRequest2" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
+    body {
+      background: rgb(249,247,247);
+      background: linear-gradient(180deg, rgba(249,247,247,1) 0%, rgba(219,226,239,1) 40%, rgba(233,239,236,1) 68%, rgba(106,156,137,1) 100%);
+    }
+
     .category-box {
        display: inline-block;
        padding: 10px;
@@ -56,10 +61,23 @@
         border-color: dimgray;
     }
 
+     .noData {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px; 
+        font-size: 18px;
+        color: #555;
+        text-align: center;
+    }
+
     </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="mt-3">
+    <div class="mt-3" style="background-color: rgba(255, 255, 255, 0.8);">
+    
+    <asp:Label ID="noDataLabel" runat="server" Text="No donation request found" Visible="false" CssClass="noData"></asp:Label>
+
     <asp:GridView ID="gvDonations" runat="server" CssClass="table table-striped" AutoGenerateColumns="False" OnRowDataBound="gvDonations_RowDataBound">
     <Columns>
         <asp:TemplateField HeaderText="Donation Details">
@@ -88,6 +106,21 @@
 </asp:GridView>
 
 </div>
+    <script>
+        function showAlert(message) {
+            Swal.fire({
+                text: message,
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                timer: 5000,
+                timerProgressBar: true,
+                willClose: () => {
+
+                    window.location.href = 'Login.aspx';
+                }
+            });
+        }
+    </script>
 </asp:Content>
 
 

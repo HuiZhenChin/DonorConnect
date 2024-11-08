@@ -110,10 +110,8 @@
 
                     </div>
                     <div class="mb-3" style="padding-top: 15px;" id="expiryDate">
-                        <asp:Label runat="server" for="fileUploadImages" CssClass="form-label" Text="Upload the images of the expiry date:" Style="font-weight: bold;"> </asp:Label>
-                        <asp:LinkButton ID="viewDetail" runat="server" CssClass="info-icon" Style="color: darkgrey;" ToolTip="View sample guide of items' expiry date taking">
-                    <i class="fa fa-info-circle"></i>
-                </asp:LinkButton>
+                        <asp:Label runat="server" CssClass="form-label" Text="Select the expiry date:" Style="font-weight: bold;"> </asp:Label>
+                       
                         <div id="displayTableContainer"></div>
                         <small class="form-text text-muted" style="color: #282a2c!important; font-weight: 500">
                             <em>Please ensure the expiry date input are correct. Categorize the items in one group if they have the same expiry date.</em>
@@ -237,7 +235,7 @@
                     <span id="vehicleError" class="text-danger" style="display: none;"></span>
                 </div>
 
-                <div class="form-group">
+               <%-- <div class="form-group">
                     <label style="font-weight: bold;">Pickup Method</label>
                     <asp:DropDownList ID="ddlLocation" runat="server" CssClass="form-control">
                         <asp:ListItem Text="Select Pick Up Method" Value="" Disabled="true" Selected="true" />
@@ -246,7 +244,7 @@
                         <asp:ListItem Text="Others" Value="Others"></asp:ListItem>
                     </asp:DropDownList>
                     <span id="methodError" class="text-danger" style="display: none;"></span>
-                </div>
+                </div>--%>
 
                 <div class="form-group">
                     <asp:Label runat="server" style="font-weight: bold;" Text="Note to Delivery Rider (if any)" />
@@ -259,7 +257,7 @@
                 </div>
          
                 <div style="display: flex; justify-content:end;">
-                    <asp:Button class="prev-3" ID="btnCancel" runat="server" Text="Cancel Donations" OnClientClick="return confirmCancel();" CssClass="btn btn-danger" style="margin-right: 20px;"></asp:Button>
+                    <asp:Button class="prev-3" ID="btnCancel" runat="server" Text="Cancel Donations" OnClientClick="return confirmCancel();" CssClass="btn btn-danger" style="margin-right: 20px; float: left;"></asp:Button>
                     <asp:Button class="next-2" runat="server" OnClientClick="return validateSlide3();" OnClick="NextSlide_Click" Text="Next" CssClass="btn btn-success"></asp:Button>
                 </div>
 
@@ -923,6 +921,7 @@
             var categoryRows = document.querySelectorAll('#categoryDetailsTable tbody tr');
             var hasEmptyTextboxes = false; // track if any textbox is empty
             var hasDonateSelection = false; // track if any "I Want Donate" button is selected
+            var hasInvalidQuantity = false; // track if any quantity is invalid
 
             // check each row for empty textboxes and donation button selection
             categoryRows.forEach(function (row) {
@@ -944,6 +943,17 @@
                     });
 
                     quantities.forEach(function (textbox) {
+                        var quantityValue = textbox.value.trim();
+                        var quantity = parseInt(quantityValue, 10);
+
+                        // check if quantity is a whole number greater than zero
+                        if (!quantityValue || isNaN(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
+                            hasInvalidQuantity = true; // invalid if not a whole number or is less than 1
+                            textbox.style.border = "1px solid red"; // highlight the invalid input
+                        } else {
+                            textbox.style.border = ""; // reset border if valid
+                        }
+
                         if (!textbox.value.trim()) {
                             isTextboxEmpty = true; // mark as true if quantity is empty
                         }
@@ -955,6 +965,11 @@
                     }
                 }
             });
+
+            if (hasInvalidQuantity) {
+                showError("Please enter valid whole numbers greater than zero for quantity.");
+                return; 
+            }
 
             // if no donate button is selected or if there are empty textboxes for selected donations, show pop up dialog message
             if (!hasDonateSelection || hasEmptyTextboxes) {
@@ -1765,12 +1780,10 @@
 
 
         function validateSlide3() {
-         
             var pickupDate = document.getElementById('<%= txtPickupDate.ClientID %>').value;
             var pickupTime = document.getElementById('<%= txtPickupTime.ClientID %>').value;
             var vehicleType = document.getElementById('<%= ddlVehicleType.ClientID %>').value;
-            var pickupMethod = document.getElementById('<%= ddlLocation.ClientID %>').value;
-
+           
             var isValid = true;
 
             // Pickup Date Validation
@@ -1800,17 +1813,11 @@
                 document.getElementById("vehicleError").style.display = "none";
             }
 
-            // Pickup Method Validation
-            if (pickupMethod === "") {
-                document.getElementById("methodError").innerHTML = "Pickup method is required.";
-                document.getElementById("methodError").style.display = "block";
-                isValid = false;
-            } else {
-                document.getElementById("methodError").style.display = "none";
-            }
+           
 
-            return isValid;
+            return isValid; 
         }
+
 
         function validateSlide4() {
            

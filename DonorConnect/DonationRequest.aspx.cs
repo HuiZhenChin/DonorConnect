@@ -282,7 +282,7 @@ namespace DonorConnect
             string donationId = Request.QueryString["donationId"];           
             string distanceValue = GetDistance(donationId);
           
-            // Step 1: Retrieve donation state from donation_publish
+            // retrieve donation state 
             string sql = "SELECT donationState FROM donation_publish WHERE donationPublishId = @donationPublishId";
             Dictionary<string, object> parameter = new Dictionary<string, object>
             {
@@ -293,10 +293,8 @@ namespace DonorConnect
             // check if retrieved any records for donationPublishId
             if (_dt.Rows.Count > 0)
             {
-                // Step 2: Extract the state from donation_publish
                 string donationState = _dt.Rows[0]["donationState"].ToString();
 
-                // Step 3: Retrieve the state from donation_item_request to compare
                 string sql2 = "SELECT state FROM donation_item_request WHERE donationId = @donationId";
                 Dictionary<string, object> parameter2 = new Dictionary<string, object>
                 {
@@ -308,7 +306,6 @@ namespace DonorConnect
                 {
                     string requestState = _dt2.Rows[0]["state"].ToString();
 
-                    // Step 4: Compare the two states and apply the charge
                     if (requestState != donationState)
                     {
                         charge.Text = "RM 5.00";
@@ -816,7 +813,49 @@ namespace DonorConnect
                 QRY _Qry = new QRY();
                 bool success = _Qry.ExecuteNonQuery(sql);
 
-                if (!success)
+                if (success)
+                {
+                    string message = "New donation request for you. Please review it as soon as possible." + ".";
+                    string link = $"OrgManageDonationRequest.aspx?donationPublishId={donationPublishId}";
+                    string encryptedLink = Encryption.Encrypt(link);
+
+                    string sqlNtf = "EXEC [create_notifications] " +
+                                    "@method = 'INSERT', " +
+                                    "@id = NULL, " +
+                                    "@userId = @userId, " +
+                                    "@link = @link, " +
+                                    "@content = @content";
+
+                    var notificationParameter = new Dictionary<string, object>
+                    {
+                        { "@userId", orgId },
+                        { "@link", encryptedLink },
+                        { "@content", message }
+                    };
+
+                    _Qry.ExecuteNonQuery(sqlNtf, notificationParameter);
+
+                    string fullLink = "https://localhost:44390/OrgManageDonationRequest.aspx?donationPublishId=" + donationPublishId;
+
+                    // send email to notify organization
+                    string sqlemail = "EXEC [application_email] " +
+                                      "@action = 'NEW DONATION REQUEST', " +
+                                      "@role = 'organization', " +
+                                      "@resubmitlink = @link, " +
+                                      "@orgId = @orgId, " +
+                                      "@donationpublishid = @donationPublishId";
+
+                    var emailParameter = new Dictionary<string, object>
+                    {
+                        { "@link", fullLink },
+                        { "@orgId", orgId },
+                        { "@donationPublishId", donationPublishId }
+                    };
+
+                    _Qry.ExecuteNonQuery(sqlemail, emailParameter);
+
+                }
+                else
                 {
                     Console.WriteLine($"Failed to insert donation items for category: {item.category}");
                 }
@@ -1194,7 +1233,7 @@ namespace DonorConnect
                     { "@donationId", donationId },
                     { "@noteRider", noteRider.Text },
                     { "@noteOrg", noteOrg.Text },
-                    { "@fee", deliveryFee.Text },
+                    { "@fee", payment.Text.Replace("RM ", "").Trim()},
                     { "@paymentId", DBNull.Value }, 
                     { "@paymentStatus", paymentStatus } 
                 };
@@ -1204,15 +1243,32 @@ namespace DonorConnect
 
                 if (success)
                 {
+                    string deliveryId = "";
+                    string fetchDeliverySql = "SELECT deliveryId FROM delivery WHERE donationId = @donationId";
+                    var deliveryParam = new Dictionary<string, object>
+                    {
+                        { "@donationId", donationId }
+                    };
+
+                    // Execute the query to fetch the deliveryId
+                    DataTable dt = _Qry.GetData(fetchDeliverySql, deliveryParam);
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        deliveryId = dt.Rows[0]["deliveryId"].ToString();  // Fetch the deliveryId
+                    }
+
                     // QR Code Generation 
                     Random random = new Random();
                     string code = random.Next(10000000, 99999999).ToString();
 
+                    
                     string token = Hash(code + username + DateTime.Now.ToString());
                     token = token.Replace("+", "A");
                     token = Encryption.Encrypt(token);
 
-                    string loginUrl = $"https://localhost:44390/UpdateDelivery.aspx?token={token}";
+                    string loginUrl = $"https://localhost:44390/UpdateDelivery.aspx?deliveryId={deliveryId}&token={token}";
+                    //loginUrl = Encryption.Encrypt(loginUrl);
 
                     //string qrContent = $"DonationId: {donationId}, PickUpAddress: {pickupAddress}, Code: {code}";
                     string qrBase64 = GenerateQrCode(loginUrl);
@@ -1236,12 +1292,12 @@ namespace DonorConnect
                     {
                         { "@donorId", donorId },
                     };
-                    DataTable dt = _Qry.GetData(donorSql, donorParameter);
+                    DataTable dt2 = _Qry.GetData(donorSql, donorParameter);
 
                     string donorName = "";
-                    if (dt.Rows.Count > 0)
+                    if (dt2.Rows.Count > 0)
                     {
-                        donorName = dt.Rows[0]["donorName"].ToString();
+                        donorName = dt2.Rows[0]["donorName"].ToString();
                     }
 
                     string vehicleSql = "SELECT vehicleType FROM delivery WHERE donationId = @donationId";
@@ -1265,7 +1321,7 @@ namespace DonorConnect
                     string paymentId = "";
                     if (paymentData.Rows.Count > 0)
                     {
-                        paymentId = paymentData.Rows[0]["paymentId"].ToString();  // Access by column name
+                        paymentId = paymentData.Rows[0]["paymentId"].ToString(); 
                     }
 
                     // generate PDF payment receipt
@@ -1280,7 +1336,42 @@ namespace DonorConnect
                         { "@donorEmail", txtEmailOTP.Text }
                     });
 
+                    string message = "Our donor has completed the payment process for donation with Id " + donationId + ". You may view the delivery process here.";
+                    string link = $"Delivery.aspx?donationId={donationId}";
+                    string encryptedLink = Encryption.Encrypt(link);
 
+                    string sqlNtf = "EXEC [create_notifications] " +
+                                    "@method = 'INSERT', " +
+                                    "@id = NULL, " +
+                                    "@userId = @userId, " +
+                                    "@link = @link, " +
+                                    "@content = @content";
+
+                    var notificationParameter = new Dictionary<string, object>
+                    {
+                        { "@userId", orgId },
+                        { "@link", encryptedLink },
+                        { "@content", message }
+                    };
+
+                    _Qry.ExecuteNonQuery(sqlNtf, notificationParameter);
+                
+                    string message2 = "Thank you for donating and supporting to " + orgName + ". You may view the delivery updates here.";
+                    string sqlNtf2 = "EXEC [create_notifications] " +
+                                    "@method = 'INSERT', " +
+                                    "@id = NULL, " +
+                                    "@userId = @userId, " +
+                                    "@link = @link, " +
+                                    "@content = @content";
+
+                    var notificationParameter2= new Dictionary<string, object>
+                    {
+                        { "@userId", donorId },
+                        { "@link", encryptedLink },
+                        { "@content", message2 }
+                    };
+
+                    _Qry.ExecuteNonQuery(sqlNtf2, notificationParameter2);
 
                     ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('OTP is valid and payment successful! Your donation order is now in the queue of waiting for pickup from delivery rider. Thank you for donating!',);", true);
                    
@@ -1318,7 +1409,7 @@ namespace DonorConnect
                 if (!string.IsNullOrEmpty(donationId))
                 {
 
-                    // Step 1: Update donation_item_request table to set status to 'Cancelled'
+                    // set status to 'Cancelled'
                     string status = "Cancelled";
                     string sqlUpdateRequest = "UPDATE donation_item_request SET requestStatus = @status WHERE donationId = @donationId";
                     var parameter = new Dictionary<string, object>
@@ -1333,31 +1424,29 @@ namespace DonorConnect
 
                     if (successItem)
                     {
-                        // Step 2: Check if donationId exists in donation_item_expiry_date table
                         string sqlCheckExpiryDate = "SELECT COUNT(*) FROM donation_item_expiry_date WHERE donationId = @donationId";
                         int expiryCount = (int)_Qry.ExecuteScalar(sqlCheckExpiryDate, parameter);
 
                         if (expiryCount > 0)
                         {
-                            // Step 3: If exists, delete from donation_item_expiry_date table
+                            // delete from table
                             string sqlDeleteExpiry = "DELETE FROM donation_item_expiry_date WHERE donationId = @donationId";
                             bool successExpiry = _Qry.ExecuteNonQuery(sqlDeleteExpiry, parameter);
 
                             if (!successExpiry)
                             {
-                                return "error"; // if failed to delete 
+                                return "error"; 
                             }
                         }
 
-                        // Step 4: Return success if everything is deleted 
                         return "success";
                     }
                     else
                     {
-                        return "error"; // if failed to delete from donation_item_request
+                        return "error"; 
                     }
                 }
-                return "error"; // if donationId is invalid
+                return "error"; 
             }
             catch (Exception ex)
             {
@@ -1523,7 +1612,6 @@ namespace DonorConnect
                 document.Close();
                 writer.Close();
             }
-
             return filePath;
         }
 
@@ -1542,6 +1630,7 @@ namespace DonorConnect
                                 qrCodeImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
                                 byte[] byteImage = ms.ToArray();
                                 return Convert.ToBase64String(byteImage);  // convert image to base64
+                                
                             }
                         }
                     }

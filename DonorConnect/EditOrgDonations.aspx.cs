@@ -18,10 +18,23 @@ namespace DonorConnect
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            string eventTarget = Request["__EVENTTARGET"];
+            string eventArgument = Request["__EVENTARGUMENT"];
+
+            if (eventTarget == "CancelDonationConfirmed" && !string.IsNullOrEmpty(eventArgument))
+            {
+                string donationId = eventArgument;
+                DeleteDonation(donationId);
+
+               
+            }
+
             if (!IsPostBack)
             {
                 string donationId = Request.QueryString["donationPublishId"];
                 string orgId = Request.QueryString["orgId"];
+                string rejected = Request.QueryString["status"];
+                string urgent = Request.QueryString["urgent"];
 
                 if (!string.IsNullOrEmpty(donationId))
                 {
@@ -30,21 +43,29 @@ namespace DonorConnect
                     string status = dp.GetStatus();
                     Session["orgId"] = orgId;
 
-                    // check the status and set button visibility 
-                    if (status == "Rejected")
+                    if (!string.IsNullOrEmpty(urgent) && !string.IsNullOrEmpty(donationId) && !string.IsNullOrEmpty(orgId))
                     {
-                        btnResubmit.Visible = true;   
-                        btnUpdate.Visible = false;   
+                        // display the Republish button if urgent is present
+                        btnRepublish.Visible = true;
+                    }
+                    else if (status == "Rejected" || !string.IsNullOrEmpty(rejected))
+                    {
+                        // check the status and set button visibility
+                        btnResubmit.Visible = true;
+                        btnUpdate.Visible = false;
+                        btnCancel.Visible = true;
                     }
                     else
                     {
-                        btnUpdate.Visible = true;     
-                        btnResubmit.Visible = false;  
+                        btnUpdate.Visible = true;
+                        btnResubmit.Visible = false;
                     }
 
+                    // load donation details
                     LoadDonationDetails(donationId);
                 }
             }
+
         }
 
         private void LoadDonationDetails(string donationId)
@@ -54,7 +75,7 @@ namespace DonorConnect
             string username = Session["username"].ToString();
             //string id = GetOrgId(username);
             string strSQL = @"SELECT urgentStatus, title, peopleNeeded, description, restriction, itemCategory, 
-                             specificItemsForCategory, specificQtyForCategory, address, donationState, created_on, status, donationImage, donationAttch, rejectedReason
+                             specificItemsForCategory, specificQtyForCategory, address, donationState, created_on, status, donationImage, donationAttch, rejectedReason, recipientName, recipientPhoneNumber, timeRange
                       FROM [donation_publish] 
                       WHERE donationPublishId  = '" + donationId + "' ";
 
@@ -70,7 +91,12 @@ namespace DonorConnect
                 txtRegion.SelectedValue = row["donationState"].ToString();
                 txtDescription.Text = row["description"].ToString();
                 txtRestrictions.Text = row["restriction"].ToString();
-                
+                txtName.Text = row["recipientName"].ToString();
+                txtPhone.Text = row["recipientPhoneNumber"].ToString();
+                txtTimeRange.Text = row["timeRange"].ToString();
+
+                LoadCategories();
+
                 // auto checked and filled item category, specific items and quantity
                 PopulateCategories(row["itemCategory"].ToString(),
                                     row["specificItemsForCategory"].ToString(),
@@ -79,7 +105,7 @@ namespace DonorConnect
                 string imagesHtml = ImageFileProcessing.ProcessImages(row["donationImage"].ToString());
                 imagesContainer.Text = imagesHtml;
 
-                // Display attachments
+                // display attachments
                 string filesHtml = ImageFileProcessing.ProcessImages(row["donationAttch"].ToString());
                 filesContainer.Text = filesHtml;
 
@@ -98,78 +124,88 @@ namespace DonorConnect
 
         private void PopulateCategories(string itemCategoryStr, string specificItemsStr, string specificQtyStr)
         {
-            // Split the category strings
+            // split the category strings
             string[] itemCategories = itemCategoryStr.Trim('[', ']').Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             string[] specificItems = SplitItems(specificItemsStr.Trim('[', ']'));
             string[] specificQty = SplitItems(specificQtyStr.Trim('[', ']'));
 
-            var categoryControls = new Dictionary<string, Tuple<CheckBox, TextBox, TextBox>>()
+            foreach (RepeaterItem item in rptCategories.Items)
             {
-                { "Food", new Tuple<CheckBox, TextBox, TextBox>(chkFood, txtSpecificFood, qtyFood) },
-                { "Clothing", new Tuple<CheckBox, TextBox, TextBox>(chkClothing, txtSpecificClothing, qtyClothing) },
-                { "Toys", new Tuple<CheckBox, TextBox, TextBox>(chkToys, txtSpecificToys, qtyToys) },
-                { "Books", new Tuple<CheckBox, TextBox, TextBox>(chkBooks, txtSpecificBooks, qtyBooks) },
-                { "Electronics", new Tuple<CheckBox, TextBox, TextBox>(chkElectronics, txtSpecificElectronics, qtyElectronics) },
-                { "Furniture", new Tuple<CheckBox, TextBox, TextBox>(chkFurniture, txtSpecificFurniture, qtyFurniture) },
-                { "Hygiene Products", new Tuple<CheckBox, TextBox, TextBox>(chkHygiene, txtSpecificHygiene, qtyHygiene) },
-                { "Medical Supplies", new Tuple<CheckBox, TextBox, TextBox>(chkMedical, txtSpecificMedical, qtyMedical) },
-                { "Other", new Tuple<CheckBox, TextBox, TextBox>(chkOther, txtSpecificOther, qtyOther) }
-            };
+                CheckBox chkCategory = item.FindControl("chkCategory") as CheckBox;
+                TextBox txtSpecificItem = item.FindControl("txtSpecificItem") as TextBox;
+                TextBox txtQuantity = item.FindControl("txtQuantity") as TextBox;
 
-            foreach (var category in itemCategories)
-            {
-                string trimmedCategory = category.Trim();
-
-                if (categoryControls.TryGetValue(trimmedCategory, out var controls))
+                if (chkCategory != null && txtSpecificItem != null && txtQuantity != null)
                 {
-                    controls.Item1.Checked = true; // Check the checkbox
+                    // check if the current checkbox's category text matches any category in the list
+                    for (int j = 0; j < itemCategories.Length; j++)
+                    {
+                        string trimmedCategory = itemCategories[j].Trim();
 
-                    int index = Array.IndexOf(itemCategories, category);
-                    if (index < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[index]))
-                    {
-                        controls.Item2.Text = specificItems[index].Trim('(', ')');
-                    }
-                    else
-                    {
-                        controls.Item2.Text = string.Empty; // Set empty
-                    }
+                        if (chkCategory.Text.Equals(trimmedCategory, StringComparison.OrdinalIgnoreCase))
+                        {
+                            chkCategory.Checked = true; // check the checkbox
 
-                    if (index < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[index]))
-                    {
-                        controls.Item3.Text = specificQty[index].Trim('(', ')');
-                    }
-                    else
-                    {
-                        controls.Item3.Text = string.Empty; // Set empty
-                    }
-                }
-                else
-                {
-                    // Handle the "Other" category
-                    chkOther.Checked = true;
+                            if (j < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[j]) && !specificItems[j].Equals("null", StringComparison.OrdinalIgnoreCase))
+                            {
+                                txtSpecificItem.Text = specificItems[j].Trim('(', ')');
+                                txtSpecificItem.Style["display"] = "block"; 
+                            }
+                            else
+                            {
+                                txtSpecificItem.Text = string.Empty; 
+                                txtSpecificItem.Style["display"] = "none"; 
+                            }
 
-                    // Append the category to the "Other" text box
-                    newCategory.Text = string.IsNullOrEmpty(newCategory.Text) ? trimmedCategory : $"{newCategory.Text}, {trimmedCategory}";
+                            // populate quantity if available
+                            if (j < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[j]) && !specificQty[j].Equals("null", StringComparison.OrdinalIgnoreCase))
+                            {
+                                txtQuantity.Text = specificQty[j].Trim('(', ')');
+                                txtQuantity.Style["display"] = "block"; 
+                            }
+                            else
+                            {
+                                txtQuantity.Text = string.Empty; 
+                                txtQuantity.Style["display"] = "none"; 
+                            }
 
-                    // Add comma between multiple specific items for "Other" category
-                    int index = Array.IndexOf(itemCategories, category);
-                    if (index < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[index]))
-                    {
-                        txtSpecificOther.Text = string.IsNullOrEmpty(txtSpecificOther.Text)
-                            ? specificItems[index]
-                            : $"{txtSpecificOther.Text}, {specificItems[index]}"; // Add comma separator
-                    }
-
-                    // Add comma between multiple quantities for "Other" category
-                    if (index < specificQty.Length && !string.IsNullOrWhiteSpace(specificQty[index]))
-                    {
-                        qtyOther.Text = string.IsNullOrEmpty(qtyOther.Text)
-                            ? specificQty[index]
-                            : $"{qtyOther.Text}, {specificQty[index]}"; // Add comma separator
+                            break;
+                        }
                     }
                 }
             }
         }
+
+        private void LoadCategories()
+        {
+            string sql = "SELECT categoryName FROM itemCategory";
+            QRY _Qry = new QRY();
+            DataTable categoriesTable = _Qry.GetData(sql);
+
+            DataTable reorderedTable = categoriesTable.Clone(); 
+
+            foreach (DataRow row in categoriesTable.Rows)
+            {
+                if (!row["categoryName"].ToString().Equals("Others", StringComparison.OrdinalIgnoreCase))
+                {
+                    reorderedTable.ImportRow(row);
+                }
+            }
+
+            // add the "Others" row at the end, if it exists
+            foreach (DataRow row in categoriesTable.Rows)
+            {
+                if (row["categoryName"].ToString().Equals("Others", StringComparison.OrdinalIgnoreCase))
+                {
+                    reorderedTable.ImportRow(row);
+                    break;
+                }
+            }
+
+            rptCategories.DataSource = reorderedTable;
+            rptCategories.DataBind();
+        }
+
 
         private string[] SplitItems(string input)
         {
@@ -212,68 +248,28 @@ namespace DonorConnect
                 List<string> specificItems = new List<string>();
                 List<string> quantities = new List<string>();
 
-                if (chkFood.Checked)
+                foreach (RepeaterItem item in rptCategories.Items)
                 {
-                    categories.Add("Food");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "null" : $"({txtSpecificFood.Text})");
-                    quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : $"({qtyFood.Text})");
-                }
-                if (chkClothing.Checked)
-                {
-                    categories.Add("Clothing");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "null" : $"({txtSpecificClothing.Text})");
-                    quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : $"({qtyClothing.Text})");
-                }
-                if (chkBooks.Checked)
-                {
-                    categories.Add("Books");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "null" : $"({txtSpecificBooks.Text})");
-                    quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : $"({qtyBooks.Text})");
-                }
-                if (chkElectronics.Checked)
-                {
-                    categories.Add("Electronics");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "null" : $"({txtSpecificElectronics.Text})");
-                    quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : $"({qtyElectronics.Text})");
-                }
-                if (chkFurniture.Checked)
-                {
-                    categories.Add("Furniture");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "null" : $"({txtSpecificFurniture.Text})");
-                    quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : $"({qtyFurniture.Text})");
-                }
-                if (chkHygiene.Checked)
-                {
-                    categories.Add("Hygiene Products");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "null" : $"({txtSpecificHygiene.Text})");
-                    quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : $"({qtyHygiene.Text})");
-                }
-                if (chkMedical.Checked)
-                {
-                    categories.Add("Medical Supplies");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "null" : $"({txtSpecificMedical.Text})");
-                    quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : $"({qtyMedical.Text})");
-                }
-                if (chkToys.Checked)
-                {
-                    categories.Add("Toys");
-                    specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "null" : $"({txtSpecificToys.Text})");
-                    quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : $"({qtyToys.Text})");
-                }
-                if (chkOther.Checked)
-                {
-                    categories.Add(newCategory.Text);
+                    CheckBox chkCategory = (CheckBox)item.FindControl("chkCategory");
+                    TextBox txtSpecificItem = (TextBox)item.FindControl("txtSpecificItem");
+                    TextBox txtQuantity = (TextBox)item.FindControl("txtQuantity");
 
-                    // split the specific items and quantities by comma 
-                    var otherSpecificItems = txtSpecificOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                    var otherQuantities = qtyOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    // add each specific item and quantity without brackets
-                    specificItems.AddRange(otherSpecificItems.Select(item => item.Trim()));
-                    quantities.AddRange(otherQuantities.Select(qty => qty.Trim()));
+                    if (chkCategory.Checked)
+                    {
+                        categories.Add(chkCategory.Text);
+                        // if specific item is empty, use "null"
+                        specificItems.Add(string.IsNullOrEmpty(txtSpecificItem.Text) ? "null" : $"({txtSpecificItem.Text})");
+                        quantities.Add(string.IsNullOrEmpty(txtQuantity.Text) ? "" : $"({txtQuantity.Text})");
+                    }
                 }
 
-                // construct the strings for database storage
+                if (categories.Count == 0)
+                {
+                    lblCategory.Style["display"] = "block";
+                    return;
+                }
+
+                // construct the strings for saving to the database
                 string itemCategories = "[" + string.Join(", ", categories) + "]";
                 string specificItemsString = "[" + string.Join(", ", specificItems) + "]";
                 string quantitiesString = "[" + string.Join(", ", quantities) + "]";
@@ -283,7 +279,7 @@ namespace DonorConnect
 
                 DonationPublish dp = new DonationPublish(donationId, "", "", "", "", "", "");
                 string status = dp.GetStatus();
-                string createdOn = dp.GetCreatedOn();
+                DateTime? createdOn = dp.GetCreatedOn();
                 string imgUpload = "";
                 string fileUpload = "";
                 string address = "";
@@ -325,6 +321,8 @@ namespace DonorConnect
                 }
 
 
+                string createdOnValue = createdOn.HasValue ? $"'{createdOn.Value.ToString("yyyy-MM-dd HH:mm:ss")}'" : "NULL";
+
                 sql = "UPDATE [donation_publish] SET " +
                                 "title = '" + txtTitle.Text + "', " +
                                 "peopleNeeded = '" + txtQuantity.Text + "', " +
@@ -340,11 +338,12 @@ namespace DonorConnect
                                 "donationAttch = '" + fileUpload + "', " +
                                 "orgId = '" + orgId + "', " +
                                 "adminId= NULL, " +
-                                "created_on= '" + createdOn + "', " +
+                                "created_on= " + createdOnValue + ", " +  // Handle null or valid date
                                 "restriction= '" + txtRestrictions.Text + "', " +
-                                "donationState = '" + txtRegion.SelectedValue + "' " +
-                                 "WHERE donationPublishId = '" + donationId + "'";
-
+                                "donationState = '" + txtRegion.SelectedValue + "', " +
+                                "recipientName = '" + txtName.Text + "', " +
+                                "recipientPhoneNumber = '" + txtPhone.Text + "' " +
+                                "WHERE donationPublishId = '" + donationId + "'";
 
                 bool success = _Qry.ExecuteNonQuery(sql);
 
@@ -373,96 +372,45 @@ namespace DonorConnect
         }
 
    
-        protected void btnCancelDonation_Click(object sender, EventArgs e)
+        protected void btnDiscardDonation_Click(object sender, EventArgs e)
         {
             Response.Redirect("OrgDonations.aspx");
         }
 
         protected void btnResubmitDonation_Click(object sender, EventArgs e)
         {
-            
-            // save another data in db, status as pending approval
-            // in admin side let him compare the previous and current application
-            if (!chkFood.Checked && !chkClothing.Checked && !chkBooks.Checked && !chkElectronics.Checked
-                    && !chkFurniture.Checked && !chkHygiene.Checked && !chkMedical.Checked && !chkToys.Checked
-                    && !chkOther.Checked)
-            {
-                lblCategory.Style["display"] = "block";
-                return;
-            }
-
-
+           
             lblCategory.Visible = false;
 
             List<string> categories = new List<string>();
             List<string> specificItems = new List<string>();
             List<string> quantities = new List<string>();
 
-            if (chkFood.Checked)
+            foreach (RepeaterItem item in rptCategories.Items)
             {
-                categories.Add("Food");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "" : $"({txtSpecificFood.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : $"({qtyFood.Text})");
-            }
-            if (chkClothing.Checked)
-            {
-                categories.Add("Clothing");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "" : $"({txtSpecificClothing.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : $"({qtyClothing.Text})");
-            }
-            if (chkBooks.Checked)
-            {
-                categories.Add("Books");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "" : $"({txtSpecificBooks.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : $"({qtyBooks.Text})");
-            }
-            if (chkElectronics.Checked)
-            {
-                categories.Add("Electronics");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "" : $"({txtSpecificElectronics.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : $"({qtyElectronics.Text})");
-            }
-            if (chkFurniture.Checked)
-            {
-                categories.Add("Furniture");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "" : $"({txtSpecificFurniture.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : $"({qtyFurniture.Text})");
-            }
-            if (chkHygiene.Checked)
-            {
-                categories.Add("Hygiene Products");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "" : $"({txtSpecificHygiene.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : $"({qtyHygiene.Text})");
-            }
-            if (chkMedical.Checked)
-            {
-                categories.Add("Medical Supplies");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "" : $"({txtSpecificMedical.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : $"({qtyMedical.Text})");
-            }
-            if (chkToys.Checked)
-            {
-                categories.Add("Toys");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "" : $"({txtSpecificToys.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : $"({qtyToys.Text})");
-            }
-            if (chkOther.Checked)
-            {
-                categories.Add(newCategory.Text);
+                CheckBox chkCategory = (CheckBox)item.FindControl("chkCategory");
+                TextBox txtSpecificItem = (TextBox)item.FindControl("txtSpecificItem");
+                TextBox txtQuantity = (TextBox)item.FindControl("txtQuantity");
 
-                // split the specific items and quantities by comma 
-                var otherSpecificItems = txtSpecificOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                var otherQuantities = qtyOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-                // add each specific item and quantity without brackets
-                specificItems.AddRange(otherSpecificItems.Select(item => item.Trim()));
-                quantities.AddRange(otherQuantities.Select(qty => qty.Trim()));
+                if (chkCategory.Checked)
+                {
+                    categories.Add(chkCategory.Text);
+                    // If specific item is empty, use "null", otherwise enclose the item in parentheses
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificItem.Text) ? "null" : $"({txtSpecificItem.Text})");
+                    quantities.Add(string.IsNullOrEmpty(txtQuantity.Text) ? "" : $"({txtQuantity.Text})");
+                }
             }
 
+            if (categories.Count == 0)
+            {
+                lblCategory.Style["display"] = "block";
+                return;
+            }
+
+            // construct the strings for saving to the database
             string itemCategories = "[" + string.Join(", ", categories) + "]";
             string specificItemsString = "[" + string.Join(", ", specificItems) + "]";
             string quantitiesString = "[" + string.Join(", ", quantities) + "]";
-
 
             string sql, sqlupdate;
             QRY _Qry = new QRY();
@@ -518,7 +466,7 @@ namespace DonorConnect
 
             sql = "EXEC [create_org_item_donations] " +
                             "@method = 'INSERT', " +
-                            "@donationPublishId = NULL, " +  //auto-generated in stored procedure
+                            "@donationPublishId = NULL, " +  // auto-generated in stored procedure
                             "@title = '" + txtTitle.Text + "', " +
                             "@peopleNeeded = '" + txtQuantity.Text + "', " +
                             "@address = '" + address + "', " +
@@ -536,6 +484,8 @@ namespace DonorConnect
                             "@created_on= NULL, " +
                             "@restriction= '" + txtRestrictions.Text + "', " +
                             "@state = '" + txtRegion.SelectedValue + "', " +
+                            "@name = '" + txtName.Text + "', " +
+                            "@phone = '" + txtPhone.Text + "', " +
                             "@closureReason = NULL, " +
                             "@resubmit = '" + resubmit + "' ";
 
@@ -550,8 +500,8 @@ namespace DonorConnect
                             "@orgName = '" + username + "' ";
                 _Qry2.ExecuteNonQuery(sqlemail);
 
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation details resubmitted successfully! Your application is now pending for approval.',);", true);
-                Response.Redirect("OrgDonations.aspx");
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess2('Donation details resubmitted successfully! Your application is now pending for approval.',);", true);
+               
             }
 
             else
@@ -560,7 +510,137 @@ namespace DonorConnect
             }
         }
 
-      
+        protected void btnCancelDonation_Click(object sender, EventArgs e)
+        {
+            string donationId = Session["donationPublishId"].ToString();
+
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "confirmCancelDonation",
+            "confirmCancelDonation('" + donationId + "');", true);
+        }
+
+        private void DeleteDonation(string donationId)
+        {
+
+            string sql = "DELETE FROM donation_publish WHERE donationPublishId = @donationId";
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                { "@donationId", donationId }
+            };
+
+            QRY _Qry = new QRY();
+            bool success = _Qry.ExecuteNonQuery(sql, parameters);
+
+            if (success)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Your donation application has been cancelled successful!',);", true);
+                Response.Redirect("OrgDonations.aspx");
+            }
+
+            else
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error cancelling donation application. Please try again!');", true);
+            }
+        }
+
+        protected void btnRepublish_Click(object sender, EventArgs e)
+        {
+            string donationId = Request.QueryString["donationPublishId"];
+            string username = Session["username"].ToString();
+            string orgId = Session["orgId"].ToString();
+
+            List<string> categories = new List<string>();
+            List<string> specificItems = new List<string>();
+            List<string> quantities = new List<string>();
+
+            foreach (RepeaterItem item in rptCategories.Items)
+            {
+                CheckBox chkCategory = (CheckBox)item.FindControl("chkCategory");
+                TextBox txtSpecificItem = (TextBox)item.FindControl("txtSpecificItem");
+                TextBox txtQuantity = (TextBox)item.FindControl("txtQuantity");
+
+                if (chkCategory.Checked)
+                {
+                    categories.Add(chkCategory.Text);
+                    // if specific item is empty, use "null"
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificItem.Text) ? "null" : $"({txtSpecificItem.Text})");
+                    quantities.Add(string.IsNullOrEmpty(txtQuantity.Text) ? "" : $"({txtQuantity.Text})");
+                }
+            }
+
+            if (categories.Count == 0)
+            {
+                lblCategory.Style["display"] = "block";
+                return;
+            }
+
+            string itemCategories = "[" + string.Join(", ", categories) + "]";
+            string specificItemsString = "[" + string.Join(", ", specificItems) + "]";
+            string quantitiesString = "[" + string.Join(", ", quantities) + "]";
+
+            string address = (txtAddress.Text == username) ? new Organization(username, "", "", "", "").GetOrgAddress() : txtAddress.Text;
+
+            string imgUpload = donationImg.HasFiles ? ImageFileProcessing.ConvertToBase64(donationImg.PostedFiles) : "";
+            string fileUpload = donationFile.HasFiles ? ImageFileProcessing.ConvertToBase64(donationFile.PostedFiles) : "";
+
+            string urgent = rbUrgentYes.Checked ? "Yes" : "No";
+            string status = "Opened";
+
+            string sql = "UPDATE donation_publish SET " +
+                         "timeRange = @timeRange, " +
+                         "status = @status, " +
+                         "newCountdownStart = @start, " +
+                         "title = @title, " +
+                         "peopleNeeded = @peopleNeeded, " +
+                         "address = @address, " +
+                         "description = @description, " +
+                         "itemCategory = @itemCategory, " +
+                         "specificItemsForCategory = @specificItems, " +
+                         "specificQtyForCategory = @specificQty, " +
+                         "urgentStatus = @urgentStatus, " +
+                         "donationImage = @donationImage, " +
+                         "donationAttch = @donationAttch, " +
+                         "restriction = @restriction, " +
+                         "donationState = @state, " +
+                         "recipientName = @name, " +
+                         "recipientPhoneNumber = @phone " +                       
+                         "WHERE donationPublishId = @donationId";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@timeRange", txtTimeRange.Text },
+                { "@donationId", donationId },
+                { "@status", status },
+                { "@start", DateTime.Now },
+                { "@title", txtTitle.Text },
+                { "@peopleNeeded", txtQuantity.Text },
+                { "@address", address },
+                { "@description", txtDescription.Text },
+                { "@itemCategory", "[" + string.Join(", ", categories) + "]" }, 
+                { "@specificItems", "[" + string.Join(", ", specificItems) + "]" },
+                { "@specificQty", "[" + string.Join(", ", quantities) + "]" },
+                { "@urgentStatus", urgent },
+                { "@donationImage", imgUpload },
+                { "@donationAttch", fileUpload },
+                { "@restriction", txtRestrictions.Text },
+                { "@state", txtRegion.SelectedValue },
+                { "@name", txtName.Text },
+                { "@phone", txtPhone.Text }
+
+            };
+
+            QRY _Qry = new QRY();
+
+            bool success = _Qry.ExecuteNonQuery(sql, parameters);
+
+            if (success)
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess2('Your donation application has been published successfully!');", true);
+            }
+            else
+            {
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error publishing the donation. Please try again!');", true);
+            }
+        }
 
     }
 }

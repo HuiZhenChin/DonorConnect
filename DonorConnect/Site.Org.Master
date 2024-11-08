@@ -1,0 +1,189 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="DonorConnect.SiteMaster" %>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            height: 100%;
+            width: 100%;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 60px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #1E1E1E;
+            overflow-x: hidden;
+            transition: width 0.3s;
+            border-radius: 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar.expanded {
+            width: 250px;
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            text-align: left;
+            padding: 15px;
+            color: white;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+        }
+
+        .sidebar-menu li a .icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .sidebar-menu li a .text {
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.expanded .text {
+            display: inline;
+        }
+
+        .content {
+            margin-left: 80px;
+            padding: 20px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow-y: auto;
+            transition: margin-left 0.3s, width 0.3s;
+            width: calc(100% - 80px);
+        }
+
+        .content.shrink {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+        }
+
+        .hamburger-menu {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                height: 100vh;
+                position: fixed;
+                top: 0;
+                left: 0;
+                background-color: #1E1E1E;
+                overflow-y: auto;
+                transition: width 0.3s;
+                padding-top: 60px;
+            }
+
+            .sidebar.expanded {
+                width: 250px;
+            }
+
+            .content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .hamburger-menu {
+                display: block;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                cursor: pointer;
+                font-size: 24px;
+                color: white;
+                z-index: 10000 !important;
+            }
+
+            .sidebar.expanded + .hamburger-menu {
+                color: white;
+            }
+        }
+
+     
+    </style>
+</head>
+<body>
+    <form runat="server">
+        <!-- Hamburger Menu for Mobile -->
+        <div class="hamburger-menu" id="hamburgerMenu" onclick="toggleSidebar()" style="color: black;">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <div class="sidebar" id="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="OrgDashboard.aspx"><span class="icon">🏠</span><span class="text">Home</span></a></li>
+                <li><a href="OrgDonations.aspx"><span class="icon">🤝🏻</span><span class="text">Donations</span></a></li>
+                <li><a href="Delivery.aspx"><span class="icon">🚚</span><span class="text">Delivery</span></a></li>
+                <li><a href="OrgViewDonationRequest.aspx"><span class="icon">🆕</span><span class="text">Donation Requests</span></a></li>
+                <li><a href="OrgAnalytics.aspx"><span class="icon">📊</span><span class="text">Analytics</span></a></li>
+                <li><a href="OrgInventory2.aspx"><span class="icon">📦</span><span class="text">Inventory</span></a></li>
+                <li><a href="OrgReport.aspx"><span class="icon">📋</span><span class="text">Report</span></a></li>
+                <li><a href="OrgCreateSignature.aspx"><span class="icon">🖋️</span><span class="text">Receipt Signature</span></a></li>
+                <li><a href="OrgSettings.aspx"><span class="icon">⚙️</span><span class="text">Settings</span></a></li>
+            </ul>
+        </div>
+
+        <div class="content" id="content">
+    
+            <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+        </div>
+
+        <script>
+            // toggle sidebar expand and shrink on hover
+            var sidebar = document.getElementById('sidebar');
+            var content = document.getElementById('content');
+            var hamburgerMenu = document.getElementById('hamburgerMenu');
+
+            sidebar.addEventListener('mouseenter', function () {
+                this.classList.add('expanded');
+                content.classList.add('shrink');
+            });
+
+            sidebar.addEventListener('mouseleave', function () {
+                this.classList.remove('expanded');
+                content.classList.remove('shrink');
+            });
+         
+            function toggleSidebar() {
+                sidebar.classList.toggle('expanded');
+                content.classList.toggle('shrink');
+
+                if (sidebar.classList.contains('expanded')) {
+                    hamburgerMenu.style.color = "white"; 
+                } else {
+                    hamburgerMenu.style.color = "black"; 
+                }
+            }
+        </script>
+    </form>
+</body>
+</html>

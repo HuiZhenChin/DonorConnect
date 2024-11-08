@@ -10,7 +10,10 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script type="text/javascript">
  
     function ErrorMsg(message, icon) {
@@ -20,7 +23,21 @@
             timer: 3000,
         });
     }
-</script>
+
+    function showConfirmationModal(email, username, role) {
+        $('#confirmationModal').modal('show');
+        window.email = email;
+        window.username = username;
+        window.role = role;
+    }
+
+    function proceedToOTP() {
+        $('#confirmationModal').modal('hide');
+        window.location.href = 'SignUpOTP.aspx?email=' + window.email + '&username=' + window.username + '&selectedRole=' + window.role;
+    }
+
+
+    </script>
 </head>
 <body style="background-color: #bfdae2">
     <form id="form1" runat="server">
@@ -84,6 +101,9 @@
                                     <asp:Label CssClass="form-label" AssociatedControlID="donorConfirmPassword" runat="server">Confirm Password*</asp:Label>
                                     <asp:label ID="lblDonorConfirmPassword" runat="server" CssClass="text-danger"/>
                                 </div>
+                                <small class="form-text text-muted" style="padding-bottom: 10px;">
+                                    <em>Password Requirements: At least 8 characters with combinations of upper and lower case alphabets, special characters and digits.</em>
+                                </small>
                             </div>
 
 
@@ -183,6 +203,9 @@
                                     <asp:Label CssClass="form-label" AssociatedControlID="orgConfirmPassword" runat="server">Confirm Password*</asp:Label>
                                     <asp:label ID="lblOrgConfirmPassword" runat="server" CssClass="text-danger"/>
                                 </div>
+                                <small class="form-text text-muted" style="padding-bottom: 10px;">
+                                    <em>Password Requirements: At least 8 characters with combinations of upper and lower case alphabets, special characters and digits.</em>
+                                </small>
                             </div>
 
                             <div id="riderDetails" class="role-details" runat="server">
@@ -297,6 +320,9 @@
                                         <asp:Label CssClass="form-label" AssociatedControlID="riderConfirmPassword" runat="server">Confirm Password*</asp:Label>
                                         <asp:label ID="lblRiderConfirmPassword" runat="server" CssClass="text-danger"/>
                                     </div>
+                                    <small class="form-text text-muted" style="padding-bottom: 10px;">
+                                        <em>Password Requirements: At least 8 characters with combinations of upper and lower case alphabets, special characters and digits.</em>
+                                    </small>
                                 </div>
                             </div>
 
@@ -304,8 +330,8 @@
                                 <asp:Button ID="signUpButton" type="submit" name="submit" CssClass="btn btn-dark btn-lg btn-block" Text="Sign Up" runat="server" onClick="btnRegister_Click" />
                             </div>
                             <p class="mb-5 pb-lg-2" style="color: #393f81;">Already have an account? <a href="Login.aspx" style="color: #393f81;">Login here</a></p>
-                            <a href="#!" class="small text-muted">Terms of use.</a>
-                            <a href="#!" class="small text-muted">Privacy policy</a>
+                            <a href="TermsConditions.html" class="small text-muted">Terms of use.</a>
+                            <a href="PrivacyPolicy.html" class="small text-muted">Privacy policy</a>
                         </div>
                     </div>
                      <div class="col-12 col-md-6 image-container">
@@ -379,6 +405,27 @@
                 </div>
             </div>
         </div>
+         <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Registration</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        By registering, you agree to our <a href="TermsConditions.html" target="_blank">Terms and Conditions</a> and <a href="PrivacyPolicy.html" target="_blank">Privacy Policy</a>.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="proceedToOTP()">I Agree</button>
+                </div>
+            </div>
+        </div>
+    </div>
     </form>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -482,8 +529,7 @@
             }
         }
 
-
-
+       
     </script>
 
 </body>

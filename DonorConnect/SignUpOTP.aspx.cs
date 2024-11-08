@@ -212,7 +212,7 @@ namespace DonorConnect
                     
                     else
                     {
-                        // Show SweetAlert error dialog
+                   
                         ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Error in signing up!', 'error');", true);
                     }
                 }
@@ -283,13 +283,55 @@ namespace DonorConnect
                         Session["message"] = message;
                         SendConfirmationEmail(con);
 
-                        Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
+                        QRY _Qry = new QRY();
+                        string sqlemail = "EXEC [admin_reminder_email] " +
+                                 "@action = 'REGISTRATION APPLICATION', " +
+                                 "@orgName = '" + orgName + "' ";
+
+                        _Qry.ExecuteNonQuery(sqlemail);
+
+                        QRY _Qry2= new QRY();
+                        string getAdminIdsSql = "SELECT adminId FROM admin WHERE status = 'Active'";
+                        DataTable adminIdsTable = _Qry2.GetData(getAdminIdsSql);
+
+                        if (adminIdsTable.Rows.Count > 0)
+                        {
+                            // encrypt the link once, as it will be the same for all admins
+                            string link = $"AdminManageApplication.aspx";
+                            string encryptedLink = Encryption.Encrypt(link);
+
+                            // loop through each admin ID and create a notification
+                            foreach (DataRow row in adminIdsTable.Rows)
+                            {
+                                string adminId = row["adminId"].ToString();
+                                string message2 = "Organization Registration Application from " + orgName;
+
+                                string sqlNtf = "EXEC [create_notifications] " +
+                                                "@method = 'INSERT', " +
+                                                "@id = NULL, " +
+                                                "@userId = @userId, " +
+                                                "@link = @link, " +
+                                                "@content = @content";
+
+                                // for each admin
+                                var notificationParameter = new Dictionary<string, object>
+                                {
+                                    { "@userId", adminId },
+                                    { "@link", encryptedLink },
+                                    { "@content", message2 }
+                                };
+
+                                _Qry2.ExecuteNonQuery(sqlNtf, notificationParameter);
+                            }
+                        }
+
+                            Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
 
                     }
                     
                     else
                     {
-                        // Show SweetAlert error dialog
+                        
                         ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Error in signing up!', 'error');", true);
                     }
                 }
@@ -361,13 +403,54 @@ namespace DonorConnect
                         Session["message"] = message;
                         SendConfirmationEmail(con);
 
-                        Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
+                        QRY _Qry = new QRY();
+                        string sqlemail = "EXEC [admin_reminder_email] " +
+                                 "@action = 'REGISTRATION APPLICATION RIDER', " +
+                                 "@username = '" + name + "' ";
+
+                        _Qry.ExecuteNonQuery(sqlemail);
+
+                        QRY _Qry2 = new QRY();
+                        string getAdminIdsSql = "SELECT adminId FROM admin WHERE status = 'Active'";
+                        DataTable adminIdsTable = _Qry2.GetData(getAdminIdsSql);
+
+                        if (adminIdsTable.Rows.Count > 0)
+                        {
+                            // encrypt the link once, as it will be the same for all admins
+                            string link = $"AdminManageApplication.aspx";
+                            string encryptedLink = Encryption.Encrypt(link);
+
+                            // loop through each admin ID and create a notification
+                            foreach (DataRow row in adminIdsTable.Rows)
+                            {
+                                string adminId = row["adminId"].ToString();
+                                string message2 = "Delivery Rider Registration Application from " + name;
+
+                                string sqlNtf = "EXEC [create_notifications] " +
+                                                "@method = 'INSERT', " +
+                                                "@id = NULL, " +
+                                                "@userId = @userId, " +
+                                                "@link = @link, " +
+                                                "@content = @content";
+
+                                // for each admin
+                                var notificationParameter = new Dictionary<string, object>
+                                {
+                                    { "@userId", adminId },
+                                    { "@link", encryptedLink },
+                                    { "@content", message2 }
+                                };
+
+                                _Qry2.ExecuteNonQuery(sqlNtf, notificationParameter);
+                            }
+                        }
+                            Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
 
                     }
                    
                     else
                     {
-                        // Show SweetAlert error dialog
+                       
                         ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Error in signing up!', 'error');", true);
                     }
                 }

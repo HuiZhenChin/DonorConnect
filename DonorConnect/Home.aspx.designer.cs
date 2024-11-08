@@ -13,5 +13,32 @@ namespace DonorConnect
 
     public partial class Home
     {
+
+        /// <summary>
+        /// totalDonationsLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label totalDonationsLabel;
+
+        /// <summary>
+        /// totalDeliveriesLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label totalDeliveriesLabel;
+
+        /// <summary>
+        /// registeredUsersLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label registeredUsersLabel;
     }
 }

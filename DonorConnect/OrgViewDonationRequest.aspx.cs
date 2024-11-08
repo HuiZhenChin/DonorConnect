@@ -27,11 +27,27 @@ namespace DonorConnect
         {
             string sql;
             QRY _Qry = new QRY();
-           
+
             Organization org = new Organization(username, "", "", "", "");
             string id = org.GetOrgId();
 
-            sql = "SELECT donationPublishId, title, itemCategory, urgentStatus, donationState FROM [donation_publish] WHERE orgId = @orgId AND status = 'Opened'";
+            // count of pending requests
+            sql = @"
+            SELECT 
+                dp.donationPublishId, 
+                dp.title, 
+                dp.itemCategory, 
+                dp.urgentStatus, 
+                dp.donationState,
+                (SELECT COUNT(DISTINCT dir.donationId) 
+                 FROM donation_item_request dir 
+                 WHERE dir.donationPublishId = dp.donationPublishId 
+                   AND dir.requestStatus = 'Pending') AS pendingRequestCount
+            FROM 
+                donation_publish dp 
+            WHERE 
+                dp.orgId = @orgId 
+                AND dp.status = 'Opened'";
 
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
@@ -39,13 +55,13 @@ namespace DonorConnect
             };
 
             DataTable donations = _Qry.GetData(sql, parameters);
-            
-            rptDonations.Visible = true;
+
+            rptDonations.Visible = donations.Rows.Count > 0;
 
             rptDonations.DataSource = donations;
             rptDonations.DataBind();
-
         }
+
 
         protected void btnView_Click(object sender, EventArgs e)
         {

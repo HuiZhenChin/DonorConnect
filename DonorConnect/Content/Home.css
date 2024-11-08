@@ -71,6 +71,64 @@ main {
     transform: translate(-50%, -50%);
 }
 
+.achievement-section {
+    background-color: #EEEEEE;
+    padding: 100px 0;
+    text-align: center;
+}
+
+.achievement-title {
+    width: 500px;
+    height: 60px;
+    margin: 0 auto;
+    text-align: center;
+    color: #1E1E1E;
+    font-size: 40px;
+    font-weight: 400;
+    word-wrap: break-word;
+    font-family: 'Itim';
+    margin-top: -70px;
+}
+
+.achievement-counters {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    margin-top: 50px;
+}
+
+.achievement-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.count {
+    width: 264.59px;
+    height: 66.25px;
+    text-align: center;
+    color: #1E1E1E;
+    font-size: 36px;
+    font-weight: 900;
+    word-wrap: break-word;
+    margin: 10px auto;
+    font-family: 'Rethink Sans';
+    transition: color 0.3s ease-in-out;
+}
+
+.count-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: #0073e6;
+}
+
+.count-label {
+    font-size: 20px;
+    color: #272829;
+    font-family: 'Radley';
+}
+
+
 .section-about {
     width: 100%;
     background: #F2EFDD;
@@ -78,6 +136,7 @@ main {
     text-align: center;
     position: relative;
     z-index: 1;
+    margin-top: 40px;
 }
 
     .section-about .container {
@@ -243,5 +302,52 @@ main {
     .section-about .description {
         font-size: 18px;
         width: 100%;
+    }
+}
+
+@media (max-width: 575px) {
+    .achievement-counters {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        margin-top: 30px;
+    }
+
+    .achievement-counter {
+        width: 100%;
+        max-width: 200px;
+        text-align: center;
+    }
+
+    .count {
+        font-size: 24px;
+    }
+
+    .count-label {
+        font-size: 14px;
+    }
+
+    .achievement-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .achievement-counters {
+        gap: 20px;
+    }
+
+    .achievement-title {
+        font-size: 28px;
+    }
+
+    .count {
+        font-size: 20px;
+    }
+
+    .count-label {
+        font-size: 12px;
     }
 }

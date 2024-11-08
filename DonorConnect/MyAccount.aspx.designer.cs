@@ -69,15 +69,6 @@ namespace DonorConnect
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl buttons;
 
         /// <summary>
-        /// btnSave control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSave;
-
-        /// <summary>
         /// btnCancel control.
         /// </summary>
         /// <remarks>
@@ -85,6 +76,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnCancel;
+
+        /// <summary>
+        /// btnSave control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSave;
 
         /// <summary>
         /// selectedRole control.
@@ -195,15 +195,6 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox txtAddress;
 
         /// <summary>
-        /// btnSaveDonorInfo control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSaveDonorInfo;
-
-        /// <summary>
         /// btnCancelDonorInfo control.
         /// </summary>
         /// <remarks>
@@ -211,6 +202,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnCancelDonorInfo;
+
+        /// <summary>
+        /// btnSaveDonorInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSaveDonorInfo;
 
         /// <summary>
         /// orgContent control.
@@ -402,15 +402,6 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox txtCategory;
 
         /// <summary>
-        /// btnSaveOrgInfo control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSaveOrgInfo;
-
-        /// <summary>
         /// btnCancelOrgInfo control.
         /// </summary>
         /// <remarks>
@@ -418,6 +409,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnCancelOrgInfo;
+
+        /// <summary>
+        /// btnSaveOrgInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSaveOrgInfo;
 
         /// <summary>
         /// riderContent control.
@@ -537,15 +537,6 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox txtPlateNo;
 
         /// <summary>
-        /// btnSaveRiderInfo control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSaveRiderInfo;
-
-        /// <summary>
         /// btnCancelRiderInfo control.
         /// </summary>
         /// <remarks>
@@ -553,6 +544,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnCancelRiderInfo;
+
+        /// <summary>
+        /// btnSaveRiderInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSaveRiderInfo;
 
         /// <summary>
         /// adminContent control.
@@ -600,15 +600,6 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox txtAdminEmail;
 
         /// <summary>
-        /// btnSaveAdminInfo control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSaveAdminInfo;
-
-        /// <summary>
         /// btnCancelAdminInfo control.
         /// </summary>
         /// <remarks>
@@ -618,49 +609,13 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.Button btnCancelAdminInfo;
 
         /// <summary>
-        /// notificationsContent control.
+        /// btnSaveAdminInfo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl notificationsContent;
-
-        /// <summary>
-        /// chkEmailNotifications control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkEmailNotifications;
-
-        /// <summary>
-        /// chkSmsNotifications control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBox chkSmsNotifications;
-
-        /// <summary>
-        /// btnSaveNotifications control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSaveNotifications;
-
-        /// <summary>
-        /// btnCancelNotifications control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnCancelNotifications;
+        protected global::System.Web.UI.WebControls.Button btnSaveAdminInfo;
 
         /// <summary>
         /// passwordContent control.
@@ -708,15 +663,6 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.TextBox txtConfirmPassword;
 
         /// <summary>
-        /// btnSavePwd control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSavePwd;
-
-        /// <summary>
         /// btnCancelPwd control.
         /// </summary>
         /// <remarks>
@@ -724,5 +670,14 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnCancelPwd;
+
+        /// <summary>
+        /// btnSavePwd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSavePwd;
     }
 }

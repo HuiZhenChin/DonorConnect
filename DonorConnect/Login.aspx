@@ -66,8 +66,8 @@
                             </div>
                             <a class="small text-muted" href="ResetPassword.aspx">Forgot password?</a>
                             <p class="mb-5 pb-lg-2" style="color: #393f81; margin-top: 15px;">Doesn't have an account? <a href="SignUp.aspx" style="color: #393f81;">Register here</a></p>
-                            <a href="#!" class="small text-muted">Terms of Use.</a>
-                            <a href="#!" class="small text-muted">Privacy Policy</a>
+                            <a href="TermsConditions.html" class="small text-muted">Terms of use.</a>
+                            <a href="PrivacyPolicy.html" class="small text-muted">Privacy policy</a>
                         </div>
                     </div>
                 </div>

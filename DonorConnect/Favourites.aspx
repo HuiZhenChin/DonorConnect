@@ -16,6 +16,11 @@
    
     <style>
   
+      body{
+          background: rgb(236,234,226);
+          background: linear-gradient(180deg, rgba(236,234,226,1) 18%, rgba(247,229,194,1) 60%, rgba(245,206,162,1) 86%, rgba(255,176,176,1) 100%);
+      }
+
      .category-box {
         display: inline-block;
         padding: 10px;
@@ -101,7 +106,6 @@
         background-color: #f1f1f1;
     }
 
-    /* Submenu styles */
     .submenu {
         display: none;
         position: absolute;
@@ -127,12 +131,10 @@
         background-color: #f1f1f1;
     }
 
-    /* Show the dropdown menu on hover */
     .dropdown:hover .dropdown-menu {
         display: block;
     }
 
-    /* Container for category columns */
     .category-container {
         display: flex; 
         flex-wrap: wrap; 
@@ -140,7 +142,6 @@
         padding: 10px; 
     }
 
-    /* Style for each category column */
     .category-column {
         flex: 1 1 200px; 
         box-sizing: border-box;
@@ -149,23 +150,19 @@
         padding: 10px; 
     }
 
-    /* Style for checkboxes in category columns */
     .category-checkbox {
         display: block;
         margin-bottom: 10px;
     }
 
-    /* Style for items within each category */
     .item-column {
         margin-bottom: 5px;
     }
 
-    /* Style for checkboxes in item columns */
     .item-checkbox {
         display: block;
     }
 
-    /* Container for state cards */
     .state-container {
         display: flex; 
         flex-wrap: wrap; 
@@ -173,7 +170,6 @@
         padding: 10px; 
     }
 
-    /* Style for each state card */
     .state-card {
         flex: 1 1 150px; 
         box-sizing: border-box;
@@ -182,7 +178,6 @@
         padding: 10px;
     }
 
-    /* Style for checkboxes in state cards */
     .state-checkbox {
         display: block;
         margin: 0;
@@ -195,6 +190,8 @@
     .card-body {
         position: relative;
         padding-top: 20px; 
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
     }
 
     .urgent-card::before {
@@ -227,14 +224,36 @@
         height: 200px;
         object-fit: cover;
     }
+
+    .status-label {    
+        background-color: #36C2CE; 
+        color: white;
+        padding: 5px 10px; 
+        font-weight: bold; 
+        border-radius: 5px;        
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+        z-index: 10; 
+        font-size: 18px;
+    }
+
+    .noData {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px; 
+        font-size: 18px;
+        color: #555;
+        text-align: center;
+    }
+
     </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
-     <asp:Label ID="lblFav" runat="server" CssClass="d-block text-center mb-4" Text="Saved Donations" Style="font-weight: bold; font-size: 24px;" ></asp:Label>
+     <asp:Label ID="lblFav" runat="server" CssClass="d-block text-center mb-4" Text="Saved Donations" Style="font-weight: bold; font-size: 28px;" ></asp:Label>
 
-      <asp:Label ID="noSavedFav" runat="server" CssClass="d-block text-center mb-4" Text="No saved donations yet" Style="font-size: 18px;" ></asp:Label>
+      <asp:Label ID="noSavedFav" runat="server" CssClass="noData" Text="No saved donations yet" Style="font-size: 18px;" ></asp:Label>
     
     <asp:GridView ID="gvFavourites" runat="server" AutoGenerateColumns="False" CssClass="centered-grid" DataKeyNames="donationPublishId" GridLines="None" BorderStyle="None" CellPadding="0">
       <Columns>
@@ -251,10 +270,19 @@
 
                       <%-- Card Body with Donation Details --%>
                     <div class="col-md-9">
-                      <div class="card mb-4 shadow-sm card-custom" style="width: 100%!important;">
+                      <div class="card mb-4 shadow-sm card-custom" style="width: 100%!important;">                         
+
                           <div class="card-body <%# Eval("cardBody") %>" style="width: 100%!important;">
                               
                               <div class="row">
+                                  <div class="col-md-12 text-right" style="padding-bottom: 10px;">
+                                       <asp:Label 
+                                        ID="lblStatusLabel" 
+                                        runat="server" 
+                                        Text='<%# Eval("statusLabel") %>' 
+                                        Visible='<%# !string.IsNullOrEmpty(Eval("statusLabel").ToString()) %>' 
+                                        CssClass="status-label" />
+                                  </div>
                                   <div class="col-md-8">
                                       <%-- URGENT Label --%>
                                       <%# Eval("urgentLabel") %>
@@ -290,6 +318,14 @@
                                               <strong>Item Details:</strong> <%# Eval("itemDetails") %>
                                           </div>
 
+                                          <div class="mb-3">
+                                              <strong>Recipient's Name: </strong><%# Eval("recipientName") %>
+                                          </div>
+
+                                          <div class="mb-3">
+                                              <strong>Recipient's Phone Number: </strong><%# Eval("recipientPhoneNumber") %>
+                                          </div>
+
                                           <%-- Images and Files --%>
                                           <div class="mb-3">
                                               <%# String.IsNullOrEmpty(Eval("donationImages") as string) ? "" : "<strong>Images:</strong> " + Eval("donationImages") %>
@@ -302,11 +338,14 @@
                                           <%-- Item Category and Icons --%>
                                           <asp:Label ID="lblItemCategory" runat="server" Text='<%# GetItemCategoryWithIcon(Eval("itemDetails")) %>' />
                                           <div class="row mb-3">
-                                              <div class="col-12 text-right position-absolute" style="bottom: 20px; right: 10px;">
+                                               <div class="row mb-3" style="padding: 20px;"></div>
+                                                 <div class="row mb-3">
+                                                     <div class="col-12 text-right position-absolute" style="bottom: 20px; right: 10px;">
                                                   <asp:LinkButton class="fas fa-trash " style="font-size: 24px; color: black; cursor: pointer; padding-right: 20px;" title="Remove from Favourites" runat="server" CommandArgument='<%# Eval("donationPublishId") %>' OnClick="btnDeleteFav_Click"></asp:LinkButton>
-                                                  <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" />
+                                                  <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" OnClick="btnDonate_Click" CommandArgument='<%# Eval("donationPublishId") %>'/>
                                               </div>
                                           </div>
+                                        </div>
                                       </div>
                                   </div>
                               </div>

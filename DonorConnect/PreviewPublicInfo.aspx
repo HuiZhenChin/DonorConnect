@@ -10,6 +10,31 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+    <style>
+        body{
+            background: rgb(231,246,242);
+            background: linear-gradient(180deg, rgba(231,246,242,1) 0%, rgba(165,201,202,1) 59%, rgba(57,91,100,1) 89%, rgba(44,51,51,1) 100%);
+        }
+
+        .badgeNew {
+            border-radius: 5px;
+            font-weight: bold;
+            color: #fff;
+            font-size: 100%!important;
+            line-height: 1.5!important;
+            padding: 5px;
+        }
+
+        .badge-active {
+            background-color: #28a745; 
+        }
+
+        .badge-terminated {
+            background-color: #dc3545;
+        }
+
+
+    </style>
     
 </asp:Content>
 
@@ -17,108 +42,107 @@
     <div class="container">
     
         <!-- Profile Picture Section -->
-        <div class="profile-pic" id="profilePic" runat="server" style="background-color: #f5f5f5; padding: 20px;">
+        <div style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
+        <div class="profile-pic" id="profilePic" runat="server" style="background-color: #EEEEEE; padding: 20px;">
 
-            <asp:Image ID="output" runat="server" ImageUrl="/Image/default_picture.jpg" Width="165px" Height="165px" />
+            <asp:Image ID="output" runat="server" ImageUrl="/Image/default_picture.jpg" Width="165px" Height="165px" style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);"/>
         </div>
         <!-- Display Username -->
-        <div style="background-color: #f5f5f5; padding-bottom: 20px; text-align: center;">
+        <div style="background-color: #EEEEEE; padding-bottom: 20px; text-align: center;">
             <asp:Label runat="server" ID="profileUsername" Font-Bold="true" Style="font-size: 22px;" />
-
+        </div>
         </div>
 
         <!-- User Information Section -->
-        <div class="section-header" id="userInfoHeader" style="margin-top: 20px;">
+        <div class="section-header" id="userInfoHeader" style="margin-top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); background-color: #D8D9DA;">
             <h5>User Information</h5>
         </div>
+        <div class="section-content" style="display: block!important;">
         <asp:Panel runat="server">
-            <div class="form-row">              
-                    <strong>Username:</strong>
-                    <asp:Label runat="server" ID="lblUsername" Text="Username" />
-                
-            </div>
+            <div class="form-row" style="justify-content: flex-end;">
+                <asp:Label runat="server" ID="lblStatus" Text="Status" />
 
+            </div>
+     
+            <span style="padding-bottom: 20px; font-size: 18px; font-weight: 500; text-decoration: underline;">Basic Information</span>
             <div class="form-row" id="fullName" style="display: none;" runat="server">
                
-                    <strong>Full Name:</strong>
-                    <asp:Label runat="server" ID="lblFullName" Text="Full Name" />
+                    <i class="fa fa-address-card" aria-hidden="true" style="padding-right: 10px; font-size: 18px; margin-left: 2px;"></i>
+                    <asp:Label runat="server" ID="lblFullName" Text="Full Name" style="font-size: 16px;"/>
                 
             </div>
 
             <div class="form-row">
                
-                    <strong>Email:</strong>
-                    <asp:Label runat="server" ID="lblEmail" Text="Email" />
+                    <strong style="padding-right: 10px; font-size: 18px;">✉️ </strong>
+                    <asp:Label runat="server" ID="lblEmail" Text="Email" style="font-size: 16px;"/>
                 
             </div>
 
             <div class="form-row">
                 
-                    <strong>Contact Number:</strong>
-                    <asp:Label runat="server" ID="lblPhoneNo" Text="Contact Number" />
+                    <strong style="padding-right: 10px; font-size: 18px;">📞 </strong>
+                    <asp:Label runat="server" ID="lblPhoneNo" Text="Contact Number" style="font-size: 16px;"/>
                 
             </div>
 
+            <div class="form-row" id="address" style="display: none;" runat="server">
+
+                <strong style="padding-right: 10px; font-size: 18px;">🏡</strong>
+                <asp:Label runat="server" ID="lblAddress" Text="Address" Style="font-size: 16px;" />
+
+            </div>
+
+            <div class="form-row" id="region" style="display: none;" runat="server">
+
+                <strong style="padding-right: 15px; font-size: 18px;">📍</strong>
+                <asp:Label runat="server" ID="lblRegion" Text="Region" Style="font-size: 16px;" />
+
+            </div>
+
+            <div class="form-row" id="vehicleType" style="display: none;" runat="server">
+                <strong style="padding-right: 10px; font-size: 18px;">🚘</strong>
+                <asp:Label runat="server" ID="lblVehicleType" Text="Vehicle Type" Style="font-size: 16px;" />
+             
+            </div>
+
+
+            <span id="pic" style="padding-bottom: 20px; font-size: 18px; font-weight: 500; text-decoration: underline; display: none;" runat="server">Person In-Charge Information</span>
             <div class="form-row" id="picName" style="display: none;" runat="server">
                
-                    <strong>Person In-Charge's Name:</strong>
-                    <asp:Label runat="server" ID="lblPicName" Text="Username" />
+                    <strong>Name:</strong>
+                    <asp:Label runat="server" ID="lblPicName" Text="Username" style="font-size: 16px;"/>
                 
             </div>
 
             <div class="form-row" id="picEmail" style="display: none;" runat="server">
                 
-                    <strong>Person In-Charge's Email:</strong>
-                    <asp:Label runat="server" ID="lblPicEmail" Text="Email" />
+                    <strong>Email:</strong>
+                    <asp:Label runat="server" ID="lblPicEmail" Text="Email" style="font-size: 16px;"/>
                 
             </div>
 
             <div class="form-row" id="picNo" style="display: none;" runat="server">
                
-                    <strong>Person In-Charge's Contact Number:</strong>
-                    <asp:Label runat="server" ID="lblPicNo" Text="Contact Number" />
+                    <strong>Contact Number:</strong>
+                    <asp:Label runat="server" ID="lblPicNo" Text="Contact Number" style="font-size: 16px;"/>
                 
             </div>
 
-            <div class="form-row" id="address" style="display: none;" runat="server">
-              
-                    <strong>Address:</strong>
-                    <asp:Label runat="server" ID="lblAddress" Text="Address" />
-                
-            </div>
-
+            <span id="other" style="padding-bottom: 20px; font-size: 18px; font-weight: 500; text-decoration: underline; display: none;" runat="server">Other Information</span>
             <div class="form-row" id="desc" style="display: none;" runat="server">
-              
-                    <strong>Description:</strong>
-                    <asp:Label runat="server" ID="lblDescription" Text="Description" />
-                
+
+                <strong>Description:</strong>
+                <asp:Label runat="server" ID="lblDescription" Text="Description" Style="font-size: 16px;" />
+
             </div>
 
-            <div class="form-row" id="region" style="display: none;" runat="server">
-             
-                    <strong>Region:</strong>
-                    <asp:Label runat="server" ID="lblRegion" Text="Region" />
-             
-            </div>
-
-            <div class="form-row" id="vehicleType" style="display: none;" runat="server">
-              
-                    <strong>Vehicle Type:</strong>
-                    <asp:Label runat="server" ID="lblVehicleType" Text="Vehicle Type" />
-               
-            </div>
-
-            <div class="form-row" id="plateNo" style="display: none;" runat="server">
-               
-                    <strong>Plate Number:</strong>
-                    <asp:Label runat="server" ID="lblPlateNo" Text="Plate Number" />
-                
-            </div>
+  
         </asp:Panel>
-
+       </div>
       
        <!-- Opened Donations Section -->
-        <div class="section-header" id="donationHeader" style="margin-top: 20px;" Visible="false" runat="server">
+        <div class="section-header" id="donationHeader" style="margin-top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); background-color: #D8D9DA;" Visible="false" runat="server">
             <h5>Opened Donations</h5>
         </div>
          <asp:Repeater ID="rptDonations" runat="server" Visible="false">
@@ -136,13 +160,7 @@
                 <div class="card-content">
                     <!-- Title -->
                     <h5 class="ticket-title"><%# Eval("title") %></h5>
-
-                    <!-- Event Date -->
-                    <%--<div class="event-date">
-                        <i class="fa fa-calendar"></i>
-                        <time><%# Eval("created_on", "{0:dddd, dd MMMM yyyy}") %></time>
-                    </div>--%>
-
+           
                     <!-- Item Category -->
                     <div class="event-info">
                         <i class="fa fa-box"></i>

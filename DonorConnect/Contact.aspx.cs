@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -250,8 +251,10 @@ namespace DonorConnect
             // if valid, proceed with form submission
             string username = Session["username"] != null ? Session["username"].ToString() : null;
             string base64File = "";
-            string fileName = "";
-
+            string fileUrl = "";
+            string filePath = "";
+            string allFileUrl = "";
+            string allFilePath = "";
             string messageId = GenerateMessageId();
 
             
@@ -263,23 +266,64 @@ namespace DonorConnect
 
             if (fileAttachment.HasFiles)
             {
-                fileName = fileAttachment.PostedFiles[0].FileName;
-                base64File = ImageFileProcessing.ConvertToBase64(fileAttachment.PostedFiles);
+                string folderPath = HttpContext.Current.Server.MapPath("~/ContactUsAttachment/");
+                List<string> fileUrls = new List<string>();  // To store all file URLs
+                List<string> filePaths = new List<string>();  // To store all file paths
+
+                // loop through all posted files
+                foreach (HttpPostedFile postedFile in fileAttachment.PostedFiles)
+                {
+                    // get the file extension of the uploaded file
+                    string fileExtension = Path.GetExtension(postedFile.FileName).ToLower();
+
+                    string[] allowedExtensions = { ".pdf", ".png", ".jpg", ".jpeg" };
+
+                    if (allowedExtensions.Contains(fileExtension))
+                    {
+                        string currentFilePath = Path.Combine(folderPath, messageId + "_" + Path.GetFileNameWithoutExtension(postedFile.FileName) + fileExtension);
+
+                        string currentFileUrl = "/ContactUsAttachment/" + messageId + "_" + Path.GetFileNameWithoutExtension(postedFile.FileName) + fileExtension;
+
+                        filePaths.Add(currentFilePath);
+                        fileUrls.Add(currentFileUrl);
+
+                        if (!Directory.Exists(folderPath))
+                        {
+                            Directory.CreateDirectory(folderPath);
+                        }
+
+                        // save the file
+                        postedFile.SaveAs(currentFilePath);
+                    }
+                    else
+                    {
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('Invalid file type. Only PDF, PNG, JPG, and JPEG are allowed.');", true);
+                        return;
+                    }
+                }
+
+                allFileUrl = string.Join(";", fileUrls);
+
+                allFilePath = string.Join(";", filePaths);
+
             }
             else
             {
-                base64File = "";
+                allFilePath = "";
             }
 
+
+
+
             string sql = @"
-              INSERT INTO [contact_us]
-              ([messageId], [sentBy], [dateSent], [messageSent], [fileAttchSent], [senderEmail], 
-               [senderPhoneNumber], [senderFullName], [senderOrgName], [adminId], 
-               [dateReplied], [messageReplied], [fileAttchReplied], [isRead])
-              VALUES
-              (@messageId, @sentBy, GETDATE(), @messageSent, @fileAttchSent, @senderEmail, 
-               @senderPhoneNumber, @senderFullName, @senderOrgName, NULL, 
-               NULL, NULL, NULL, 'No')";
+          INSERT INTO [contact_us]
+          ([messageId], [sentBy], [dateSent], [messageSent], [fileAttchSent], [senderEmail], 
+           [senderPhoneNumber], [senderFullName], [senderOrgName])
+          VALUES
+          (@messageId, @sentBy, GETDATE(), @messageSent, @fileAttchSent, @senderEmail, 
+           @senderPhoneNumber, @senderFullName, @senderOrgName)";
+
+            string encryptedFileUrl= Encryption.Encrypt(allFileUrl);
 
             QRY _Qry = new QRY();
 
@@ -288,7 +332,7 @@ namespace DonorConnect
                 { "@messageId", messageId },
                 { "@sentBy", username != null ? username : senderFullName },
                 { "@messageSent", messageSent },
-                { "@fileAttchSent", base64File },
+                { "@fileAttchSent", encryptedFileUrl },
                 { "@senderEmail", senderEmail },
                 { "@senderPhoneNumber", senderPhoneNumber },
                 { "@senderFullName", senderFullName },
@@ -296,19 +340,42 @@ namespace DonorConnect
             };
 
             string sql2 = "EXEC [contact_us_reminder] " +
-                "@username = '" + (username != null ? username : senderFullName) + "', " +
-                "@SENDER_EMAIL = '" + senderEmail + "', " +
-                "@fullName= '" + senderFullName + "'," +
-                "@phoneNumber= '" + senderPhoneNumber + "'," +
-                "@orgName= '" + senderOrgName + "'," +
-                "@message = '" + messageSent + "'," +
-                "@attch = '" + fileName + "' ";
+             "@username = '" + (senderOrgName != null ? senderOrgName : (username != null ? username : senderFullName)) + "', " +
+             "@SENDER_EMAIL = '" + senderEmail + "', " +
+             "@fullName= '" + senderFullName + "'," +
+             "@phoneNumber= '" + senderPhoneNumber + "'," +
+             "@orgName= '" + (senderOrgName != null ? senderOrgName : "NULL") + "'," +
+             "@message = '" + messageSent + "'," +
+             "@attch = '" + allFilePath + "' ";
+
 
             bool success = _Qry.ExecuteNonQuery(sql, parameters);
             bool success2 = _Qry.ExecuteNonQuery(sql2);
 
             if (success || success2)
             {
+                if (!string.IsNullOrEmpty(allFilePath))
+                {
+                    string[] filePaths = allFilePath.Split(';');
+
+                    foreach (string indifilePath in filePaths)
+                    {
+                        if (File.Exists(indifilePath))
+                        {
+                            try
+                            {
+                                // Delete each file
+                                File.Delete(indifilePath);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Log the error if the file can't be deleted
+                                Console.WriteLine("Error deleting file: " + ex.Message);
+                            }
+                        }
+                    }
+                }
+
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Your message has been sent successfully!');", true);
             }
             else
@@ -320,28 +387,27 @@ namespace DonorConnect
 
         private string GenerateMessageId()
         {
-            string sql = "SELECT TOP 1 [messageId] FROM [contact_us] ORDER BY [messageId] DESC";
+            string sql = "SELECT TOP 1 [messageId] FROM [contact_us] ORDER BY CAST(SUBSTRING([messageId], 2, LEN([messageId])-1) AS INT) DESC";
             QRY _Qry = new QRY();
 
             DataTable dt = _Qry.GetData(sql, new Dictionary<string, object>());
 
-            // if the table is empty, start with "M1"
             if (dt.Rows.Count == 0)
             {
                 return "M1";
             }
 
-           
             string currentMaxId = dt.Rows[0]["messageId"].ToString();
-         
+
             string number = currentMaxId.Substring(1);
             int newNumber = int.Parse(number) + 1;
 
-          
+            // generate the new messageId
             string newMessageId = "M" + newNumber;
 
             return newMessageId;
         }
+
 
 
     }

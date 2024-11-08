@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -22,95 +23,91 @@ namespace DonorConnect
                 {
                     string username = Session["username"].ToString();
 
-
+                    LoadCategories();
 
                 }
             }
         }
 
-        protected void btnSubmitNewDonation_Click(object sender, EventArgs e)
+        private void LoadCategories()
         {
-            if (!chkFood.Checked && !chkClothing.Checked && !chkBooks.Checked && !chkElectronics.Checked
-                && !chkFurniture.Checked && !chkHygiene.Checked && !chkMedical.Checked && !chkToys.Checked
-                && !chkOther.Checked)
+            string sql = "SELECT categoryName FROM itemCategory";
+            QRY _Qry = new QRY();
+            DataTable categoriesTable = _Qry.GetData(sql);
+
+            DataTable reorderedTable = categoriesTable.Clone();
+
+            foreach (DataRow row in categoriesTable.Rows)
             {
-                lblCategory.Style["display"] = "block";
-                return;
+                if (!row["categoryName"].ToString().Equals("Others", StringComparison.OrdinalIgnoreCase))
+                {
+                    reorderedTable.ImportRow(row);
+                }
             }
 
+            // add the "Others" row at the end, if it exists
+            foreach (DataRow row in categoriesTable.Rows)
+            {
+                if (row["categoryName"].ToString().Equals("Others", StringComparison.OrdinalIgnoreCase))
+                {
+                    reorderedTable.ImportRow(row);
+                    break;
+                }
+            }
 
+            rptCategories.DataSource = reorderedTable;
+            rptCategories.DataBind();
+        }
+
+
+
+        protected void btnSubmitNewDonation_Click(object sender, EventArgs e)
+        {
+          
             lblCategory.Visible = false;
 
             List<string> categories = new List<string>();
             List<string> specificItems = new List<string>();
             List<string> quantities = new List<string>();
 
-            if (chkFood.Checked)
+           if (rbUrgentYes.Checked)
             {
-                categories.Add("Food");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificFood.Text) ? "null" : $"({txtSpecificFood.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyFood.Text) ? "" : $"({qtyFood.Text})");
-            }
-            if (chkClothing.Checked)
-            {
-                categories.Add("Clothing");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificClothing.Text) ? "null" : $"({txtSpecificClothing.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyClothing.Text) ? "" : $"({qtyClothing.Text})");
-            }
-            if (chkBooks.Checked)
-            {
-                categories.Add("Books");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificBooks.Text) ? "null" : $"({txtSpecificBooks.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyBooks.Text) ? "" : $"({qtyBooks.Text})");
-            }
-            if (chkElectronics.Checked)
-            {
-                categories.Add("Electronics");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificElectronics.Text) ? "null" : $"({txtSpecificElectronics.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyElectronics.Text) ? "" : $"({qtyElectronics.Text})");
-            }
-            if (chkFurniture.Checked)
-            {
-                categories.Add("Furniture");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificFurniture.Text) ? "null" : $"({txtSpecificFurniture.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyFurniture.Text) ? "" : $"({qtyFurniture.Text})");
-            }
-            if (chkHygiene.Checked)
-            {
-                categories.Add("Hygiene Products");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificHygiene.Text) ? "null" : $"({txtSpecificHygiene.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyHygiene.Text) ? "" : $"({qtyHygiene.Text})");
-            }
-            if (chkMedical.Checked)
-            {
-                categories.Add("Medical Supplies");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificMedical.Text) ? "null" : $"({txtSpecificMedical.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyMedical.Text) ? "" : $"({qtyMedical.Text})");
-            }
-            if (chkToys.Checked)
-            {
-                categories.Add("Toys");
-                specificItems.Add(string.IsNullOrEmpty(txtSpecificToys.Text) ? "null" : $"({txtSpecificToys.Text})");
-                quantities.Add(string.IsNullOrEmpty(qtyToys.Text) ? "" : $"({qtyToys.Text})");
-            }
-            if (chkOther.Checked)
-            {
-                categories.Add(newCategory.Text);
-
-                // Split the specific items and quantities by comma for the "Other" category
-                var otherSpecificItems = txtSpecificOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                var otherQuantities = qtyOther.Text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-                // Add each specific item and quantity for the "Other" category without brackets
-                specificItems.AddRange(otherSpecificItems.Select(item => item.Trim()));
-                quantities.AddRange(otherQuantities.Select(qty => qty.Trim()));
+                if (!int.TryParse(txtTimeRange.Text, out int timeRange) || timeRange <= 0)
+                {
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "Swal.fire('Error', 'Please enter a valid time range in days.', 'error');", true);
+                    return;
+                }
             }
 
-            // Construct the strings for saving to the database
+            foreach (RepeaterItem item in rptCategories.Items)
+            {
+                CheckBox chkCategory = (CheckBox)item.FindControl("chkCategory");
+                TextBox txtSpecificItem = (TextBox)item.FindControl("txtSpecificItem");
+                TextBox txtQuantity = (TextBox)item.FindControl("txtQuantity");
+
+                if (chkCategory.Checked)
+                {
+                    categories.Add(chkCategory.Text);
+                    // if specific item is empty, use "null"
+                    specificItems.Add(string.IsNullOrEmpty(txtSpecificItem.Text) ? "null" : $"({txtSpecificItem.Text})");
+                    quantities.Add(string.IsNullOrEmpty(txtQuantity.Text) ? "" : $"({txtQuantity.Text})");
+                }
+            }
+
+            if (categories.Count == 0)
+            {
+                lblCategory.Visible = true;
+                lblCategory.Style["display"] = "block";
+                lblCategory.InnerText = "Please select at least one category.";
+
+                //ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "Swal.fire('Error', 'Please select at least one category.', 'error');", true);
+                return;
+            }
+
+            // construct the strings for saving to the database
             string itemCategories = "[" + string.Join(", ", categories) + "]";
-            string specificItemsString = "[" + string.Join(", ", specificItems) + "]";
+            string specificItemsString = "[" + string.Join(", ", specificItems) + "]"; 
             string quantitiesString = "[" + string.Join(", ", quantities) + "]";
-
 
             string sql;
             QRY _Qry = new QRY();
@@ -161,6 +158,8 @@ namespace DonorConnect
                             "@donationPublishId = NULL, " +  //auto-generated in stored procedure
                             "@title = '" + txtTitle.Text + "', " +
                             "@peopleNeeded = '" + txtQuantity.Text + "', " +
+                            "@name = '" + txtName.Text + "', " +
+                            "@phone = '" + txtPhone.Text + "', " +
                             "@address = '" + address + "', " +
                             "@desc = '" + txtDescription.Text + "', " +
                             "@itemCategory = '" + itemCategories + "', " +
@@ -210,6 +209,46 @@ namespace DonorConnect
                         _Qry2.ExecuteNonQuery(sqlemail);
                     }
 
+                    // retrieve the list of active admin IDs
+                    string getAdminIdsSql = "SELECT adminId FROM admin WHERE status = 'Active'";
+                    DataTable adminIdsTable = _Qry2.GetData(getAdminIdsSql);
+
+                    if (adminIdsTable.Rows.Count > 0)
+                    {
+                        // encrypt the link once, as it will be the same for all admins
+                        string link = $"AdminManageDonationRequest.aspx";
+                        string encryptedLink = Encryption.Encrypt(link);
+
+                        // loop through each admin ID and create a notification
+                        foreach (DataRow row in adminIdsTable.Rows)
+                        {
+                            string adminId = row["adminId"].ToString();
+                            string message2 = "New donation request from " + username;
+
+                            string sqlNtf = "EXEC [create_notifications] " +
+                                            "@method = 'INSERT', " +
+                                            "@id = NULL, " +
+                                            "@userId = @userId, " +
+                                            "@link = @link, " +
+                                            "@content = @content";
+
+                            // for each admin
+                            var notificationParameter = new Dictionary<string, object>
+                            {
+                                { "@userId", adminId },
+                                { "@link", encryptedLink },
+                                { "@content", message2 }
+                            };
+
+                            _Qry2.ExecuteNonQuery(sqlNtf, notificationParameter);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No active admins found for notification.");
+                    }
+
+                  
                     Page.ClientScript.RegisterStartupScript(this.GetType(), "PageUp", @"<script type='text/javascript'>showSuccess('" + message + "');</script>");
                     clearText();
                 }
@@ -236,16 +275,18 @@ namespace DonorConnect
             rbUrgentNo.Checked = true;
             rbUrgentNo.Checked = false;
             txtTimeRange.Text = "";
-            chkBooks.Checked = false;
-            chkClothing.Checked = false;
-            chkElectronics.Checked = false;
-            chkFood.Checked = false;
-            chkFurniture.Checked = false;
-            chkHygiene.Checked = false;
-            chkMedical.Checked = false;
-            chkOther.Checked = false;
-            chkToys.Checked = false;
-            newCategory.Text = "";
+            //chkBooks.Checked = false;
+            //chkClothing.Checked = false;
+            //chkElectronics.Checked = false;
+            //chkFood.Checked = false;
+            //chkFurniture.Checked = false;
+            //chkHygiene.Checked = false;
+            //chkMedical.Checked = false;
+            //chkOther.Checked = false;
+            //chkToys.Checked = false;
+            //newCategory.Text = "";
+            txtName.Text = "";
+            txtPhone.Text = "";
         }
       
 

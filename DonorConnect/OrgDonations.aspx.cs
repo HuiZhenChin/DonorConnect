@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Net;
 using System.Web.UI.HtmlControls;
+using System.Web.Services;
 
 namespace DonorConnect
 {
@@ -193,7 +194,7 @@ namespace DonorConnect
             if (dt.Rows.Count > 0 && dt.Rows[0]["resubmit"].ToString() == "yes")
             {
                 // show alert if already resubmitted
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('You have already resubmitted your application. You can only resubmit once before approval from admin.');", true);
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError2('You have already resubmitted your application. You can only resubmit once before approval from admin.');", true);
                 return;
             }
 
@@ -251,44 +252,80 @@ namespace DonorConnect
             Organization org = new Organization(username, "", "", "", "");
             string orgId = org.GetOrgId();
 
-            // update status become "closed" and check from donation request table to see how many pending requests made by donors
+            // directly close the donation and proceed with notifications
+            CloseDonation(donationPublishId, closureReason, username, orgId);
+        }
+
+
+        // close the donation and notify donors if confirmed
+        protected void CloseDonation(string donationPublishId, string closureReason, string username, string orgId)
+        {
             string status = "Closed";
-            string sql = "UPDATE [donation_publish] SET " +  
-                                "status = '" + status + "' " +
-                                 "WHERE donationPublishId = '" + donationPublishId + "'";
+            string sql = "UPDATE [donation_publish] SET status = @status WHERE donationPublishId = @donationPublishId";
 
             QRY _Qry = new QRY();
-            bool success = _Qry.ExecuteNonQuery(sql);
+            var parameter = new Dictionary<string, object>
+            {
+                { "@status", status },
+                { "@donationPublishId", donationPublishId }
+            };
+            bool success = _Qry.ExecuteNonQuery(sql, parameter);
 
             if (success)
             {
-                // send email notify admin
-                string sqlemail, sqlupdate;
-               
+                // send closure notification to admin
+                string sqlemail = "EXEC [admin_reminder_email] @action = 'CLOSE', @reason = @closureReason, @orgName = @username";
+                var parameter2 = new Dictionary<string, object>
+                {
+                    { "@reason", closureReason },
+                    { "@orgName", username }
+                };
                 QRY _Qry2 = new QRY();
+                _Qry2.ExecuteNonQuery(sqlemail, parameter2);
+
+                // update closure reason 
+                string sqlupdate = "UPDATE [donation_publish] SET closureReason = @closureReason WHERE donationPublishId = @donationPublishId";
+                var parameter3 = new Dictionary<string, object>
+                {
+                    { "@closureReason", closureReason },
+                    { "@donationPublishId", donationPublishId }
+                };
                 QRY _Qry3 = new QRY();
+                _Qry3.ExecuteNonQuery(sqlupdate, parameter3);
 
-                sqlemail = "EXEC [admin_reminder_email] " +
-                             "@action = 'CLOSE', " +
-                             "@reason = '" + closureReason + "', " +
-                             "@orgName = '" + username + "' ";
-                _Qry2.ExecuteNonQuery(sqlemail);
+                // auto-reject pending requests and notify each donor
+                string rejectSql = "UPDATE donation_item_request SET status = 'Rejected' WHERE donationPublishId = @donationPublishId AND requestStatus = 'Pending'";
+                QRY _QryReject = new QRY();
+                _QryReject.ExecuteNonQuery(rejectSql, parameter);
 
-                sqlupdate= "UPDATE [donation_publish] SET " +
-                                "closureReason = '" + closureReason + "' " +
-                                 "WHERE donationPublishId = '" + donationPublishId + "'";
-                _Qry3.ExecuteNonQuery(sqlupdate);
+                // get all pending donor IDs to notify them of rejection
+                string donorIdQuery = "SELECT donorId FROM donation_item_request WHERE donationPublishId = @donationPublishId AND requestStatus = 'Pending'";
+                List<Dictionary<string, object>> result = _Qry.ExecuteQuery(donorIdQuery, parameter);
 
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation closed successfully!',);", true);
-                
-                BindGridView();
+                // notify each donor
+                foreach (var row in result)
+                {
+                    string donorId = row["donorId"].ToString();
+                    string sqlemail2 = "EXEC [application_email] @action = 'AUTO-REJECT DONATION REQUEST', @reason = @reason, @role = 'donor', @donorId = @donorId";
+                    var parameter6 = new Dictionary<string, object>
+                    {
+                        { "@reason", closureReason },
+                        { "@donorId", donorId }
+                    };
+                    QRY _QryEmail = new QRY();
+                    _QryEmail.ExecuteNonQuery(sqlemail2, parameter6);
+                }
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation closed successfully and pending requests have been rejected.');", true);
+                BindGridView(); 
             }
             else
             {
-
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error closing donations. Please try again!');", true);
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showError('There was an error closing the donation. Please try again!');", true);
             }
         }
+
+
 
         protected void btnCancel_Click(object sender, EventArgs e)
         {
@@ -373,6 +410,15 @@ namespace DonorConnect
             Response.Redirect("~/PublishDonations.aspx");
         }
 
-       
+        [WebMethod]
+        public static int GetPendingCount(string donationPublishId)
+        {
+            string pendingCountSql = "SELECT COUNT(*) FROM donation_item_request WHERE donationPublishId = @donationPublishId AND requestStatus = 'Pending'";
+            QRY _QryCheck = new QRY();
+            var parameter = new Dictionary<string, object> { { "@donationPublishId", donationPublishId } };
+            int pendingCount = Convert.ToInt32(_QryCheck.ExecuteScalar(pendingCountSql, parameter));
+            return pendingCount;
+        }
+
     }
 }

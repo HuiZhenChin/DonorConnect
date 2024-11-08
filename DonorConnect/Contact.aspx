@@ -12,23 +12,11 @@
 
     <style>
         body {
-            position: relative;
-            margin: 0;
-        }
-        body::before {
-            content: "";
-            background-image: url('/Image/forest.png');
+            background: rgb(243,238,234);
+            background: linear-gradient(180deg, rgba(243,238,234,1) 5%, rgba(243,238,234,1) 15%, rgba(235,227,213,1) 44%, rgba(235,227,213,1) 54%, rgba(176,166,149,1) 72%, rgba(119,107,93,1) 95%);
             background-size: cover;
-            background-position: center;
-            opacity: 0.7; 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1; 
         }
-
+        
         .section-header{
             border: none;
         }
@@ -84,7 +72,7 @@
         <div class="row mb-3">
             <div class="col-md-12">
                 <asp:Label runat="server" Text="Organization Name" AssociatedControlID="txtOrgName" />
-                <small class="form-text text-muted" style="color: dimgrey;"><em>(If you are representing your company, foundation, or organization)</em></small>
+                <small class="form-text text-muted"><em style="color: #543310;">(If you are representing your company, foundation, or organization)</em></small>
                 <asp:TextBox runat="server" ID="txtOrgName" CssClass="form-control" Placeholder="Enter your company name"/>
             </div>
         </div>
@@ -101,8 +89,8 @@
             <div class="col-md-12">
                 <asp:Label runat="server" Text="Attach File" AssociatedControlID="fileAttachment" />
                 <asp:FileUpload runat="server" ID="fileAttachment" CssClass="form-control" AllowMultiple="true" OnChange="validateAttachmentUpload(this)"/>
-                <small class="form-text text-muted" style="color: dimgrey;">
-                    <em>Accepted Formats: .jpg, .jpeg, .png, .pdf Maximum 5 attachments.</em>
+                <small class="form-text text-muted">
+                    <em style="color: #543310;">Accepted Formats: .jpg, .jpeg, .png, .pdf Maximum 5 attachments.</em>
                 </small>
                 <span id="attchUploadError" class="text-danger" style="display: none;">You have uploaded files in not acceptable format or more than 5 attachments. Note that you can upload maximum 5 attachments in .jpg, .jpeg, .png or .pdf formats.</span>
             </div>

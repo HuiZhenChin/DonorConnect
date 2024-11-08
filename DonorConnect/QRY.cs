@@ -135,7 +135,7 @@ namespace DonorConnect
             }
         }
 
-        public object ExecuteScalar(string query, Dictionary<string, object> parameters)
+        public object ExecuteScalar(string query, Dictionary<string, object> parameters = null)
         {
             using (SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString))
             {
@@ -212,6 +212,39 @@ namespace DonorConnect
         public void AddParameter(string parameterName, object value)
         {
             command.Parameters.AddWithValue(parameterName, value);
+        }
+
+        public List<Dictionary<string, object>> ExecuteQuery(string query, Dictionary<string, object> parameters)
+        {
+            List<Dictionary<string, object>> results = new List<Dictionary<string, object>>();
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["DCConnString"].ConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    // Add parameters to the command
+                    foreach (var param in parameters)
+                    {
+                        cmd.Parameters.AddWithValue(param.Key, param.Value);
+                    }
+
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Dictionary<string, object> row = new Dictionary<string, object>();
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                row[reader.GetName(i)] = reader.GetValue(i);
+                            }
+                            results.Add(row);
+                        }
+                    }
+                }
+            }
+
+            return results;
         }
 
     }

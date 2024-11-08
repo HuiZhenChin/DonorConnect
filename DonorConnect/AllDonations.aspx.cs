@@ -30,6 +30,9 @@ namespace DonorConnect
             {
                 BindGridView();
                 Session["AvailableCategoryItem"] = categoryItemDict;
+                string jsonCategoryItem = Newtonsoft.Json.JsonConvert.SerializeObject(categoryItemDict);
+                ClientScript.RegisterStartupScript(this.GetType(), "ConsoleLogCategoryItem", $"console.log({jsonCategoryItem});", true);
+
 
                 string donationPublishId = Request.QueryString["donationPublishId"];
                 if (!string.IsNullOrEmpty(donationPublishId))
@@ -57,7 +60,7 @@ namespace DonorConnect
             //string id = GetOrgId(username);
             string status = "Opened";
             string strSQL = @"SELECT *, donationPublishId, urgentStatus, title, peopleNeeded, description, restriction, itemCategory, 
-                    specificItemsForCategory, specificQtyForCategory, address, donationState, created_on, donationImage, donationAttch, orgId
+                    specificItemsForCategory, specificQtyForCategory, address, donationState, created_on, donationImage, donationAttch, orgId, timeRange, approved_on, newCountdownStart, recipientPhoneNumber, recipientName
                  FROM [donation_publish] WHERE status = '" + status + "' ORDER BY CASE WHEN urgentStatus = 'Yes' THEN 1 ELSE 2 END, donation_publish.created_on ASC";
 
             if (!string.IsNullOrWhiteSpace(keyword))
@@ -111,6 +114,10 @@ namespace DonorConnect
                 processedTable.Columns.Add("urgentLabel");
                 processedTable.Columns.Add("cardBody");
                 processedTable.Columns.Add("saveButton");
+                processedTable.Columns.Add("countdownEndDate");
+                processedTable.Columns.Add("newCountdownStart");
+                processedTable.Columns.Add("recipientPhoneNumber");
+                processedTable.Columns.Add("recipientName");
 
                 foreach (DataRow row in _dt.Rows)
                 {
@@ -127,7 +134,7 @@ namespace DonorConnect
                         string category = itemCategories[i].Trim();
                         string items = i < specificItems.Length && !string.IsNullOrWhiteSpace(specificItems[i]) ? specificItems[i].Trim('(', ')') : "Any";
 
-                        // Replace "null" with an empty string
+                        // replace "null" with an empty string
                         items = items.Replace("null", "").Trim();
 
                         if (string.IsNullOrEmpty(items))
@@ -186,6 +193,14 @@ namespace DonorConnect
                     newRow["donationFiles"] = ImageFileProcessing.ProcessFiles(row["donationAttch"].ToString());
                     newRow["orgProfilePic"] = profilePic;
                     newRow["orgName"] = orgName;
+                    newRow["recipientPhoneNumber"] = row["recipientPhoneNumber"];
+                    newRow["recipientName"] = row["recipientName"];
+
+                    DateTime approvedOn = row["approved_on"] != DBNull.Value ? Convert.ToDateTime(row["approved_on"]) : DateTime.MinValue;
+
+                    DateTime countdownStartTime = row["newCountdownStart"] != DBNull.Value
+                        ? Convert.ToDateTime(row["newCountdownStart"])
+                        : approvedOn;
 
                     if (isUrgent)
                     {
@@ -204,6 +219,19 @@ namespace DonorConnect
                         </div>";
 
                         newRow["cardBody"] = "urgent-card";
+
+                        int timeRangeDays = 0;
+                        if (row["timeRange"] != DBNull.Value && int.TryParse(row["timeRange"].ToString(), out timeRangeDays) && timeRangeDays > 0)
+                        {
+                            // Add the timeRange value to the determined countdown start time
+                            DateTime countdownEndDate = countdownStartTime.AddMinutes(timeRangeDays);
+                            newRow["countdownEndDate"] = countdownEndDate.ToString("yyyy-MM-ddTHH:mm:ss");
+                        }
+                        else
+                        {
+                            newRow["countdownEndDate"] = "";
+                        }
+
                     }
                     else
                     {
@@ -290,8 +318,8 @@ namespace DonorConnect
 
             foreach (string category in categories)
             {
-                string icon = GetIconForCategory(category);
-                string colorClass = GetBorderColorForCategory(category); // Get color class for each category
+                string icon = "fas " + GetIconForCategory(category);
+                string colorClass = GetBorderColorForCategory(category); 
 
                 sb.AppendFormat("<div class='category-box {0}'><i class='{1}'></i> {2}</div>", colorClass, icon, category);
             }
@@ -303,29 +331,25 @@ namespace DonorConnect
 
         private string GetIconForCategory(string category)
         {
-            
-            switch (category.ToLower())
+            string sql = "SELECT categoryIcon FROM itemCategory WHERE categoryName = @categoryName";
+            QRY _Qry = new QRY();
+            Dictionary<string, object> parameters = new Dictionary<string, object>
             {
-                case "clothing":
-                    return "fas fa-tshirt"; 
-                case "food":
-                    return "fas fa-seedling"; 
-                case "furniture":
-                    return "fas fa-couch";
-                case "toys":
-                    return "fas fa-football-ball";
-                case "books":
-                    return "fas fa-book";
-                case "electronics":
-                    return "fas fa-plug";
-                case "hygiene products":
-                    return "fas fa-pump-soap";
-                case "medical supplies":
-                    return "fas fa-briefcase-medical";
-                default:
-                    return "fas fa-box-open"; 
+                { "@categoryName", category }
+            };
+
+            DataTable dt = _Qry.GetData(sql, parameters);
+
+            if (dt.Rows.Count > 0)
+            {
+                return dt.Rows[0]["categoryIcon"].ToString();
+            }
+            else
+            {
+                return "fas fa-box-open"; 
             }
         }
+
 
         private string[] ExtractCategories(string details)
         {
@@ -368,17 +392,22 @@ namespace DonorConnect
 
         protected void LoadCategories(object sender, EventArgs e)
         {
-            var categories = GetCategoriesFromDatabase();
+            if (rptCategories.Visible)
+            {
+                rptCategories.Visible = false;
+                btnFilterDonations.Visible = false;
+            }
+            else
+            {
+                var categories = GetCategoriesFromDatabase();
 
-            // bind categories
-            rptCategories.DataSource = categories;
-            rptCategories.DataBind();
+                rptCategories.DataSource = categories;
+                rptCategories.DataBind();
 
-           
-            rptCategories.Visible = true;
+                rptCategories.Visible = true;
+                btnFilterDonations.Visible = true;
+            }
         }
-
-
 
         protected void CategorySelected(object sender, EventArgs e)
         {
@@ -414,8 +443,6 @@ namespace DonorConnect
         }
 
 
-
-
         private Dictionary<string, List<string>> GetItemsByCategories(Dictionary<string, List<string>> categoryItemDictionary)
         {
             var itemsByCategory = new Dictionary<string, List<string>>();
@@ -423,7 +450,7 @@ namespace DonorConnect
             if (categoryItemDictionary.Count == 0)
                 return itemsByCategory;
 
-            // Filter the dictionary to only include categories that are already stored
+            // filter the dictionary to only include categories that are already stored
             string categoryList = string.Join("','", categoryItemDictionary.Keys.Select(c => c.Replace("'", "''")));
 
             string query = $"SELECT categoryName, specificItems FROM itemCategory WHERE categoryName IN ('{categoryList}')";
@@ -438,14 +465,14 @@ namespace DonorConnect
 
                 var items = itemsString.Split(',').Select(i => i.Trim()).ToList();
 
-                // Initialize a list to store the matched items
+                // store the matched items
                 var matchedItems = new List<string>();
 
                 if (categoryItemDictionary.ContainsKey(categoryName))
                 {
                     foreach (var item in categoryItemDictionary[categoryName])
                     {
-                        // Compare each item using a LIKE match
+                        // compare each item
                         foreach (var dbItem in items)
                         {
                             if (item.IndexOf(dbItem, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -455,10 +482,10 @@ namespace DonorConnect
                         }
                     }
 
-                    // Remove duplicates and merge the matched items with the existing ones in the dictionary
+                    // remove duplicates and merge the matched items with the existing ones in the dictionary
                     matchedItems = matchedItems.Distinct().ToList();
 
-                    // Add the matched items to the final dictionary
+                    // add the matched items to the final dictionary
                     itemsByCategory[categoryName] = matchedItems;
                 }
             }
@@ -608,7 +635,8 @@ namespace DonorConnect
             filteredDonations.Columns.Add("urgentLabel", typeof(string));
             filteredDonations.Columns.Add("cardBody", typeof(string));
             filteredDonations.Columns.Add("saveButton");
-
+            filteredDonations.Columns.Add("countdownEndDate");
+           
             // populate the new columns
             foreach (DataRow row in filteredDonations.Rows)
             {
@@ -672,6 +700,7 @@ namespace DonorConnect
                 row["itemDetails"] = itemDetailsBuilder.ToString();
                 row["donationImages"] = ImageFileProcessing.ProcessImages(row["donationImage"].ToString());
                 row["donationFiles"] = ImageFileProcessing.ProcessFiles(row["donationAttch"].ToString());
+                DateTime approvedOn = row["approved_on"] != DBNull.Value ? Convert.ToDateTime(row["approved_on"]) : DateTime.MinValue;
 
                 if (row["urgentStatus"].ToString().ToLower() == "yes")
                 {
@@ -689,6 +718,18 @@ namespace DonorConnect
                             URGENT!
                         </div>";
                     row["cardBody"] = "urgent-card";
+
+                    int timeRangeDays = 0;
+                    if (row["timeRange"] != DBNull.Value && int.TryParse(row["timeRange"].ToString(), out timeRangeDays) && timeRangeDays > 0)
+                    {
+                        // Add the timeRange value to the approved_on date
+                        DateTime countdownEndDate = approvedOn.AddMinutes(timeRangeDays);
+                        row["countdownEndDate"] = countdownEndDate.ToString("yyyy-MM-ddTHH:mm:ss");
+                    }
+                    else
+                    {
+                        row["countdownEndDate"] = "";
+                    }
                 }
                 else
                 {
@@ -765,16 +806,26 @@ namespace DonorConnect
 
         protected void LoadStates(object sender, EventArgs e)
         {
-            // load the list of states
-            rptStates.DataSource = new List<string>
+            if (rptStates.Visible)
             {
-                "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan",
-                "Pahang", "Penang", "Perak", "Perlis", "Sabah", "Sarawak",
-                "Selangor", "Terengganu"
-            };
-            rptStates.DataBind();
-            rptStates.Visible = true;
+                rptStates.Visible = false;
+                btnFilterDonations.Visible = false;
+            }
+            else
+            {
+  
+                rptStates.DataSource = new List<string>
+                {
+                    "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan",
+                    "Pahang", "Penang", "Perak", "Perlis", "Sabah", "Sarawak",
+                    "Selangor", "Terengganu"
+                };
+                rptStates.DataBind();
+                rptStates.Visible = true;
+                btnFilterDonations.Visible = true;
+            }
         }
+
 
         protected void StateSelected(object sender, EventArgs e)
         {
@@ -803,7 +854,7 @@ namespace DonorConnect
             else
             {
                 lblNoResults.Visible = true;
-                lblNoResults.Text = $"{resultCount} donation(s) found.";
+                lblNoResults.Text = $"{resultCount} result(s) found.";
             }
         }
 
@@ -877,6 +928,8 @@ namespace DonorConnect
                     donationResults.Columns.Add("urgentLabel", typeof(string));
                     donationResults.Columns.Add("cardBody", typeof(string));
                     donationResults.Columns.Add("saveButton");
+                    donationResults.Columns.Add("countdownEndDate");
+                    
 
                     foreach (DataRow row in donationResults.Rows)
                     {
@@ -939,6 +992,7 @@ namespace DonorConnect
                         row["itemDetails"] = itemDetailsBuilder.ToString();
                         row["donationImages"] = ImageFileProcessing.ProcessImages(row["donationImage"].ToString());
                         row["donationFiles"] = ImageFileProcessing.ProcessFiles(row["donationAttch"].ToString());
+                        DateTime approvedOn = row["approved_on"] != DBNull.Value ? Convert.ToDateTime(row["approved_on"]) : DateTime.MinValue;
 
                         if (row["urgentStatus"].ToString().ToLower() == "yes")
                         {
@@ -956,6 +1010,20 @@ namespace DonorConnect
                             URGENT!
                         </div>";
                             row["cardBody"] = "urgent-card";
+
+                            int timeRangeDays = 0;
+                            if (row["timeRange"] != DBNull.Value && int.TryParse(row["timeRange"].ToString(), out timeRangeDays) && timeRangeDays > 0)
+                            {
+                                // add the timeRange value to the approved_on date
+                                DateTime countdownEndDate = approvedOn.AddMinutes(timeRangeDays);
+                                row["countdownEndDate"] = countdownEndDate.ToString("yyyy-MM-ddTHH:mm:ss");
+                            }
+                            else
+                            {
+                                row["countdownEndDate"] = "";
+                            }
+
+
                         }
                         else
                         {
@@ -989,10 +1057,9 @@ namespace DonorConnect
 
         public DataTable GetOrganizationsByKeyword(string keyword)
         {
-            // Initialize the query string to search for the keyword in the organization's name
-            string sql = "SELECT orgId, orgName, orgProfilePicBase64 FROM organization WHERE LOWER(orgName) LIKE '%" + keyword.ToLower() + "%' AND orgStatus = 'Active'";
+            // search for the keyword in the organization's name
+            string sql = "SELECT orgId, orgName, orgProfilePicBase64 FROM organization WHERE LOWER(orgName) LIKE '%" + keyword.ToLower() + "%' AND orgStatus != 'Pending Approval'";
 
-            // Execute the query and return the results as a DataTable
             QRY _Qry = new QRY();
             Dictionary<string, object> parameter = new Dictionary<string, object>
             {
@@ -1072,8 +1139,9 @@ namespace DonorConnect
 
             if (!string.IsNullOrEmpty(orgId))
             {
-                
-                string sql = "SELECT title, itemCategory FROM donation_publish WHERE orgId = @orgId";
+
+                string sql = "SELECT title, itemCategory FROM donation_publish WHERE orgId = @orgId AND status = 'Opened'";
+
                 Dictionary<string, object> parameters = new Dictionary<string, object>
                 {
                     { "@orgId", orgId }
@@ -1106,13 +1174,22 @@ namespace DonorConnect
             }
             else
             {
-                Button btn = (Button)sender;
-                string donationPublishId = btn.CommandArgument;
+                // check if the user is a donor
+                string role = Session["role"]?.ToString();
+                if (role != "donor")
+                {
+                    // user is logged in but not a donor
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showInfo('Only donor accounts can donate items to this organization.');", true);
+                }
+                else
+                {
+                    // user is a donor, proceed with donation
+                    Button btn = (Button)sender;
+                    string donationPublishId = btn.CommandArgument;
+                    string username = Session["username"].ToString();
 
-                string username = Session["username"].ToString();
-
-                Response.Redirect($"DonationRequest.aspx?donationPublishId={donationPublishId}");
-                //Response.Redirect("Delivery.aspx");
+                    Response.Redirect($"DonationRequest.aspx?donationPublishId={donationPublishId}");
+                }
             }
         }
 
@@ -1120,26 +1197,41 @@ namespace DonorConnect
         {
             if (Session["username"] == null)
             {
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('Please login or sign up if you do not have an account yet to save this donation to the cart.');", true);
+                // user is not logged in
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('Please login or sign up if you " +
+                    "do not have an account yet to save this donation to the cart.');", true);
             }
             else
             {
-                string username = Session["username"].ToString();
-                LinkButton btn = (LinkButton)sender;
-                string donationPublishId = btn.CommandArgument;
-
-                // check if the donation is already saved
-                if (IsDonationAlreadySaved(username, donationPublishId))
+                // check if the user is a donor
+                string role = Session["role"]?.ToString();
+                if (role != "donor")
                 {
-                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('This donation is already saved to your favorites.');", true);
+                    // user is logged in but not a donor
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showInfo('Only donor accounts can save donations to favorites.');", true);
                 }
                 else
                 {
-                    // save donation to favorites
-                    SaveToFavorite(username, donationPublishId);
+                    // user is a donor, proceed with saving to favorites
+                    string username = Session["username"].ToString();
+                    LinkButton btn = (LinkButton)sender;
+                    string donationPublishId = btn.CommandArgument;
+
+                    // check if the donation is already saved
+                    if (IsDonationAlreadySaved(username, donationPublishId))
+                    {
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showErrorMsg('This donation is already saved to your favorites.');", true);
+                    }
+                    else
+                    {
+                        // save donation to favorites
+                        SaveToFavorite(username, donationPublishId);
+                        ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Donation has been added to your favorites.');", true);
+                    }
                 }
             }
         }
+
 
         private bool IsDonationAlreadySaved(string username, string donationPublishId)
         {
@@ -1153,7 +1245,6 @@ namespace DonorConnect
                 { "@DonationPublishId", donationPublishId }
             };
 
-            // Execute query to check if any record exists
             string count = _Qry.GetScalarValue(strSQL, parameters);
 
             int countInt = 0;
@@ -1214,8 +1305,91 @@ namespace DonorConnect
             }
         }
 
+        [WebMethod]
+        public static void UpdateCountdown(string donationId)
+        {
+            string sql = "UPDATE donation_publish SET countdownEnded = @currentTime, status = @status WHERE donationPublishId = @donationId";
 
+            var parameters = new Dictionary<string, object>
+            {
+                { "@currentTime", DateTime.Now },
+                { "@donationId", donationId },
+                { "@status", "Ended" }
+            };
 
+            QRY _Qry = new QRY();
+
+            string orgId = GetOrgId(donationId);
+
+            bool success = _Qry.ExecuteNonQuery(sql, parameters);
+
+            if (success)
+            {
+                string sqlNtf = "EXEC [create_notifications] " +
+                                "@method = 'INSERT', " +
+                                "@id = NULL, " +
+                                "@userId = @userId, " +
+                                "@link = @link, " +
+                                "@content = @content";
+
+                string link = $"EditOrgDonations.aspx?donationPublishId={donationId}&orgId={orgId}&urgent=done";
+                string encryptedLink = Encryption.Encrypt(link);
+
+                string message = "Your urgent donation countdown timer is ended. Have you received enough needed items? If not, you can republish the donation again.";
+
+                var notificationParameter = new Dictionary<string, object>
+                {
+                    { "@userId", orgId },
+                    { "@link", encryptedLink },
+                    { "@content", message }
+                };
+
+                _Qry.ExecuteNonQuery(sqlNtf, notificationParameter);
+
+                string sqlemail = "EXEC [application_email] " +
+                                  "@action = 'URGENT DONATION', " +
+                                  "@role = 'organization', " +
+                                  "@orgId = @orgId, " +
+                                  "@donationpublishid = @donationPublishId";
+
+                var emailParameter = new Dictionary<string, object>
+                {
+                    { "@orgId", orgId },
+                    { "@donationPublishId", donationId }
+                };
+
+                _Qry.ExecuteNonQuery(sqlemail, emailParameter);
+            }
+        }
+
+        public static string GetOrgId(string donationPublishId)
+        {
+            QRY _Qry = new QRY();
+            string orgId = "";
+
+            try
+            {
+                string sql = "SELECT orgId FROM donation_publish WHERE donationPublishId = @donationPublishId";
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "@donationPublishId", donationPublishId }               
+                };
+
+                DataTable result = _Qry.GetData(sql, parameters);
+
+                if (result.Rows.Count > 0)
+                {
+                    orgId = result.Rows[0]["orgId"].ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred: " + ex.Message);
+            }
+
+            return orgId;
+        }
 
     }
 }

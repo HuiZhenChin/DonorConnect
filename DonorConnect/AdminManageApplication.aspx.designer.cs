@@ -60,6 +60,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.GridView gvOrg;
 
         /// <summary>
+        /// lblNoOrgApplications control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNoOrgApplications;
+
+        /// <summary>
         /// lblRider control.
         /// </summary>
         /// <remarks>
@@ -76,5 +85,14 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView gvRider;
+
+        /// <summary>
+        /// lblNoRiderApplications control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNoRiderApplications;
     }
 }

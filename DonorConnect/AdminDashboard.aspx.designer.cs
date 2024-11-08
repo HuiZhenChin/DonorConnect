@@ -24,6 +24,15 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.Button btnUser;
 
         /// <summary>
+        /// lblPendingApprovalCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPendingApprovalCount;
+
+        /// <summary>
         /// btnDonationRequest control.
         /// </summary>
         /// <remarks>
@@ -31,6 +40,15 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnDonationRequest;
+
+        /// <summary>
+        /// lblRegistrationApprovalCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRegistrationApprovalCount;
 
         /// <summary>
         /// btnApplication control.
@@ -42,12 +60,12 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.Button btnApplication;
 
         /// <summary>
-        /// btnDelivery control.
+        /// btnItemCategory control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnDelivery;
+        protected global::System.Web.UI.WebControls.Button btnItemCategory;
     }
 }

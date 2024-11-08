@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Services.Description;
 using System.Web.UI;
@@ -24,7 +25,6 @@ namespace DonorConnect
         {
             if (!IsPostBack)
             {
-                // Initial page load actions (if any)
                 
             }
            
@@ -35,7 +35,16 @@ namespace DonorConnect
             try
             {
                 string role = selectedRole.Value;
+
+                if (string.IsNullOrEmpty(role))
+                {
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "Swal.fire({ title: 'Error', text: 'Please select a role!', icon: 'warning', confirmButtonText: 'OK' });", true);
+                    return;
+                }
+
                 bool isValid = true;
+
+                string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
 
                 // validation based on role and set session variables to enter otp page
                 switch (role)
@@ -64,6 +73,11 @@ namespace DonorConnect
                         if (donorPassword.Text == "")
                         {
                             lblDonorPassword.Text = "Password is required";
+                            isValid = false;
+                        }
+                        else if (!Regex.IsMatch(donorPassword.Text, passwordPattern))
+                        {
+                            lblDonorPassword.Text = "Password must be at least 8 characters, include uppercase, lowercase, number, and special character.";
                             isValid = false;
                         }
                         if (donorConfirmPassword.Text == "")
@@ -140,6 +154,11 @@ namespace DonorConnect
                         if (orgPassword.Text == "")
                         {
                             lblOrgPassword.Text = "Password is required";
+                            isValid = false;
+                        }
+                        else if (!Regex.IsMatch(orgPassword.Text, passwordPattern))
+                        {
+                            lblOrgPassword.Text = "Password must be at least 8 characters, include uppercase, lowercase, number, and special character.";
                             isValid = false;
                         }
                         if (orgConfirmPassword.Text == "")
@@ -240,6 +259,11 @@ namespace DonorConnect
                             lblRiderPassword.Text = "Password is required";
                             isValid = false;
                         }
+                        else if (!Regex.IsMatch(riderPassword.Text, passwordPattern))
+                        {
+                            lblRiderPassword.Text = "Password must be at least 8 characters, include uppercase, lowercase, number, and special character.";
+                            isValid = false;
+                        }
                         if (riderConfirmPassword.Text == "")
                         {
                             lblRiderConfirmPassword.Text = "Confirm Password is required";
@@ -286,7 +310,6 @@ namespace DonorConnect
                             Session["VehicleType"] = vehicleType.SelectedValue;
                             Session["RiderPassword"] = riderPassword.Text;
 
-                            // Save the files in session (e.g., as byte arrays)
                             if (riderCarLicense.HasFiles)
                             {
                                 string base64DrvingLicense = ImageFileProcessing.ConvertToBase64(riderCarLicense.PostedFiles);
@@ -308,7 +331,7 @@ namespace DonorConnect
 
                 if (isValid)
                 {
-                    // Redirect to OTP verification page
+                    // redirect to OTP verification page
                     string email = "";
                     string username = "";
 
@@ -332,7 +355,9 @@ namespace DonorConnect
                             break;
                     }
 
-                    Response.Redirect($"SignUpOTP.aspx?email={email}&username={username}&selectedRole={role}");
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showConfirmationModal",
+                    $"showConfirmationModal('{email}', '{username}', '{role}');", true);
+                    //Response.Redirect($"SignUpOTP.aspx?email={email}&username={username}&selectedRole={role}");
                 }
             }
             catch (Exception ex)
@@ -342,18 +367,7 @@ namespace DonorConnect
         }
 
 
-        //private string ConvertToBase64(HttpPostedFile postedFile)
-        //{
-        //    using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
-        //    {
-        //        postedFile.InputStream.CopyTo(ms);
-        //        byte[] bytes = ms.ToArray();
-        //        return Convert.ToBase64String(bytes);
-        //    }
-
-        //}
-
-       
+        
 
     }
 

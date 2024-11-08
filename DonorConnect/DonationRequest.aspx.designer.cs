@@ -132,15 +132,6 @@ namespace DonorConnect
         protected global::System.Web.UI.WebControls.FileUpload fileUploadImages;
 
         /// <summary>
-        /// viewDetail control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton viewDetail;
-
-        /// <summary>
         /// btnConfirm2 control.
         /// </summary>
         /// <remarks>
@@ -301,15 +292,6 @@ namespace DonorConnect
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlVehicleType;
-
-        /// <summary>
-        /// ddlLocation control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlLocation;
 
         /// <summary>
         /// noteRider control.

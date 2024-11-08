@@ -17,6 +17,27 @@
    
     <style>
   
+     body {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        font-family: 'Arial', sans-serif;
+     }
+
+    body::before {
+        content: "";
+        background-image: url('/Image/forest.png');
+        background-size: contain;
+        background-position: inherit;
+        opacity: 0.6;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1; 
+    }
+
      .category-box {
         display: inline-block;
         padding: 10px;
@@ -65,9 +86,9 @@
      }
 
      .dropdown {
-    position: relative;
-    display: inline-block;
-}
+        position: relative;
+        display: inline-block;
+    }
 
     .dropdown-toggle {
        
@@ -128,7 +149,6 @@
         background-color: #f1f1f1;
     }
 
-    /* Show the dropdown menu on hover */
     .dropdown:hover .dropdown-menu {
         display: block;
     }
@@ -146,14 +166,18 @@
         flex: 1 1 200px; 
         box-sizing: border-box;
         margin: 10px;
-        border: 1px solid #ccc; 
+        border: 1px solid #3282B8; 
         padding: 10px; 
+        background-color: #F9F7F7;
+        border-radius: 5px;
+
     }
 
     /* Style for checkboxes in category columns */
     .category-checkbox {
         display: block;
         margin-bottom: 10px;
+        
     }
 
     /* Style for items within each category */
@@ -172,6 +196,7 @@
         flex-wrap: wrap; 
         gap: 10px; 
         padding: 10px; 
+       
     }
 
     /* Style for each state card */
@@ -181,6 +206,9 @@
         margin: 10px;
         border: 1px solid #ccc; 
         padding: 10px;
+        border: 1px solid #3282B8; 
+        background-color: #DBE2EF;
+        border-radius: 5px;
     }
 
     /* Style for checkboxes in state cards */
@@ -191,11 +219,17 @@
 
     .urgent-card {
         background-color: #FFF5EE;
+        border: solid 2px #F2BED1;
+        border-radius: 5px 5px 0 0; 
+        
     }
 
     .card-body {
         position: relative;
         padding-top: 20px; 
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        
     }
 
     .urgent-card::before {
@@ -204,7 +238,7 @@
         top: -8px;
         left: 0;
         width: 100%;
-        height: 8px; 
+        height: 10px; 
         background: repeating-linear-gradient(
             45deg,
             #FAA0A0,
@@ -214,7 +248,7 @@
         );
         z-index: 1; 
         border-radius: 5px 5px 0 0; 
-
+        
     }
 
     .image-grid {
@@ -228,24 +262,27 @@
         height: 200px;
         object-fit: cover;
     }
+
+ 
+
     </style>
 
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="filter-bar d-flex align-items-center mb-4" style="padding-top:20px;">
+    <div class="filter-bar d-flex align-items-center mb-4" style="padding-top:20px; padding-left: 10px; padding-right: 10px;">
 
         <!-- Search Input -->
-        <asp:TextBox ID="txtSearchKeyword" runat="server" CssClass="form-control" Placeholder="Search by keyword..." AutoPostBack="True" OnTextChanged="SearchDonations"></asp:TextBox>
+        <asp:TextBox ID="txtSearchKeyword" runat="server" CssClass="form-control" Placeholder="Search by keyword..." AutoPostBack="True" OnTextChanged="SearchDonations" style="border: solid 2px #4A628A"></asp:TextBox>
 
         <!-- Categories Button -->
-        <asp:Button ID="btnShowCategories" runat="server" Text="Categories" CssClass="btn btn-primary ml-3" OnClick="LoadCategories" />
+        <asp:Button ID="btnShowCategories" runat="server" Text="Categories" CssClass="btn btn-primary ml-3" OnClick="LoadCategories" style="background-color: #164863;"/>
 
          <!-- States Button -->
-        <asp:Button ID="btnShowStates" runat="server" Text="States" CssClass="btn btn-primary ml-3" OnClick="LoadStates" />
+        <asp:Button ID="btnShowStates" runat="server" Text="States" CssClass="btn btn-primary ml-3" OnClick="LoadStates" style="background-color: #427D9D;"/>
 
        <asp:Button ID="btnShowMap" runat="server" Text="Show Map" CssClass="btn btn-primary ml-3" 
-        OnClientClick="getUserCurrentLocation(); initMap(); return false;" />
+        OnClientClick="toggleMap(); return false;"  style="background-color: #365486;"/>
 
         
 
@@ -293,9 +330,9 @@
 
     <asp:HiddenField ID="hfCategoryName" runat="server" />
 
-
-    <asp:Button ID="btnFilterDonations" runat="server" Text="Filter Donations" OnClick="FilterDonations" CssClass="btn btn-primary" />
-
+    <div style="padding-left: 10px;">
+        <asp:Button ID="btnFilterDonations" runat="server" Text="Filter Donations" OnClick="FilterDonations" CssClass="btn btn-primary" Visible="false" style="background-color: #3F72AF;"/>
+    </div>
      <div class="mt-3">
         <asp:Label ID="lblNoResults" runat="server" style="margin-top: 20px;" CssClass="alert alert-warning" Visible="false" />
     </div>
@@ -314,12 +351,12 @@
                 <ItemTemplate>
                     <div class="row" data-donation-id='<%# Eval("donationPublishId") %>'>                
                         <%-- Profile Picture and Organization Name --%>
-                        <div class="col-md-3 d-flex">
+                        <div class="col-md-3 d-flex" style="padding-left: 50px;">
                             <img src='<%# String.IsNullOrEmpty(Eval("orgProfilePic") as string) ? "/Image/default_picture.jpg" : "data:image/png;base64," + Eval("orgProfilePic") %>'
                                  alt="Org Profile Picture"
                                  style="width: 100px; height: 100px; border-radius: 50%; border: 1px solid black;" />
                             <a href='<%# "PreviewPublicInfo.aspx?role=organization&username=" + Eval("orgName") %>' style="text-decoration: none; color: black;">
-                                <strong class="ml-2"><%# Eval("orgName") %></strong>
+                                <strong class="ml-2" style="display: contents;"><%# Eval("orgName") %></strong>
                             </a>
 
 
@@ -331,6 +368,15 @@
                             <div class="card-body <%# Eval("cardBody") %>" style="width: 100%!important;">
                                 
                                 <div class="row">
+                                    <div class="col-md-12 text-right">
+                                    <div id='<%# "countdown_" + Eval("donationPublishId") %>'
+                                            data-countdown='<%# Eval("countdownEndDate") %>'
+                                            data-donationid='<%# Eval("donationPublishId") %>' 
+                                            class="badge badge-info"
+                                            style="font-size: 1.1em;">
+                                         
+                                        </div>
+                                    </div>
                                     <div class="col-md-8">
                                         <%-- URGENT Label --%>
                                         <%# Eval("urgentLabel") %>
@@ -340,18 +386,26 @@
                                             <%-- People Needed and State --%>
                                             <div class="row mb-3">
                                                 <div class="col-md-6">
+                                                    <i class="fas fa-users mr-2"></i>                                                 
                                                     <strong>People In Need For Items:</strong>
-                                                    <i class="icon icon-people-needed"></i><%# Eval("peopleNeeded") %>
+                                                    <%# Eval("peopleNeeded") %>
                                                 </div>
+
                                                 <div class="col-md-6 text-right">
+                                                    <i class="fas fa-map-marker-alt mr-2"></i>                                                 
                                                     <strong>State:</strong>
-                                                    <i class="icon icon-state"></i><%# Eval("donationState") %>
+                                                    <%# Eval("donationState") %>
                                                 </div>
+
                                             </div>
 
                                             <%-- Address and Description --%>
                                             <div class="mb-3">
                                                 <strong>Address:</strong> <%# Eval("address") %><br />
+                                                
+                                            </div>
+                                            
+                                            <div class="mb-3">
                                                 <strong>Description:</strong> <%# Eval("description") %>
                                             </div>
 
@@ -366,6 +420,14 @@
                                                 <strong>Item Details:</strong> <%# Eval("itemDetails") %>
                                             </div>
 
+                                            <div class="mb-3">
+                                                <strong>Recipient's Name: </strong> <%# Eval("recipientName") %>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <strong>Recipient's Phone Number: </strong><%# Eval("recipientPhoneNumber") %>
+                                            </div>
+
                                             <%-- Images and Files --%>
                                             <div class="mb-3">
                                                 <%# String.IsNullOrEmpty(Eval("donationImages") as string) ? "" : "<strong>Images:</strong> " + Eval("donationImages") %>
@@ -377,10 +439,11 @@
                                         <div class="col-md-4 text-center">
                                             <%-- Item Category and Icons --%>
                                             <asp:Label ID="lblItemCategory" runat="server" Text='<%# GetItemCategoryWithIcon(Eval("itemDetails")) %>' />
+                                            <div class="row mb-3" style="padding: 20px;"></div>
                                             <div class="row mb-3">
                                                 <div class="col-12 text-right position-absolute" style="bottom: 20px; right: 10px;">
                                                     <asp:LinkButton class="fas fa-heart " style='<%# "font-size: 24px; cursor: pointer; padding-right: 20px; color: " + Eval("saveButton") %>' title="Save to Favorites" runat="server" OnClick="btnSaveFav_Click" CommandArgument='<%# Eval("donationPublishId") %>'></asp:LinkButton>
-                                                    <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" OnClick="btnDonate_Click" CommandArgument='<%# Eval("donationPublishId") %>'/>
+                                                    <asp:Button ID="btnDonate" runat="server" type="submit" CssClass="btn btn-success" Text="Donate Now!" OnClick="btnDonate_Click" CommandArgument='<%# Eval("donationPublishId") %>' style="background-color: #486989; border-color: #343A69;"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -410,6 +473,15 @@
             });
         }
 
+        function showInfo(message) {
+            Swal.fire({
+                title: 'Cannot Access!',
+                text: message,
+                icon: 'info',
+                confirmButtonText: 'OK'
+            });
+        }
+
         function showSuccess(message) {
             Swal.fire({
                 text: message,
@@ -430,7 +502,7 @@
                 navigator.geolocation.getCurrentPosition(showPosition, showError, {
                     enableHighAccuracy: true,
                     timeout: 10000, // wait up to 10 seconds
-                    maximumAge: 0    // don't use a cached position
+                    maximumAge: 0    
                 });
             } else {
                 alert("Geolocation is not supported by the browser.");
@@ -513,7 +585,7 @@
                 dataType: 'json',
                 success: function (response) {
                     var organizationInfo = response.d;
-
+                    console.log(organizationInfo);
                     var geocoder = new google.maps.Geocoder();
                     organizationInfo.forEach(function (org) {
                         var orgName = org.orgName;
@@ -579,7 +651,7 @@
                         }
                     });
 
-                    // Add click event listener to marker
+                    // add click event listener to marker
                     google.maps.event.addListener(marker, 'click', function () {
                         fetchDonationsAndShowInfo(orgName, marker, map);
                     });
@@ -600,6 +672,81 @@
             }
         }
 
+        function toggleMap() {
+            var mapPanel = document.getElementById('map');
+            var btnShowMap = document.getElementById('<%= btnShowMap.ClientID %>');
+
+             if (mapPanel.style.display === "none" || mapPanel.style.display === "") {
+             
+                 mapPanel.style.display = "block";
+                 getUserCurrentLocation();
+                 initMap();
+                 btnShowMap.value = "Hide Map"; 
+             } else {
+                 // hide the map 
+                 mapPanel.style.display = "none";
+                 btnShowMap.value = "Show Map"; 
+             }
+        }
+
+        function startCountdown(endDate, elementId, donationId) {
+            const countdownElement = document.getElementById(elementId);
+            if (!endDate || !countdownElement) return;
+
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const distance = new Date(endDate).getTime() - now;
+
+
+
+                if (distance < 0) {
+                    countdownElement.innerHTML = "Expired";
+                    clearInterval(timer);
+                    markCountdownAsEnded(donationId); 
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+
+            const timer = setInterval(updateCountdown, 1000);
+            updateCountdown(); 
+        }
+
+        function markCountdownAsEnded(donationId) {
+            $.ajax({
+                url: "AllDonations.aspx/UpdateCountdown",
+                type: "POST",
+                contentType: "application/json; charset=utf-8", 
+                data: JSON.stringify({ donationId: donationId }), 
+                dataType: "json", 
+                success: function (response) {
+                   //console.log(donationId);
+                    console.log("Countdown status updated successfully.");
+                },
+                error: function (xhr, status, error) {
+                    console.error("An error occurred: " + error);
+                }
+            });
+        }
+
+
+        // initialize countdowns after page load
+        window.onload = function () {
+            const countdownElements = document.querySelectorAll("[data-countdown]");
+            countdownElements.forEach(function (element) {
+                const endDate = element.getAttribute("data-countdown");
+                const elementId = element.getAttribute("id");
+                const donationId = element.getAttribute("data-donationid");
+                startCountdown(endDate, elementId, donationId);
+            });
+        };
+   
      
     </script>
 </asp:Content>

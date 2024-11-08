@@ -6,13 +6,30 @@
     <link href="/Content/PreviewPublicInfo.css" rel="stylesheet" type="text/css" />
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     
     
     <style>
+    body{
+        background: rgb(248,236,209);
+        background: linear-gradient(180deg, rgba(248,236,209,1) 18%, rgba(222,182,171,1) 56%, rgba(172,125,136,1) 79%, rgba(133,88,111,1) 100%);
+    }
+
+    .body-content::before {
+        content: "";
+        position: fixed; 
+        bottom: 0; 
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url(/Image/cloud2.png) no-repeat bottom left;
+        background-size: 100% auto;
+        opacity: 0.6;
+        z-index: -1;
+    }
+
     .row-container {
         position: relative;
         padding: 15px;
@@ -74,14 +91,24 @@
         background-color: #e53935;
     }
 
+    .status-refund {
+        color: #fff;
+        border-color: #e53935; 
+        background-color: orange;
+    }
+
 
     #categoryDetailsTable {
-    margin-top: 20px; 
-    border: 1px solid black; 
-    border-radius: 8px; 
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); 
-    border-collapse: separate; 
-    overflow: hidden; 
+        margin-top: 20px; 
+        border: 1px solid black; 
+        border-radius: 8px; 
+        box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); 
+        border-collapse: separate; 
+        overflow: hidden; 
+        }
+
+    #categoryDetailsTable thead tr th{
+        color: black;
     }
 
     #categoryDetailsTable th, #categoryDetailsTable td {
@@ -95,8 +122,38 @@
         text-align: center;
     }
 
+    .donation-details p {
+        margin-bottom: 10px; 
+    }
 
+    .table {
+        background-color: rgba(255, 255, 255, 0.7); 
+        border-collapse: collapse;
+        width: 100%;
+    }
 
+    .table tbody tr th {
+        background-color: #838383;
+        color: #ffffff;
+        padding: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .noData {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px; 
+        font-size: 18px;
+        color: #555;
+        text-align: center;
+    }
+    
     </style>
 </asp:Content>
 
@@ -105,42 +162,35 @@
         <!-- Tabs for different statuses -->
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <asp:LinkButton ID="lnkAll" runat="server" CssClass="nav-link active" OnClick="LoadDonations_Click" CommandArgument="All">All</asp:LinkButton>
+                <asp:LinkButton ID="lnkAll" runat="server" CssClass="nav-link active" OnClick="LoadDonations_Click" CommandArgument="All" style="color: #493628;">All</asp:LinkButton>
             </li>
             <li class="nav-item">
-                <asp:LinkButton ID="lnkPending" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="Pending">Pending</asp:LinkButton>
+                <asp:LinkButton ID="lnkPending" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="Pending" style="color: #493628;">Pending</asp:LinkButton>
             </li>
             <li class="nav-item">
-                <asp:LinkButton ID="lnkToPay" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="To Pay">To Pay</asp:LinkButton>
+                <asp:LinkButton ID="lnkToPay" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="To Pay" style="color: #493628;">To Pay</asp:LinkButton>
             </li>
             <li class="nav-item">
-                <asp:LinkButton ID="lnkToAccept" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="To Accept">To Accept</asp:LinkButton>
+                <asp:LinkButton ID="lnkToAccept" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="To Accept" style="color: #493628;">To Accept</asp:LinkButton>
             </li>
             <li class="nav-item">
-                <asp:LinkButton ID="lnkToPickUp" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="To PickUp">To PickUp</asp:LinkButton>
+                <asp:LinkButton ID="lnkToPickUp" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="To PickUp" style="color: #493628;">To PickUp</asp:LinkButton>
             </li>
             <li class="nav-item">
-                <asp:LinkButton ID="lnkToReach" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="To Reach">To Reach</asp:LinkButton>
+                <asp:LinkButton ID="lnkToReach" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="To Reach" style="color: #493628;">To Reach</asp:LinkButton>
             </li>
             <li class="nav-item">
-                <asp:LinkButton ID="lnkCompleted" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="Completed">Completed</asp:LinkButton>
+                <asp:LinkButton ID="lnkCompleted" runat="server" CssClass="nav-link" OnClick="LoadDonations_Click" CommandArgument="Completed" style="color: #493628;">Completed</asp:LinkButton>
             </li>
+            
         </ul>
 
         </div>
 
-       <%-- <div class="mt-3">
-            <h3>QR Code Scanner</h3>
-            <video id="video" autoplay style="width:100%; max-width:400px;"></video>
-            <canvas id="canvas" style="display:none;"></canvas>
-            <p id="outputMessage">Scanning for QR code...</p>
-            <p id="outputData"></p>
-        </div>
-    </div>--%>
-
+    <asp:Label ID="noDataLabel" runat="server" Text="No delivery made yet" Visible="false" CssClass="noData"></asp:Label>
 
         <!-- GridView for displaying donations -->
-        <asp:GridView ID="gvDonations" runat="server" CssClass="table table-striped" AutoGenerateColumns="False" OnRowDataBound="gvDonations_RowDataBound">
+        <asp:GridView ID="gvDonations" runat="server" CssClass="table table-striped" AutoGenerateColumns="False" OnRowDataBound="gvDonations_RowDataBound" style="margin-top: 20px;">
             <Columns>
                 <asp:TemplateField HeaderText="Donation Details">
                     <ItemTemplate>
@@ -153,10 +203,12 @@
                             </div>
 
                             <!-- Donor Information -->
-                            <strong>Donation ID:</strong> <%# Eval("donationId") %><br />
-                            <strong>Pick Up Address:</strong> <%# Eval("pickUpAddress") %><br />
-                            <strong>Published By:</strong> <%# Eval("orgName") %><br />
-                            <strong>Destination Address:</strong> <%# Eval("destinationAddress") %><br />
+                            <div class="donation-details">
+                                <p><strong>Donation ID:</strong> <%# Eval("donationId") %></p>
+                                <p><strong>Pick Up Address:</strong> <%# Eval("pickUpAddress") %></p>
+                                <p><strong>Published By:</strong> <%# Eval("orgName") %></p>
+                                <p><strong>Destination Address:</strong> <%# Eval("destinationAddress") %></p>
+                            </div>
 
                             <!-- Pickup Date and Time are displayed only when status is not Pending or To Pay -->
 
@@ -169,8 +221,8 @@
 
                             <!-- Pick Up Time Section -->
                             <asp:Panel ID="pnlPickUpTime" runat="server" Visible='<%# Eval("status").ToString() != "Pending" && Eval("status").ToString() != "To Pay" %>'>
-                                <strong>Pick Up Time:</strong>
-                                <asp:Label ID="lblPickUpTime" runat="server"
+                                <strong style="bottom: -10px; position: relative;">Pick Up Time:</strong>
+                                <asp:Label ID="lblPickUpTime" runat="server" style="bottom: -10px; position: relative;"
                                     Text='<%# Eval("pickupTime", "{0:hh:mm tt}") %>'>
                                 </asp:Label><br />
                             </asp:Panel>
@@ -188,20 +240,31 @@
                             <!-- View and QR Code buttons are hidden when status is Pending or To Pay -->
                             <div class="text-right mt-2">
                                 <asp:Button ID="btnMakePayment" runat="server" CommandArgument='<%# Eval("donationId") %>'
-                                    Text="Make Payment" CssClass="btn btn-success btn-sm"
+                                    Text="Make Payment" CssClass="btn btn-success btn-" style="background-color: #ED8D8D; border: #ED8D8D; padding: 8px 16px; font-size: 1em; "
                                     Visible='<%# Eval("status").ToString() == "To Pay" %>' OnClick="btnPay_Click" />
 
                                 <asp:Button ID="btnView" runat="server" CommandArgument='<%# Eval("donationId") %>'
-                                    Text="View Delivery" CssClass="btn btn-info btn-sm" OnClick="btnViewDelivery_Click"
-                                    Visible='<%# Eval("status").ToString() != "Pending" && Eval("status").ToString() != "To Pay" && Eval("status").ToString() != "Rejected" %>' />
+                                    Text="View Delivery" CssClass="btn btn-info btn-sm" OnClick="btnViewDelivery_Click" style="background-color: #8D6262; border: #8D6262; padding: 8px 16px; font-size: 1em;"
+                                    Visible='<%# Eval("status").ToString() != "Pending" && Eval("status").ToString() != "To Pay" && Eval("status").ToString() != "Rejected"  && Eval("status").ToString() != "Refund" && Eval("status").ToString() != "Approved" && Eval("status").ToString() != "Cancelled" %>' />
 
                                 <asp:Button ID="btnQRCode" runat="server" CommandArgument='<%# Eval("donationId") %>'
-                                    Text="QR Code" CssClass="btn btn-info btn-sm"
-                                    Visible='<%# Eval("status").ToString() != "Pending" && Eval("status").ToString() != "To Pay" && Eval("status").ToString() != "Rejected"%>'
+                                    Text="QR Code" CssClass="btn btn-info btn-sm" style="background-color: #393232; border: #393232; padding: 8px 16px; font-size: 1em;"
+                                    Visible='<%# Eval("status").ToString() != "Pending" && Eval("status").ToString() != "To Pay" && Eval("status").ToString() != "Approved" && Eval("status").ToString() != "Refund" && Eval("status").ToString() != "To Reach" && Eval("status").ToString() != "Completed" && Eval("status").ToString() != "Cancelled" && Eval("status").ToString() != "To Accept" && Eval("status").ToString() != "Rejected"%>'
                                     OnClientClick='<%# "showQRCodeModal(\"" + Eval("donationId") + "\"); return false;" %>' />
 
-
+                                
                             </div>
+
+                            <div class="text-left mt-2" style="position: relative;">
+                                <asp:Button ID="btnRefund" runat="server" CommandArgument='<%# Eval("donationId") %>'
+                                    Text="Refund?"
+                                    style="background: none; border: none; text-decoration: underline;"
+                                    OnClientClick='<%# "showRefundModal(\"" + Eval("donationId") + "\"); return false;" %>'
+                                    Visible='<%# Eval("status").ToString() == "To Accept" %>' />
+                            </div>
+
+
+
                         </div>
                         
                     </ItemTemplate>
@@ -226,6 +289,45 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="refundModal" tabindex="-1" role="dialog" aria-labelledby="refundModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="refundModalLabel">Request Refund</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to request a refund for this donation? You can only request a refund before your pickup is accepted by the rider. </p>
+
+                <!-- Hidden field for donationId -->
+                <asp:HiddenField ID="hfDonationId" runat="server" />
+
+                <!-- Dropdown for selecting refund reason -->
+                <div class="form-group">
+                    <label for="ddlRefundReason">Reason for Refund:</label>
+                    <asp:DropDownList ID="ddlRefundReason" runat="server" CssClass="form-control">
+                        <asp:ListItem Text="-- Select Reason --" Value="" />                      
+                        <asp:ListItem Text="Change of Delivery Address" Value="Change of Delivery Address" />
+                        <asp:ListItem Text="No Longer Need the Item" Value="No Longer Need the Item" />
+                        <asp:ListItem Text="Donor Unable to Provide Item" Value="Donor Unable to Provide Item" />
+                        <asp:ListItem Text="Cancel the Donation" Value="Cancel the Donation" />
+                        <asp:ListItem Text="Other" Value="Other" />
+                    </asp:DropDownList>
+                </div>
+                <asp:Label ID="lblError" runat="server" Text="">
+                </asp:Label><br />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <asp:Button ID="btnConfirmRefund" runat="server" CssClass="btn btn-danger" Text="Confirm Refund" OnClick="btnRefund_Click" />
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
@@ -259,76 +361,30 @@
             return false; 
         }
 
+        function showRefundModal(donationId) {
+            
+            $('#<%= hfDonationId.ClientID %>').val(donationId);
+           
+            $('#refundModal').modal('show');
+        }
 
+        function showError(message) {
+            Swal.fire({
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'OK',
 
-        // Reference the video, canvas, and output elements
-        //const video = document.getElementById('video');
-        //const canvas = document.getElementById('canvas');
-        //const outputMessage = document.getElementById('outputMessage');
-        //const outputData = document.getElementById('outputData');
-        //const context = canvas.getContext('2d');
+            });
+        }
 
-        //// Function to start video feed from the camera
-        //function startVideo() {
-        //    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        //        .then(stream => {
-        //            video.srcObject = stream;
-        //            video.setAttribute("playsinline", true); // to prevent fullscreen in iOS
-        //            video.play();
-        //            requestAnimationFrame(scanQRCode);
-        //        })
-        //        .catch(err => {
-        //            console.error("Error accessing the camera: ", err);
-        //            outputMessage.innerText = "Unable to access camera.";
-        //        });
-        //}
+        function showSuccess(message) {
+            Swal.fire({
+                text: message,
+                icon: 'success',
+                confirmButtonText: 'OK',
 
-        //// Function to capture a frame and scan for QR code
-        //function scanQRCode() {
-        //    if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        //        canvas.width = video.videoWidth;
-        //        canvas.height = video.videoHeight;
-        //        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        //        // Capture the image from the video feed
-        //        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        //        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-
-        //        // If QR code is found, display the data and redirect
-        //        if (code) {
-        //            outputMessage.hidden = true;
-        //            outputData.innerText = "QR Code Data: " + code.data;
-
-        //            // If the QR code contains a URL, redirect to it
-        //            if (isValidUrl(code.data)) {
-        //                window.location.href = code.data; // Redirect to the scanned URL
-        //            } else {
-        //                console.log("QR Code found, but not a valid URL.");
-        //            }
-        //        } else {
-        //            outputMessage.hidden = false;
-        //            outputMessage.innerText = "Scanning for QR code...";
-        //            outputData.innerText = "";
-        //        }
-        //    }
-        //    // Continue scanning for the QR code
-        //    requestAnimationFrame(scanQRCode);
-        //}
-
-        //// Helper function to validate if the scanned data is a valid URL
-        //function isValidUrl(string) {
-        //    try {
-        //        new URL(string);
-        //        return true;
-        //    } catch (_) {
-        //        return false;
-        //    }
-        //}
-
-        // Start the video when the page loads
-       // window.onload = startVideo;
-
-        
+            });
+        }
 
     </script>
 

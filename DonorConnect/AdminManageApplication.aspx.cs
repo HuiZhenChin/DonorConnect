@@ -59,6 +59,7 @@ namespace DonorConnect
             gvOrg.DataBind();
 
             lblOrg.Visible = true;
+            lblNoOrgApplications.Visible = _dt.Rows.Count == 0;
 
 
         }
@@ -106,6 +107,7 @@ namespace DonorConnect
             gvRider.DataBind();
 
             lblRider.Visible = true;
+            lblNoRiderApplications.Visible = _dt.Rows.Count == 0;
         }
 
         protected void btnViewRider_click(object sender, EventArgs e)

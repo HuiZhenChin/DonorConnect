@@ -16,6 +16,14 @@ namespace DonorConnect
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["username"] == null || string.IsNullOrEmpty(Session["username"].ToString()))
+            {
+                // if username is not present, redirect to login page or show an alert
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showAlert('Please login to your account to access the page.');", true);
+               
+                return;
+            }
+
             if (!IsPostBack)
             {
                 string donationPublishId = Request.QueryString["donationPublishId"];
@@ -109,11 +117,13 @@ namespace DonorConnect
                 }
 
                 // bind the processed table to the GridView
+                noDataLabel.Visible = false;
                 gvDonations.DataSource = processedTable;
                 gvDonations.DataBind();
             }
             else
             {
+                noDataLabel.Visible = true;
                 gvDonations.DataSource = null;
                 gvDonations.DataBind();
             }

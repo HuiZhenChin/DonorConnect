@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="PublishDonations.aspx.cs" Inherits="DonorConnect.PublishDonations1" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Org.Master" AutoEventWireup="true" CodeBehind="PublishDonations.aspx.cs" Inherits="DonorConnect.PublishDonations1" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,11 @@
      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<style>
+     <style>
+         body{
+              background: rgb(249,247,247);
+              background: linear-gradient(180deg, rgba(249,247,247,1) 0%, rgba(219,226,239,1) 40%, rgba(233,239,236,1) 68%, rgba(106,156,137,1) 100%);
+         }
         .category-row {
             display: flex;
             flex-wrap: wrap;
@@ -33,8 +37,8 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container mt-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
+        <div class="card" style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <div class="card-header text-white" style="background-color: #204051;">
                 <h4 class="mb-0">Publish New Item Donations</h4>
             </div>
             <div class="card-body">
@@ -66,7 +70,16 @@
                     <asp:TextBox ID="txtQuantity" runat="server" CssClass="form-control" placeholder="Enter number of people in need (e.g. a range of 30)" />
                     <asp:RequiredFieldValidator ID="rfvQuantity" runat="server" ControlToValidate="txtQuantity" ErrorMessage="Number of people in need is required." CssClass="text-danger" />
                 </div>
-                
+                <div class="form-group">
+                    <label for="txtName">Recipient Name</label>
+                    <asp:TextBox ID="txtName" runat="server" CssClass="form-control" placeholder="Enter recipient name (enter your username if it is donated to your organization)" />
+                    <asp:RequiredFieldValidator ID="rfvName" runat="server" ControlToValidate="txtName" ErrorMessage="Name is required." CssClass="text-danger" />
+                </div>
+                <div class="form-group">
+                    <label for="txtPhone">Recipient Phone Number</label>
+                    <asp:TextBox ID="txtPhone" runat="server" CssClass="form-control" placeholder="Enter recipient phone number" />
+                    <asp:RequiredFieldValidator ID="rfvPhone" runat="server" ControlToValidate="txtPhone" ErrorMessage="Phone number is required." CssClass="text-danger" />
+                </div>
                 <div class="form-group">
                     <label for="txtAddress">Recipient Address</label>
                     <asp:TextBox ID="txtAddress" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="5" placeholder="Enter recipient address (enter your username if it is donated to your organization, else enter the new address)" />
@@ -103,61 +116,30 @@
                     <label>Item Categories </label>
                     <label style="font-style:italic; color: gray;">(For Specific Items Needed for each category, please add a comma <b> ","</b> if you have more than one item needed for that category.)</label>
                     <div class="category-row">
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkFood" runat="server" Text="Food"/>
-                            <asp:TextBox ID="txtSpecificFood" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyFood" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkClothing" runat="server" Text="Clothing" />
-                            <asp:TextBox ID="txtSpecificClothing" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyClothing" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkToys" runat="server" Text="Toys"  />
-                            <asp:TextBox ID="txtSpecificToys" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyToys" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkBooks" runat="server" Text="Books"  />
-                            <asp:TextBox ID="txtSpecificBooks" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyBooks" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkElectronics" runat="server" Text="Electronics"  />
-                            <asp:TextBox ID="txtSpecificElectronics" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyElectronics" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkFurniture" runat="server" Text="Furniture"  />
-                            <asp:TextBox ID="txtSpecificFurniture" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyFurniture" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkHygiene" runat="server" Text="Hygiene Products"  />
-                            <asp:TextBox ID="txtSpecificHygiene" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyHygiene" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkMedical" runat="server" Text="Medical Supplies"  />
-                            <asp:TextBox ID="txtSpecificMedical" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyMedical" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity" TextMode="Number" style="display:none;" />
-                        </div>
-                        <div class="category-checkbox">
-                            <asp:CheckBox ID="chkOther" runat="server" Text="Other"  />
-                            <asp:TextBox ID="newCategory" runat="server" CssClass="form-control specific-items-input" Placeholder="Enter new category" style="display:none;" />
-                            <asp:TextBox ID="txtSpecificOther" runat="server" CssClass="form-control specific-items-input" Placeholder="Specify items needed" style="display:none;" />
-                            <asp:TextBox ID="qtyOther" runat="server" CssClass="form-control specific-qty-input" Placeholder="Enter quantity"  TextMode="Number" style="display:none;" />
-                        </div>
+                       <asp:Repeater ID="rptCategories" runat="server">
+                        <ItemTemplate>
+                            <div class="category-checkbox">
+                                <asp:CheckBox ID="chkCategory" runat="server" Text='<%# Eval("categoryName") %>' />
+                                <asp:TextBox ID="txtSpecificItem" runat="server" CssClass="form-control specific-items-input" Placeholder="(eg: item A, item B)" style="display:none;" />
+                                <asp:TextBox ID="txtQuantity" runat="server" CssClass="form-control specific-qty-input" Placeholder="(eg: quantity A, quantity B)" TextMode="Number" style="display:none;" />
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
+
                     </div>
                     
-                     <label id="lblCategory" style="display:none; color: darkred;" runat="server">Please select at least one category needed by your organization, helping donors to understand your needs.</label>
+                     <label id="lblCategory" style="color: #dc3545!important;" runat="server"></label>
 
                 </div>
                 
                 <div class="form-group" id="timeRange" style="display:none;">
                     <label for="txtTimeRange">Time Range</label>
-                    <asp:TextBox ID="txtTimeRange" runat="server" CssClass="form-control" placeholder="Enter time range (e.g., 2 weeks or NONE for no time limitations)" />
+                    <div class="input-group">
+                        <asp:TextBox ID="txtTimeRange" runat="server" CssClass="form-control" TextMode="Number" placeholder="Enter time range (e.g., 7/ 14/ 21 days)" />
+                        <div class="input-group-append">
+                            <span class="input-group-text">Days</span>
+                        </div>
+                    </div>
                     <asp:RequiredFieldValidator ID="rfvTimeRange" runat="server" ControlToValidate="txtTimeRange" ErrorMessage="Time range of item donations is required." CssClass="text-danger" Enabled="false" />
                 </div>
 
@@ -196,9 +178,9 @@
 
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
-            var urgentYes = document.getElementById('<%= rbUrgentYes.ClientID %>');
+           var urgentYes = document.getElementById('<%= rbUrgentYes.ClientID %>');
            var urgentNo = document.getElementById('<%= rbUrgentNo.ClientID %>');
-    var timeRange = document.getElementById('timeRange');
+           var timeRange = document.getElementById('timeRange');
            var rfvTimeRange = document.getElementById('<%= rfvTimeRange.ClientID %>');
            var categories = document.querySelectorAll('.category-checkbox');
            var lblCategory = document.getElementById('lblCategory');
@@ -308,7 +290,7 @@
 
             if (!isValid) {
                 errorMsg.style.display = 'block';
-                fileInput.value = ''; // Clear the file input
+                fileInput.value = ''; // clear the file input
             } else {
                 errorMsg.style.display = 'none';
             }
@@ -330,7 +312,7 @@
 
             if (!isValid) {
                 errorMsg.style.display = 'block';
-                fileInput.value = ''; // Clear the file input
+                fileInput.value = ''; // clear the file input
             } else {
                 errorMsg.style.display = 'none';
             }

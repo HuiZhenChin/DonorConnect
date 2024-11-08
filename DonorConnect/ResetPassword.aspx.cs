@@ -21,7 +21,12 @@ namespace DonorConnect
         {
             string username = txtUsername.Text;
 
-            // Search the database for the user
+            if (string.IsNullOrEmpty(username))
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Username cannot be empty!', 'warning');", true);
+                return;
+            }
+
             string email = GetUserEmailFromDatabase(username);
 
             string role = GetUserRoleFromDatabase(username);
@@ -36,6 +41,7 @@ namespace DonorConnect
                 lblRole.Text = role;
                 confirmationSection.Visible = true;
             }
+           
             else
             {
                 ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('User not found!');", true);

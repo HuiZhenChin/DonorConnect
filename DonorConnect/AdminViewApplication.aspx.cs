@@ -172,16 +172,15 @@ namespace DonorConnect
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
-                // Find the controls in the Repeater's current item
                 Literal litLabel = (Literal)e.Item.FindControl("litLabel");
                 HyperLink hyperLinkLicense = (HyperLink)e.Item.FindControl("hyperLinkLicense");
 
                 if (litLabel != null && hyperLinkLicense != null)
                 {
-                    // Check if the FieldName is "Business License"
+                    // check if the FieldName is "Business License"
                     if (litLabel.Text == "Business License")
                     {
-                        // Show the hyperlink
+                        // show the hyperlink
                         hyperLinkLicense.Visible = true;
                     }
                 }

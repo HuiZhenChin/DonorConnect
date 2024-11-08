@@ -10,6 +10,10 @@
      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <style>
+          body{
+              background: rgb(238,233,218);
+              background: linear-gradient(180deg, rgba(238,233,218,1) 17%, rgba(221,228,232,1) 56%, rgba(147,191,207,1) 80%, rgba(123,178,209,1) 100%);
+          }
         .custom {
             border: 1px solid black; 
             border-collapse: separate;
@@ -55,7 +59,7 @@
 
     <div class="card-deck">
         <div class="card mt-3 shadow-sm">
-            <div class="card-body">
+            <div class="card-body" style="background-color: rgba(238, 238, 238, 0.8);">
                 <div id="application" runat="server">
                     <asp:Label ID="lblApplication" runat="server" CssClass="d-block text-center mb-4" Text="New Applications" Style="font-weight: bold; font-size: 24px;"></asp:Label>
 

@@ -75,22 +75,22 @@ namespace DonorConnect
             return id;
         }
 
-        public string GetCreatedOn()
+        public DateTime? GetCreatedOn()
         {
             string sql;
-            string created_on = "";
+            DateTime? createdOn = null; 
             QRY _Qry = new QRY();
             DataTable _dt;
             sql = "SELECT * FROM [donation_publish] WHERE donationPublishId = '" + _donationPublishId + "' ";
 
             _dt = _Qry.GetData(sql);
 
-            if (_dt.Rows.Count > 0)
+            if (_dt.Rows.Count > 0 && _dt.Rows[0]["created_on"] != DBNull.Value)
             {
-                created_on = _dt.Rows[0]["created_on"].ToString();
+                createdOn = Convert.ToDateTime(_dt.Rows[0]["created_on"]);
             }
 
-            return created_on;
+            return createdOn;
         }
 
         private string GetAddress()

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+using System.Web.Services.Description;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -270,7 +271,6 @@ namespace DonorConnect
             WHERE categoryName = '" + categoryName.Replace("'", "''") + @"' 
             AND specificItems LIKE '%" + item.Replace("'", "''") + @"%'";
 
-            // Execute the query and retrieve the count
             DataTable dt = _Qry.GetData(sql);
 
             // check if the item exists for the particular category based on the count
@@ -355,7 +355,7 @@ namespace DonorConnect
                         {
                             string[] specificItemList = row["SpecificItems"].ToString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-                            // Loop through items and check existence
+                            // loop through items and check existence
                             foreach (string item in specificItemList)
                             {
                                 if (!CheckItemExist(category, item.Trim()))
@@ -467,10 +467,10 @@ namespace DonorConnect
             string id = Request.QueryString["id"];
 
             // get existing items for the category
-            string sqlSelect = "SELECT specificItems FROM itemCategory WHERE categoryName = @CategoryName";
+            string sqlSelect = "SELECT specificItems FROM itemCategory WHERE categoryName = @categoryName";
             var parametersSelect = new Dictionary<string, object>
             {
-                { "@CategoryName", category }
+                { "@categoryName", category }
             };
 
             QRY qry = new QRY();
@@ -496,19 +496,19 @@ namespace DonorConnect
             string sql;
             var parameters = new Dictionary<string, object>
             {
-                { "@CategoryName", category },
-                { "@SpecificItems", newItems }
+                { "@categoryName", category },
+                { "@specificItems", newItems }
             };
 
             if (dt.Rows.Count > 0)
             {
                 // update existing category with new items
-                sql = "UPDATE [itemCategory] SET specificItems = @SpecificItems WHERE categoryName = @CategoryName";
+                sql = "UPDATE [itemCategory] SET specificItems = @SpecificItems WHERE categoryName = @categoryName";
             }
             else
             {
                 // insert new category together with items if category not yet exist
-                sql = "INSERT INTO [itemCategory] (categoryName, specificItems) VALUES (@CategoryName, @SpecificItems)";
+                sql = "INSERT INTO [itemCategory] (categoryName, specificItems) VALUES (@categoryName, @specificItems)";
             }
 
             bool success = qry.ExecuteNonQuery(sql, parameters);
@@ -575,11 +575,15 @@ namespace DonorConnect
             string status = "Opened";
             DonationPublish dp = new DonationPublish(donationPublishId, "", "", "", "", "", "");
             string id = dp.GetId();
+            DateTime date = DateTime.Now;
+            string formattedDate = date.ToString("yyyy-MM-dd HH:mm:ss");
 
             string sql = "UPDATE [donation_publish] SET " +
-                                "status = '" + status + "', " +
-                                "adminId = '" + adminId + "' " +
-                                 "WHERE donationPublishId = '" + donationPublishId + "'";
+             "status = '" + status + "', " +
+             "adminId = '" + adminId + "', " +
+             "approved_on = '" + formattedDate + "' " +
+             "WHERE donationPublishId = '" + donationPublishId + "'";
+
 
             QRY _Qry = new QRY();
             bool success = _Qry.ExecuteNonQuery(sql);
@@ -625,7 +629,8 @@ namespace DonorConnect
             DonationPublish dp = new DonationPublish(donationPublishId, "", "", "", "", "", "");
             string id= dp.GetId();
             bool isRejected = false;
-
+            string resubmitLink = "https://localhost:44390/EditOrgDonations.aspx?donationPublishId=" + donationPublishId + "&orgId=" + id + "&status=Rejected" ;
+            string encryptedLink = Encryption.Encrypt(resubmitLink);
 
             if (!string.IsNullOrEmpty(donationPublishId) && !string.IsNullOrEmpty(rejectionReason))
             {
@@ -652,6 +657,24 @@ namespace DonorConnect
                                       "@resubmitlink = NULL ";
 
                     _Qry2.ExecuteNonQuery(sqlemail);
+
+                    string sqlNtf = "EXEC [create_notifications] " +
+                                "@method = 'INSERT', " +
+                                "@id = NULL, " +
+                                "@userId = @userId, " +
+                                "@link = @link, " +
+                                "@content = @content";
+
+                    string message = "Your donation application is rejected by our team. Please access this link if you would like to resubmit the application again.";
+
+                    var notificationParameter = new Dictionary<string, object>
+                    {
+                        { "@userId", id },
+                        { "@link", encryptedLink },
+                        { "@content", message }
+                    };
+
+                    _Qry2.ExecuteNonQuery(sqlNtf, notificationParameter);
 
                     ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "showSuccess('Application is rejected! An email is sent to inform them about this.',);", true);
 

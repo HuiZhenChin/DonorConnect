@@ -23,7 +23,7 @@ namespace DonorConnect
             string username= Session["username"].ToString();
             string role= Session["role"].ToString();
             string userId = GetUserId(username, role);
-            string sql = "SELECT content, link, created_on FROM notifications WHERE userId = @userId ORDER BY created_on DESC";
+            string sql = "SELECT notificationId, content, link, created_on, isRead FROM notifications WHERE userId = @userId ORDER BY created_on DESC";
 
             var parameters = new Dictionary<string, object>
             {
@@ -33,34 +33,80 @@ namespace DonorConnect
             QRY qry = new QRY();
             DataTable dt = qry.GetData(sql, parameters);
 
-            gvNotifications.DataSource = dt;
-            gvNotifications.DataBind();
+            if (dt.Rows.Count == 0)
+            {
+                lblNoNotifications.Text = "You have no notifications.";
+                lblNoNotifications.Visible = true;
+                gvNotifications.Visible = false;
+            }
+            else
+            {
+                gvNotifications.DataSource = dt;
+                gvNotifications.DataBind();
+
+                lblNoNotifications.Visible = false;
+                gvNotifications.Visible = true;
+            }
         }
 
         protected void gvNotifications_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             if (e.CommandName == "Redirect")
             {
-                // get the encrypted link 
+             
                 string encryptedLink = e.CommandArgument.ToString();
+                string decodedEncryptedLink = HttpUtility.UrlDecode(encryptedLink);
 
-                // decrypt the link 
                 string decryptedLink;
                 try
                 {
-                    decryptedLink = Encryption.Decrypt(encryptedLink);
+                    decryptedLink = Encryption.Decrypt(decodedEncryptedLink);
                 }
                 catch (Exception ex)
                 {
-                    
                     ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "alert('Error decrypting link.');", true);
                     return;
                 }
+
+                // mark the notification as read using the link
+                MarkNotificationAsRead(encryptedLink);
 
                 // redirect to the decrypted link
                 Response.Redirect(decryptedLink);
             }
         }
+
+        private void MarkNotificationAsRead(string link)
+        {
+            string sql;
+            var parameters = new Dictionary<string, object>
+            {
+                { "@link", link }
+            };
+
+            // check if the current role is admin
+            if (Session["role"]?.ToString() == "admin")
+            {
+                string username = Session["username"]?.ToString();
+
+                if (string.IsNullOrEmpty(username))
+                {
+                    Console.WriteLine("No username in session.");
+                    return;
+                }
+
+                sql = "UPDATE notifications SET isRead = 1 WHERE link = @link AND userId = (SELECT adminId FROM admin WHERE adminUsername = @username)";
+                parameters.Add("@username", username);
+            }
+            else
+            {
+                sql = "UPDATE notifications SET isRead = 1 WHERE link = @link";
+            }
+
+            QRY _Qry = new QRY();
+            _Qry.ExecuteNonQuery(sql, parameters);
+        }
+
 
         private string GetUserId(string username, string role)
         {

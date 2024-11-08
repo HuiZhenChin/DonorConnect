@@ -9,6 +9,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -62,6 +63,7 @@ namespace DonorConnect
                     }
                     else if (role == "admin")
                     {
+                        btnPreview.Visible = false;
                         ShowAdminInfo(username);
                         donorContent.Visible = false;
                         orgContent.Visible = false;
@@ -392,14 +394,25 @@ namespace DonorConnect
 
             if (!string.IsNullOrEmpty(base64String))
             {
-                output.ImageUrl = "data:image/jpeg;base64," + base64String;
+                string imageFormat = "jpeg"; 
+                if (base64String.StartsWith("/9j/")) 
+                {
+                    imageFormat = "jpeg";
+                }
+                else if (base64String.StartsWith("iVBORw0KGgo")) 
+                {
+                    imageFormat = "png";
+                }
+
+                output.ImageUrl = $"data:image/{imageFormat};base64," + base64String;
             }
             else
             {
-                // default image if no profile picture is found
+
                 output.ImageUrl = "/Image/default_picture.jpg";
             }
         }
+
 
 
         private string GetProfilePictureFromDb()
@@ -440,9 +453,15 @@ namespace DonorConnect
 
                 if (_dt3.Rows.Count > 0)
                 {
-                    return _dt3.Rows[0]["riderFacePicBase64"].ToString();
-                }
+                    string encryptedImage = _dt3.Rows[0]["riderFacePicBase64"].ToString();
 
+                    string[] parts = encryptedImage.Split(new char[] { ':' }, 2);
+                    string filename = parts[0]; 
+
+                    string decryptedImage = ImageFileProcessing.DecryptImages(parts[1]);
+
+                    return decryptedImage;
+                }
             }
 
             else if (role == "admin")
@@ -473,7 +492,7 @@ namespace DonorConnect
                     }
                 }
             }
-            // Hide buttons after saving
+            // hide buttons after saving
             buttons.Visible = false;
         }
 
@@ -559,6 +578,17 @@ namespace DonorConnect
                 string username = Session["username"].ToString();
 
                 string role = GetUserRoleFromDatabase(username);
+
+                string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+
+                // validate that the password meets the requirements
+                if (!Regex.IsMatch(txtPassword.Text, passwordPattern))
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert",
+                        "showError('Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.');", true);
+                    return;
+                }
+
 
                 if (txtPassword.Text != txtConfirmPassword.Text)
                 {
@@ -680,15 +710,33 @@ namespace DonorConnect
 
         protected void btnPreview_Click(object sender, EventArgs e)
         {
-         
-            string username= Session["username"].ToString();
+            QRY _Qry= new QRY();
+
+            string username = Session["username"].ToString();
 
             string role = Session["role"].ToString();
 
             if (username != null && role != null)
             {
-                Response.Redirect($"PreviewPublicInfo.aspx?role={role}&username={username}");
+                string query = username;
 
+                if (role.Equals("rider", StringComparison.OrdinalIgnoreCase))
+                {
+
+                    string sql = "SELECT riderFullName FROM [delivery_rider] WHERE riderUsername = @username";
+                    var parameters = new Dictionary<string, object>
+                    {
+                        { "@username", username}
+                    };
+                    var _dt = _Qry.GetData(sql, parameters);
+
+                    if (_dt.Rows.Count > 0)
+                    {
+                        query = _dt.Rows[0]["riderFullName"].ToString();
+                    }
+                }
+
+                Response.Redirect($"PreviewPublicInfo.aspx?role={role}&username={query}");
             }
         }
 

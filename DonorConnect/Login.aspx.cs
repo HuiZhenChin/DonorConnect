@@ -18,77 +18,82 @@ namespace DonorConnect
         {
             if (!Page.IsPostBack)
             {
-
+                
             }
         }
 
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
-            try { 
-            
-            string encryptedpass = null;
-            encryptedpass = HashPassword(txtPassword.Text);
-            string valid_sql = "EXEC login @username = '" + txtUsername.Text + "' , @password = '" + encryptedpass + "' ";
-            QRY checkQry = new QRY();
-            DataTable dt_check = new DataTable();
-            dt_check = checkQry.GetData(valid_sql);
-            if (dt_check.Rows.Count > 0)
+            if (string.IsNullOrEmpty(txtUsername.Text))
             {
-                string message = dt_check.Rows[0]["MESSAGE"].ToString();
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Username and Password cannot be empty!', 'warning');", true);
+                return;
+            }
 
-                if (message == "Login Successful!")
+            try
+            {
+                string encryptedpass = HashPassword(txtPassword.Text);
+                string valid_sql = "EXEC login @username = '" + txtUsername.Text + "' , @password = '" + encryptedpass + "' ";
+                QRY checkQry = new QRY();
+                DataTable dt_check = checkQry.GetData(valid_sql);
+
+                if (dt_check.Rows.Count > 0)
                 {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showMessage('Login Successfully!');", true);
-                    ScriptManager.RegisterStartupScript(this, GetType(), "redirect", "setTimeout(function(){ window.location.href='/Home.aspx'; }, 3000);", true);
+                    string message = dt_check.Rows[0]["MESSAGE"].ToString();
 
-                    Session["username"] = txtUsername.Text;
-
-                    // get role
-                    string sql = "SELECT * FROM [user] WHERE username = '" + txtUsername.Text + "' ";
-                    QRY _Qry = new QRY();
-                    DataTable _dt = _Qry.GetData(sql);
-
-                    if (_dt.Rows.Count > 0)
+                    if (message == "Login Successful!")
                     {
-                        string role = _dt.Rows[0]["role"].ToString();
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "showMessage('Login Successfully!');", true);
+                        ScriptManager.RegisterStartupScript(this, GetType(), "redirect", "setTimeout(function(){ window.location.href='/Home.aspx'; }, 3000);", true);
 
-                        Session["role"] = role;
+                        Session["username"] = txtUsername.Text;
+
+                        // get role
+                        string sql = "SELECT * FROM [user] WHERE username = '" + txtUsername.Text + "' ";
+                        QRY _Qry = new QRY();
+                        DataTable _dt = _Qry.GetData(sql);
+
+                        if (_dt.Rows.Count > 0)
+                        {
+                            string role = _dt.Rows[0]["role"].ToString();
+                            Session["role"] = role;
+                        }
                     }
-                 }
-
-                else if (message == "Admin Registration")
-                {
-                    Response.Redirect("~/AdminRegister.aspx");
+                    else if (message == "Admin Registration")
+                    {
+                        Response.Redirect("~/AdminRegister.aspx");
+                    }
+                    else if (message == "Incorrect Password!")
+                    {
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Incorrect Password!', 'error');", true);
+                    }
+                    else if (message == "Account does not exist")
+                    {
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Account does not exist', 'warning');", true);
+                    }
+                    else if (message == "Your application is still pending for approval")
+                    {
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Your application is still pending for approval', 'warning');", true);
+                    }
+                    else if (message == "Your account has been terminated")
+                    {
+                        ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Your account has been terminated', 'warning');", true);
+                    }
                 }
-
-                else if (message == "Incorrect Password!")
+                else
                 {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Incorrect Password!', 'error');", true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('An unexpected error occurred.', 'error');", true);
                 }
-                else if (message == "Account does not exist")
-                {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Account does not exist', 'warning');", true);
-                }
-                else if (message == "Your application is still pending for approval")
-                {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('Your application is still pending for approval', 'warning');", true);
-                }
-               
             }
-            else
+            catch (Exception ex)
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('An unexpected error occurred.', 'error');", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('An error occurred: " + ex.Message + "', 'error');", true);
             }
         }
-        catch (Exception ex)
-        {
-            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "ErrorMsg('An error occurred: " + ex.Message + "', 'error');", true);
-        }
-    }
 
 
-    private string HashPassword(string password)
+        private string HashPassword(string password)
         {
             using (SHA256 sha256 = SHA256.Create())
             {

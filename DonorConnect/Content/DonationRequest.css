@@ -5,27 +5,15 @@ body {
     padding: 0;
 }
 
-    /*body::before {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        height: 50%;
-        background: url('/Image/tree.jpg') no-repeat left center;
-        background-color: lightblue!important;
-        opacity: 0.75; 
-        z-index: -1; 
-    }*/
 
 .body-content {
     position: relative;
-    min-height: 100vh; /* Ensure it fills at least the viewport height */
-    /* Apply the gradient background to the main content */
+    min-height: 100vh; 
     background: linear-gradient(180deg, rgba(235,249,251,1) 5%, rgba(158,202,212,1) 17%, rgba(112,202,226,1) 31%, rgba(205,245,240,1) 52%, rgba(181,217,176,1) 66%, rgba(18,74,50,1) 100%);
     background-size: cover;
     background-position: center;
-    padding-bottom: 20px; /* Add padding to avoid overlap with footer */
-    z-index: 1; /* Ensure content stays above the background */
+    padding-bottom: 20px; 
+    z-index: 1; 
 }
 
     .body-content::before {
@@ -35,59 +23,52 @@ body {
         left: 0;
         width: 100%;
         height: 100%;
-        /* Set the background image with opacity */
         background: url('/Image/tree4.png') no-repeat bottom left;
-        background-size: 40% auto; /* Control image size */
-        opacity: 0.7; /* Adjust the image opacity here */
-
-        z-index: -1; /* Ensure it stays behind the content */
+        background-size: 40% auto;
+        opacity: 0.7; 
+        z-index: -1;
     }
 
 
 .distance-info p {
-    margin: 5px 0; /* Adjust spacing as needed */
+    margin: 5px 0; 
 }
 
 .distance-info strong {
     display: inline-block;
-    width: 120px; /* Adjust width to align titles and values */
+    width: 120px;
 }
 
 .distance-info span {
     font-weight: normal;
 }
 
-/* Container for the progress bar and form */
 .form-container {
-    width: 80%; /* Adjust the width as needed */
-    margin: 0 auto; /* Center the container */
-    padding: 20px; /* Add some padding inside the container */
-    /* Ensure the box model includes padding and borders in the width/height */
+    width: 80%; 
+    margin: 0 auto;
+    padding: 20px; 
     box-sizing: border-box;
-    /* Set the background with opacity */
-    background-color: rgba(182, 212, 179, 0.7); /* Light green color with 70% opacity */
-
-    border: 1px solid transparent; /* Optional border for visual separation */
-    border-radius: 8px; /* Optional border-radius to round the corners */
+    background-color: rgba(182, 212, 179, 0.7); 
+    border: 1px solid transparent; 
+    border-radius: 8px; 
     padding-top: 10px;
 }
 
 
 #categoryDetailsTable {
-    margin-top: 20px; /* Existing margin */
-    border: 1px solid black; /* Solid black border */
-    border-radius: 8px; /* Adds rounded corners */
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); /* Adds a slight shadow */
-    border-collapse: separate; /* Use separate borders to show border-radius */
-    overflow: hidden; /* Ensures the rounded corners are applied inside the table */
+    margin-top: 20px;
+    border: 1px solid black; 
+    border-radius: 8px; 
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); 
+    border-collapse: separate; 
+    overflow: hidden;
 }
 
     #categoryDetailsTable th, #categoryDetailsTable td {
-        border: 1px solid black; /* Solid black borders for table cells */
-        padding: 8px; /* Optional padding inside the cells */
+        border: 1px solid black; 
+        padding: 8px; 
     }
 
-    /* Optional: Adding a background to the table header */
     #categoryDetailsTable th {
         background-color: #f8f9fa; 
         text-align: center;
@@ -169,7 +150,7 @@ header {
                 border-color: var(--main-color);
                 background-color: var(--main-color);
                 color: #fff;
-                content: "\f00c"; /* FontAwesome check icon */
+                content: "\f00c"; 
                 font-family: "FontAwesome";
             }
 
@@ -191,19 +172,16 @@ header {
     text-transform: uppercase; 
 }
 
-/* Slide pages styling */
 .slide-page {
     
     transition: all 0.6s ease;
 
 }
 
-    /* Show the current step */
     .slide-page.active {
         display: block;
     }
 
-/* Buttons */
 .button-container {
     display: flex;
     justify-content: space-between;
@@ -232,64 +210,6 @@ button {
     button.finish-btn {
         background-color: #2196F3;
     }
-
-/* Progress Bar Styling */
-/*.container .progress-bar {
-    display: -webkit-box;
-    margin: 40px 0;
-    user-select: none;
-}
-
-    .container .progress-bar .step {
-        text-align: center;
-        width: 25%;
-        position: relative;
-    }
-
-        .container .progress-bar .step p {
-            font-weight: 500;
-            font-size: 18px;
-            color: #000;
-            margin-bottom: 8px;
-        }
-*/
-/*.progress-bar .step .bullet {
-    height: 25px;
-    width: 25px;
-    border: 2px solid #000;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 18px;
-    color: #000;
-    background: #fff;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.progress-bar .step .check {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #4CAF50;
-    border-radius: 50%;
-    color: white;
-    text-align: center;
-    line-height: 25px;
-    font-size: 16px;
-}
-
-    .progress-bar .step .bullet.active,
-    .progress-bar .step .check.active {
-        background: #4CAF50;
-        border-color: #4CAF50;
-        color: #fff;
-    }*/
 
 .container .slide-page {
     width: 100%;
@@ -325,217 +245,3 @@ button {
         }
 
 
-/** {
-    margin: 0;
-    padding: 0;
-    outline: none;
-    font-family: 'Poppins', sans-serif;
-}
-
-body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    overflow: hidden;
-    background: url("bg.png"), -webkit-linear-gradient(bottom, #0250c5, #d43f8d);
-}
-
-::selection {
-    color: #fff;
-    background: #d43f8d;
-}
-
-.container {
-    width: 330px;
-    background: #fff;
-    text-align: center;
-    border-radius: 5px;
-    padding: 50px 35px 10px 35px;
-}
-
-    .container header {
-        font-size: 35px;
-        font-weight: 600;
-        margin: 0 0 30px 0;
-    }
-
-    .container .form-outer {
-        width: 100%;
-        overflow: hidden;
-    }
-
-        .container .form-outer form {
-            display: flex;
-            width: 400%;
-        }
-
-.form-outer form .page {
-    width: 25%;
-    transition: margin-left 0.3s ease-in-out;
-}
-
-    .form-outer form .page .title {
-        text-align: left;
-        font-size: 25px;
-        font-weight: 500;
-    }
-
-    .form-outer form .page .field {
-        width: 330px;
-        height: 45px;
-        margin: 45px 0;
-        display: flex;
-        position: relative;
-    }
-
-form .page .field .label {
-    position: absolute;
-    top: -30px;
-    font-weight: 500;
-}
-
-form .page .field input {
-    height: 100%;
-    width: 100%;
-    border: 1px solid lightgrey;
-    border-radius: 5px;
-    padding-left: 15px;
-    font-size: 18px;
-}
-
-form .page .field select {
-    width: 100%;
-    padding-left: 10px;
-    font-size: 17px;
-    font-weight: 500;
-}
-
-form .page .field button {
-    width: 100%;
-    height: calc(100% + 5px);
-    border: none;
-    background: #d33f8d;
-    margin-top: -20px;
-    border-radius: 5px;
-    color: #fff;
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: 0.5s ease;
-}
-
-    form .page .field button:hover {
-        background: #000;
-    }
-
-form .page .btns button {
-    margin-top: -20px !important;
-}
-
-    form .page .btns button.prev {
-        margin-right: 3px;
-        font-size: 17px;
-    }
-
-    form .page .btns button.next {
-        margin-left: 3px;
-    }
-
-.container .progress-bar {
-    display: flex;
-    margin: 40px 0;
-    user-select: none;
-}
-
-    .container .progress-bar .step {
-        text-align: center;
-        width: 100%;
-        position: relative;
-    }
-
-        .container .progress-bar .step p {
-            font-weight: 500;
-            font-size: 18px;
-            color: #000;
-            margin-bottom: 8px;
-        }
-
-.progress-bar .step .bullet {
-    height: 25px;
-    width: 25px;
-    border: 2px solid #000;
-    display: inline-block;
-    border-radius: 50%;
-    position: relative;
-    transition: 0.2s;
-    font-weight: 500;
-    font-size: 17px;
-    line-height: 25px;
-}
-
-    .progress-bar .step .bullet.active {
-        border-color: #d43f8d;
-        background: #d43f8d;
-    }
-
-    .progress-bar .step .bullet span {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .progress-bar .step .bullet.active span {
-        display: none;
-    }
-
-    .progress-bar .step .bullet:before,
-    .progress-bar .step .bullet:after {
-        position: absolute;
-        content: '';
-        bottom: 11px;
-        right: -51px;
-        height: 3px;
-        width: 44px;
-        background: #262626;
-    }
-
-    .progress-bar .step .bullet.active:after {
-        background: #d43f8d;
-        transform: scaleX(0);
-        transform-origin: left;
-        animation: animate 0.3s linear forwards;
-    }
-
-@keyframes animate {
-    100% {
-        transform: scaleX(1);
-    }
-}
-
-.progress-bar .step:last-child .bullet:before,
-.progress-bar .step:last-child .bullet:after {
-    display: none;
-}
-
-.progress-bar .step p.active {
-    color: #d43f8d;
-    transition: 0.2s linear;
-}
-
-.progress-bar .step .check {
-    position: absolute;
-    left: 50%;
-    top: 70%;
-    font-size: 15px;
-    transform: translate(-50%, -50%);
-    display: none;
-}
-
-    .progress-bar .step .check.active {
-        display: block;
-        color: #fff;
-    }
-*/
