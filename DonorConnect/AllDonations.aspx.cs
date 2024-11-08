@@ -224,7 +224,7 @@ namespace DonorConnect
                         if (row["timeRange"] != DBNull.Value && int.TryParse(row["timeRange"].ToString(), out timeRangeDays) && timeRangeDays > 0)
                         {
                             // Add the timeRange value to the determined countdown start time
-                            DateTime countdownEndDate = countdownStartTime.AddMinutes(timeRangeDays);
+                            DateTime countdownEndDate = countdownStartTime.AddDays(timeRangeDays);
                             newRow["countdownEndDate"] = countdownEndDate.ToString("yyyy-MM-ddTHH:mm:ss");
                         }
                         else
@@ -723,7 +723,7 @@ namespace DonorConnect
                     if (row["timeRange"] != DBNull.Value && int.TryParse(row["timeRange"].ToString(), out timeRangeDays) && timeRangeDays > 0)
                     {
                         // Add the timeRange value to the approved_on date
-                        DateTime countdownEndDate = approvedOn.AddMinutes(timeRangeDays);
+                        DateTime countdownEndDate = approvedOn.AddDays(timeRangeDays);
                         row["countdownEndDate"] = countdownEndDate.ToString("yyyy-MM-ddTHH:mm:ss");
                     }
                     else
@@ -1015,7 +1015,7 @@ namespace DonorConnect
                             if (row["timeRange"] != DBNull.Value && int.TryParse(row["timeRange"].ToString(), out timeRangeDays) && timeRangeDays > 0)
                             {
                                 // add the timeRange value to the approved_on date
-                                DateTime countdownEndDate = approvedOn.AddMinutes(timeRangeDays);
+                                DateTime countdownEndDate = approvedOn.AddDays(timeRangeDays);
                                 row["countdownEndDate"] = countdownEndDate.ToString("yyyy-MM-ddTHH:mm:ss");
                             }
                             else
